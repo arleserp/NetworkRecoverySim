@@ -60,8 +60,7 @@ public class graphStatistics {
         }
         return sum/g.getVertexCount();
     }
-    
-    
+   
  /*   public void computeClusteringStats(Graph<GraphElements.MyVertex, String> graph) {
         //clusteringStats = new SummaryStatistics();
         for (GraphElements.MyVertex vertex : graph.getVertices()) {

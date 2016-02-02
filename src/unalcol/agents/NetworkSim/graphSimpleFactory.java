@@ -63,7 +63,7 @@ public class graphSimpleFactory {
                 g = new EppsteinPowerLawGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), agentsNumber, channelsNumber, 5).create();
             break;
         }
-        
+         
         //Visualize topology
         layout.setSize(new Dimension(600, 600)); // sets the initial size of the layout space
         
@@ -87,3 +87,4 @@ public class graphSimpleFactory {
         return g;
     }
 }
+
