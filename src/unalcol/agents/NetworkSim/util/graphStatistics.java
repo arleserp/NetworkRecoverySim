@@ -60,18 +60,4 @@ public class graphStatistics {
         }
         return sum/g.getVertexCount();
     }
-   
- /*   public void computeClusteringStats(Graph<GraphElements.MyVertex, String> graph) {
-        //clusteringStats = new SummaryStatistics();
-        for (GraphElements.MyVertex vertex : graph.getVertices()) {
-            if (degree(vertex) > 0) {
-                double clusteringCoefficient
-                        = computeWeightedClusteringCoefficient(vertex);
-                clusteringStats.addValue(clusteringCoefficient);
-                logger.debug("cc(" + vertex.hashCode() + ") = "
-                        + clusteringCoefficient);
-            }
-        }
-    }
-*/ 
 }
