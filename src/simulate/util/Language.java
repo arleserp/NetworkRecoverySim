@@ -15,4 +15,4 @@ public interface Language {
 
   public int getActionsNumber();
   public int getPerceptsNumber();
-}
+} 

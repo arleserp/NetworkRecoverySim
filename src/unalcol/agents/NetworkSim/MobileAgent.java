@@ -8,7 +8,6 @@ package unalcol.agents.NetworkSim;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.concurrent.LinkedBlockingQueue;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 

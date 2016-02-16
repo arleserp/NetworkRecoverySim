@@ -12,8 +12,8 @@ package unalcol.agents.NetworkSim;
 public class SyncronizationMain {
     public static String graphMode = "lattice";
     public static int population = 5;
-    public static int channelNumber = 1;
-    public static int vertexNumber = 20;
+    public static int channelNumber = 5;
+    public static int vertexNumber = 5;
     public static float pf = 0.5f;
     public static float beta = 1f;
 

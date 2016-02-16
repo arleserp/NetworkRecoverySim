@@ -5,11 +5,9 @@
  */
 package unalcol.agents.NetworkSim.util;
 
-import static edu.uci.ics.jung.algorithms.metrics.Metrics.clusteringCoefficients;
 import edu.uci.ics.jung.algorithms.shortestpath.DistanceStatistics;
 import edu.uci.ics.jung.algorithms.shortestpath.UnweightedShortestPath;
 import edu.uci.ics.jung.graph.Graph;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import org.apache.commons.collections15.Transformer;
