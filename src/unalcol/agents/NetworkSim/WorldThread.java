@@ -51,16 +51,16 @@ public class WorldThread implements Runnable {
      * @param height
      * @return
      */
-    WorldThread(int pop, float pf, int nv, int ne) {
+    WorldThread(int pop, float pf) {
         population = pop;
         probFailure = pf;
         positions = new Hashtable<>();
-        vertexNumber = nv;
-        channelNumber = ne;
+        //vertexNumber = nv;
+        //channelNumber = ne;
         System.out.println("Pop: "  + population);
         System.out.println("Pf: "  + pf);
-        System.out.println("Vertex Number: "  + vertexNumber);
-        System.out.println("Channel Number: "  + channelNumber);
+        //System.out.println("Vertex Number: "  + vertexNumber);
+        //System.out.println("Channel Number: "  + channelNumber);
     }
 
     
@@ -78,12 +78,12 @@ public class WorldThread implements Runnable {
         SimpleLanguage languaje = new SimpleLanguage(_percepts, _actions);
 
         //report = new reportHealingProgram(population, probFailure, this);
-//        greport = new GraphicReportHealingObserver(probFailure);
+        //greport = new GraphicReportHealingObserver(probFailure);
 
         //Create graph
-        Graph<GraphElements.MyVertex, String> g = graphSimpleFactory.createGraph(SyncronizationMain.graphMode, vertexNumber, channelNumber);
+        Graph<GraphElements.MyVertex, String> g = graphSimpleFactory.createGraph(SyncronizationMain.graphMode);
 
-        System.out.println("Distances: " + graphStatistics.computeAveragePathLength(g));
+        System.out.println("Average Path Length: " + graphStatistics.computeAveragePathLength(g));
         Map<GraphElements.MyVertex, Double> m = graphStatistics.clusteringCoefficients(g);
         System.out.println("Clustering coeficients:" + m);
         System.out.println("Average Clustering Coefficient: " + graphStatistics.averageCC(g));

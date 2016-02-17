@@ -91,8 +91,9 @@ public class NetworkEnvironment extends Environment {
                 case 0: // move
                     GraphElements.MyVertex v = (GraphElements.MyVertex) ac.getAttribute("location");
                     a.setLocation(v);
-                    
-                    Iterator<Object> it = a.getData().iterator();
+    
+                    ArrayList<Object> copy = new ArrayList<>(a.getData());
+                    Iterator<Object> it = copy.iterator();
                     while(it.hasNext()){
                         Object x = it.next();
                         if (!v.getData().contains(x)) {
@@ -127,8 +128,8 @@ public class NetworkEnvironment extends Environment {
         
         //Load data in Agent
         //clone ArrayList
-        
-        Iterator<Object> it = anAgent.getLocation().getData().iterator();
+        ArrayList<Object> copy = new ArrayList<>(anAgent.getLocation().getData());
+        Iterator<Object> it = copy.iterator();
         while(it.hasNext()){
             Object x = it.next();
             if (!anAgent.getData().contains(x)) {

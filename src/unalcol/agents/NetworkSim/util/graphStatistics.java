@@ -21,41 +21,42 @@ public class graphStatistics {
 
     public static double computeAveragePathLength(Graph<GraphElements.MyVertex, String> graph) {
         double sum = 0;
-        double n = 0;
+        double n = graph.getVertexCount();
         //Transformer<GraphElements.MyVertex, Double> distances = DistanceStatistics.averageDistances(graph, new UnweightedShortestPath<>(graph));
-        Transformer<GraphElements.MyVertex, Double> distances = DistanceStatistics.averageDistances(graph, new UnweightedShortestPath(graph));
-        System.out.println("distances" + distances.toString());
-        
+        UnweightedShortestPath u = new UnweightedShortestPath(graph);
+
         for (GraphElements.MyVertex v : graph.getVertices()) {
-            
-            sum += distances.transform(v);
-            System.out.println("v" + v + ", distances" + distances.transform(v));
-            n++;
+            for (GraphElements.MyVertex w : graph.getVertices()) {
+                if (!w.equals(v)) {
+                    System.out.println("<" + w + "," + v + ">" + u.getDistance(v, w).doubleValue());
+                    sum += u.getDistance(v, w).doubleValue();
+                }
+            }
+
         }
-        return sum / n;
+        return sum / (n * (n - 1));
     }
 
-    public static Map clusteringCoefficients(Graph g){
+    public static Map clusteringCoefficients(Graph g) {
         return edu.uci.ics.jung.algorithms.metrics.Metrics.clusteringCoefficients(g);
     }
-    
-    public static Double averageCC(Graph g){
+
+    public static Double averageCC(Graph g) {
         Map<GraphElements.MyVertex, Double> m = clusteringCoefficients(g);
         Collection<Double> val = m.values();
         double sum = 0;
-        for(Double v: val){
-            sum+= v;
+        for (Double v : val) {
+            sum += v;
         }
-        return sum/val.size();
+        return sum / val.size();
     }
-    
-    
-    public static Double averageDegree(Graph g){
+
+    public static Double averageDegree(Graph g) {
         Collection vertices = g.getVertices();
         double sum = 0;
-        for(Object v: vertices){
-            sum+= g.degree((GraphElements.MyVertex)v);
+        for (Object v : vertices) {
+            sum += g.degree((GraphElements.MyVertex) v);
         }
-        return sum/g.getVertexCount();
+        return sum / g.getVertexCount();
     }
 }
