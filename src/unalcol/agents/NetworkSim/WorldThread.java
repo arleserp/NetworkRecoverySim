@@ -92,7 +92,7 @@ public class WorldThread implements Runnable {
 
         //Creates "Agents"
         for (int i = 0; i < population; i++) {
-            AgentProgram program = ProgramMobileAgentsFactory.createProgram(probFailure);
+            AgentProgram program = ProgramMobileAgentsFactory.createProgram(probFailure, "random");
             MobileAgent a = new MobileAgent(program);
             a.setAttribute("ID", String.valueOf(i));
             a.setLocation(getLocation(g));
