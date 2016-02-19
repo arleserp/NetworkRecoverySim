@@ -1,4 +1,4 @@
-package unalcol.agents.NetworkSim;
+package unalcol.agents.NetworkSim.environment;
 
 import java.util.Hashtable;
 
@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import org.apache.commons.collections15.Transformer;
+import unalcol.agents.NetworkSim.ActionParameters;
+import unalcol.agents.NetworkSim.GraphElements;
+import unalcol.agents.NetworkSim.MobileAgent;
 
 public class NetworkEnvironment extends Environment {
 

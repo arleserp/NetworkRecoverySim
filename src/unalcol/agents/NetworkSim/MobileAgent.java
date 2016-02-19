@@ -22,6 +22,8 @@ public class MobileAgent extends Agent implements Serializable {
     private int round;
     private GraphElements.MyVertex location;
     private ArrayList data;
+    private float pheromone; 
+    
     
     public MobileAgent(AgentProgram _program) {
         super(_program);
@@ -44,6 +46,21 @@ public class MobileAgent extends Agent implements Serializable {
             return (false);
         }
     }
+    
+    /**
+     * @return the pheromone
+     */
+    public float getPheromone() {
+        return pheromone;
+    }
+
+    /**
+     * @param pheromone the pheromone to set
+     */
+    public void setPheromone(float pheromone) {
+        this.pheromone = pheromone;
+    }
+
 
 //    public void putMessage(Object message) {
 //        mbuffer.add(message);

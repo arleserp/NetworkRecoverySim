@@ -30,6 +30,7 @@ public class GraphElements {
         private boolean packetSwitchCapable;
         private boolean tdmSwitchCapable;
         private ArrayList data;
+        private float ph = 0.5f;
         
         int State;
         
@@ -81,6 +82,20 @@ public class GraphElements {
          */
         public void setData(ArrayList data) {
             this.data = data;
+        }
+
+        /**
+         * @return the ph
+         */
+        public float getPh() {
+            return ph;
+        }
+
+        /**
+         * @param ph the ph to set
+         */
+        public void setPh(float ph) {
+            this.ph = ph;
         }
     }
     

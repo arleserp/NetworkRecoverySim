@@ -4,21 +4,23 @@
  * and open the template in the editor.
  */
 
-package unalcol.agents.NetworkSim;
+package unalcol.agents.NetworkSim.programs;
 
 import java.util.Collection;
 import unalcol.agents.Action;
 import unalcol.agents.AgentProgram;
+import unalcol.agents.NetworkSim.ActionParameters;
+import unalcol.agents.NetworkSim.GraphElements;
 import unalcol.agents.Percept;
 
 /**
  *
  * @author Arles Rodriguez
  */
-class defaultSynchronizationProgram implements AgentProgram {
+public class RandomSynchronizationProgram implements AgentProgram {
     float pf;
     
-    public defaultSynchronizationProgram(float pf) {
+    public RandomSynchronizationProgram(float pf) {
         this.pf = pf;
     }
 

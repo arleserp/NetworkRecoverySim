@@ -1,5 +1,6 @@
-package unalcol.agents.NetworkSim;
+package unalcol.agents.NetworkSim.environment;
 
+import unalcol.agents.NetworkSim.environment.NetworkEnvironment;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;

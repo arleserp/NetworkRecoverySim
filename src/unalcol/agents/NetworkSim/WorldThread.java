@@ -5,6 +5,7 @@
  */
 package unalcol.agents.NetworkSim;
 
+import unalcol.agents.NetworkSim.environment.NetworkEnvironment;
 import static edu.uci.ics.jung.algorithms.metrics.Metrics.clusteringCoefficients;
 import edu.uci.ics.jung.algorithms.shortestpath.DistanceStatistics;
 import edu.uci.ics.jung.graph.Graph;
@@ -101,6 +102,7 @@ public class WorldThread implements Runnable {
             agents.add(a);
         }
 
+        
         world = new NetworkEnvironment(agents, languaje, g);
         //greport.addObserver(world);
         world.run();

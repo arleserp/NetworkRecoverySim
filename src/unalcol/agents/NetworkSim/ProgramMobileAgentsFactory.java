@@ -6,6 +6,7 @@
 package unalcol.agents.NetworkSim;
 
 import unalcol.agents.AgentProgram;
+import unalcol.agents.NetworkSim.programs.RandomSynchronizationProgram;
 
 /**
  * Factory Class to create a determined kind of World and Program given some
@@ -23,8 +24,18 @@ public class ProgramMobileAgentsFactory {
      * @param failuresByTermite
      * @return an AgentProgram
      */
-    public static AgentProgram createProgram(float pf) {
-        AgentProgram program = new defaultSynchronizationProgram(pf);
+    public static AgentProgram createProgram(float pf, String mode) {
+        AgentProgram program = null;
+        switch(mode){
+            case "random":
+               program = new RandomSynchronizationProgram(pf);
+               break;
+            case "carriers":
+            default:
+               program = new RandomSynchronizationProgram(pf);
+               break;
+        }
+                
         return program;
     }
 
