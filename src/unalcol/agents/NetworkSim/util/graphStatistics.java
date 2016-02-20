@@ -5,12 +5,10 @@
  */
 package unalcol.agents.NetworkSim.util;
 
-import edu.uci.ics.jung.algorithms.shortestpath.DistanceStatistics;
 import edu.uci.ics.jung.algorithms.shortestpath.UnweightedShortestPath;
 import edu.uci.ics.jung.graph.Graph;
 import java.util.Collection;
 import java.util.Map;
-import org.apache.commons.collections15.Transformer;
 import unalcol.agents.NetworkSim.GraphElements;
 
 /**
@@ -28,7 +26,7 @@ public class graphStatistics {
         for (GraphElements.MyVertex v : graph.getVertices()) {
             for (GraphElements.MyVertex w : graph.getVertices()) {
                 if (!w.equals(v)) {
-                    System.out.println("<" + w + "," + v + ">" + u.getDistance(v, w).doubleValue());
+                    //System.out.println("<" + w + "," + v + ">" + u.getDistance(v, w).doubleValue());
                     sum += u.getDistance(v, w).doubleValue();
                 }
             }

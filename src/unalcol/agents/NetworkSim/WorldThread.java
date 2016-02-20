@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Observer;
 // unalcol.agent.networkSim.reports.GraphicReportHealingObserver;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
@@ -20,6 +21,7 @@ import unalcol.agents.simulate.util.SimpleLanguage;
 import unalcol.random.RandomUtil;
 import java.util.Vector;
 import unalcol.agents.NetworkSim.util.graphStatistics;
+import unalcol.agents.NetworkSim.util.graphVisualization;
 
 /**
  * Creates a simulation without graphic interface
@@ -42,6 +44,7 @@ public class WorldThread implements Runnable {
     Hashtable<String, Object> positions;
     int width;
     int height;
+    private Observer graphVisualization;
 
     /**
      * Creates a simulation without graphic interface
@@ -92,9 +95,8 @@ public class WorldThread implements Runnable {
 
         //Creates "Agents"
         for (int i = 0; i < population; i++) {
-            AgentProgram program = ProgramMobileAgentsFactory.createProgram(probFailure, "random");
-            MobileAgent a = new MobileAgent(program);
-            a.setAttribute("ID", String.valueOf(i));
+            AgentProgram program = ProgramWorldSimpleFactory.createProgram(probFailure, SyncronizationMain.motionAlg);
+            MobileAgent a = new MobileAgent(program, i);
             a.setLocation(getLocation(g));
             a.setProgram(program);
             a.setAttribute("infi", new ArrayList<String>());
@@ -102,12 +104,13 @@ public class WorldThread implements Runnable {
             agents.add(a);
         }
 
-        
+        graphVisualization = new graphVisualization();
         world = new NetworkEnvironment(agents, languaje, g);
+        world.addObserver(graphVisualization);
         //greport.addObserver(world);
+        world.not();
         world.run();
         executions++;
-
         /*        world.updateSandC();
          world.calculateGlobalInfo();
          world.nObservers();

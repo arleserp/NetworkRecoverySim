@@ -23,12 +23,13 @@ public class MobileAgent extends Agent implements Serializable {
     private GraphElements.MyVertex location;
     private ArrayList data;
     private float pheromone; 
+    private int id;
     
-    
-    public MobileAgent(AgentProgram _program) {
+    public MobileAgent(AgentProgram _program, int ida) {
         super(_program);
         data = new ArrayList();
         round = -1;
+        id = ida;
     }
 
     public void setAttribute(String key, Object value) {
@@ -126,5 +127,19 @@ public class MobileAgent extends Agent implements Serializable {
      */
     public void setData(ArrayList data) {
         this.data = data;
+    }
+
+    /**
+     * @return the id
+     */
+    public int getId() {
+        return id;
+    }
+
+    /**
+     * @param id the id to set
+     */
+    public void setId(int id) {
+        this.id = id;
     }
 }

@@ -27,26 +27,29 @@ public class NetworkEnvironment extends Environment {
     public SimpleLanguage language = null;
     Date date;
     Hashtable<String, ArrayList> mbuffer = new Hashtable();
-    Graph<GraphElements.MyVertex, String> g;
-    String currentNode = null;
+    public Graph<GraphElements.MyVertex, String> topology;
+    GraphElements.MyVertex currentNode = null;
     String currentEdge = null;
     String lastactionlog;
+    public ArrayList<GraphElements.MyVertex> visitedNodes = new ArrayList();
+    public ArrayList<GraphElements.MyVertex> locationAgents = null;
+    
+    
+    BasicVisualizationServer<GraphElements.MyVertex, String> vv;
 
-    BasicVisualizationServer<String, String> vv;
-
-    void setVV(BasicVisualizationServer<String, String> v) {
+    void setVV(BasicVisualizationServer<GraphElements.MyVertex, String> v) {
         vv = v;
     }
-
     // Transformer maps the vertex number to a vertex property
-    Transformer<String, Paint> vertexColor = new Transformer<String, Paint>() {
+    Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
         @Override
-        public Paint transform(String i) {
-            //System.out.println("callllll" + currentNode);
-            if (currentNode.equals(i)) {
-                return Color.RED;
+        public Paint transform(GraphElements.MyVertex i) {
+            System.out.println("callllll" + currentNode);
+           
+            if (getVisitedNodes().contains(i)) {
+                return Color.BLUE;
             }
-            return Color.BLUE;
+            return Color.RED;
         }
     };
 
@@ -73,7 +76,10 @@ public class NetworkEnvironment extends Environment {
         boolean flag = (action != null);
         MobileAgent a = (MobileAgent) agent;
         ActionParameters ac = (ActionParameters) action;
-        currentNode = (String) a.getAttribute("ID");
+        currentNode = a.getLocation();
+        visitedNodes.add(currentNode);
+        getLocationAgents().set(a.getId(), a.getLocation());
+        //(GraphElements.MyVertex) a.getAttribute("ID");
         //System.out.println("cn" + currentNode);
 //        vv.repaint();
         String log;
@@ -81,7 +87,7 @@ public class NetworkEnvironment extends Environment {
         if (flag) {
             //Agents can be put to Sleep for some ms
             //sleep is good is graph interface is on
-            agent.sleep(3);
+            agent.sleep(10);
 
             String act = action.getCode();
             String msg = null;
@@ -97,16 +103,19 @@ public class NetworkEnvironment extends Environment {
     
                     ArrayList<Object> copy = new ArrayList<>(a.getData());
                     Iterator<Object> it = copy.iterator();
-                    while(it.hasNext()){
+                    /*while(it.hasNext()){
                         Object x = it.next();
+                        if(x == null){
+                            System.out.println("error!");
+                        }
                         if (!v.getData().contains(x)) {
                             v.getData().add(x);
                         }
-                    }
+                    }*/
                     
                     a.setRound(a.getRound() + 1);
                     
-                    if(a.getData().size() == g.getVertexCount()){
+                    if(a.getData().size() == getTopology().getVertexCount()){
                         System.out.println("complete" + a.getRound());
                         a.die();
                     }
@@ -118,6 +127,8 @@ public class NetworkEnvironment extends Environment {
                     break;
             }
         }
+        setChanged();
+        notifyObservers();
         return flag;
     }
 
@@ -125,36 +136,43 @@ public class NetworkEnvironment extends Environment {
     public Percept sense(Agent agent) {
         MobileAgent anAgent = (MobileAgent) agent;
         Percept p = new Percept();
-        //System.out.println("sense - g " + g);
+        //System.out.println("sense - topology " + topology);
         //Load neighbors 
-        p.setAttribute("neighbors", g.getNeighbors(anAgent.getLocation()));
+        p.setAttribute("neighbors", getTopology().getNeighbors(anAgent.getLocation()));
         
         //Load data in Agent
         //clone ArrayList
         ArrayList<Object> copy = new ArrayList<>(anAgent.getLocation().getData());
+        System.out.println("copy" + copy);
         Iterator<Object> it = copy.iterator();
         while(it.hasNext()){
             Object x = it.next();
+            if(x == null){
+                System.out.println("error 2!");
+            }
             if (!anAgent.getData().contains(x)) {
                 anAgent.getData().add(x);
             }
         }
         
-        System.out.println("agent info:" + anAgent.getData());
+        System.out.println("agent info size:" + anAgent.getData().size());
         return p;
     }
 
     public NetworkEnvironment(Vector<Agent> _agents, SimpleLanguage _language, Graph<GraphElements.MyVertex, String> gr) {
         super(_agents);
         int n = _agents.size();
+        locationAgents = new ArrayList<>(n);
+
         for (int i = 0; i < n; i++) {
             MobileAgent ag = (MobileAgent) _agents.get(i);
+            locationAgents.add(new GraphElements.MyVertex("null"));
             //System.out.println("creating buffer id" + ag.getAttribute("ID"));
 
         }
         language = _language;
         date = new Date();
-        g = gr;
+        topology = gr;
         //r = new reportPajeFormat();
         //r.addObserver(this);
     }
@@ -190,6 +208,53 @@ public class NetworkEnvironment extends Environment {
 
     private void returnOutput(String pid, Hashtable out) {
         controlBoard.getInstance().addOutput(pid, out);
+    }
+
+    /**
+     * @return the topology
+     */
+    public Graph<GraphElements.MyVertex, String> getTopology() {
+        return topology;
+    }
+
+    /**
+     * @param topology the topology to set
+     */
+    public void setTopology(Graph<GraphElements.MyVertex, String> topology) {
+        this.topology = topology;
+    }
+
+    /**
+     * @return the visitedNodes
+     */
+    public ArrayList<GraphElements.MyVertex> getVisitedNodes() {
+        return visitedNodes;
+    }
+
+    /**
+     * @param visitedNodes the visitedNodes to set
+     */
+    public void setVisitedNodes(ArrayList<GraphElements.MyVertex> visitedNodes) {
+        this.visitedNodes = visitedNodes;
+    }
+
+    public void not() {
+        setChanged();
+        notifyObservers();
+    }
+
+    /**
+     * @return the locationAgents
+     */
+    public ArrayList<GraphElements.MyVertex> getLocationAgents() {
+        return locationAgents;
+    }
+
+    /**
+     * @param locationAgents the locationAgents to set
+     */
+    public void setLocationAgents(ArrayList<GraphElements.MyVertex> locationAgents) {
+        this.locationAgents = locationAgents;
     }
 
 }

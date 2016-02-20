@@ -19,25 +19,28 @@ public class SyncronizationMain {
     public static float beta = 1f;
     public static int rows = 5;
     public static int columns = 5;
-
+    public static String motionAlg = "random";
+    
     // Perform simulation
     public static void main(String[] args) {
         if (args.length >= 1) {
             //Pop Size
             System.out.println("graphmode:" + args[0]);
             graphMode = args[0];
-
+            
             if (graphMode.equals("smallworld")) {
                 beta = Float.valueOf(args[1]);
                 vertexNumber = Integer.valueOf(args[2]);
                 popSize = Integer.valueOf(args[3]);
                 pf = Float.valueOf(String.valueOf(args[4]));
+                motionAlg = args[5];
             }
             
             if (graphMode.equals("scalefree")) {
                 vertexNumber = Integer.valueOf(args[1]);
                 popSize = Integer.valueOf(args[2]);
                 pf = Float.valueOf(String.valueOf(args[3]));
+                motionAlg = args[4];
             }
             
             if (graphMode.equals("lattice")) {
@@ -45,6 +48,7 @@ public class SyncronizationMain {
                 columns = Integer.valueOf(args[2]);
                 popSize = Integer.valueOf(args[3]);
                 pf = Float.valueOf(String.valueOf(args[4]));
+                motionAlg = args[5];
             }
             
             WorldThread w = new WorldThread(popSize, pf);
@@ -54,9 +58,9 @@ public class SyncronizationMain {
         } else {
             System.out.println("Usage:");
             System.out.println("java -Xmx4200m -classpath NetworkSimulator.jar unalcol.agents.NetworkSim graphmode [smallworld|scalefree|lattice]");
-            System.out.println("java -Xmx4200m -classpath NetworkSimulator.jar unalcol.agents.NetworkSim graphmode smallworld beta nodenumber agentsnumber pf");
-            System.out.println("java -Xmx4200m -classpath NetworkSimulator.jar unalcol.agents.NetworkSim graphmode scalefree nodenumber agentsnumber pf");
-            System.out.println("java -Xmx4200m -classpath NetworkSimulator.jar unalcol.agents.NetworkSim graphmode lattice rows columns agentsnumber pf");
+            System.out.println("java -Xmx4200m -classpath NetworkSimulator.jar unalcol.agents.NetworkSim graphmode smallworld beta nodenumber agentsnumber pf motionAlg");
+            System.out.println("java -Xmx4200m -classpath NetworkSimulator.jar unalcol.agents.NetworkSim graphmode scalefree nodenumber agentsnumber pf motionAlg");
+            System.out.println("java -Xmx4200m -classpath NetworkSimulator.jar unalcol.agents.NetworkSim graphmode lattice rows columns agentsnumber pf motionAlg");
         }
     }
 }
