@@ -20,6 +20,7 @@ public class SyncronizationMain {
     public static int rows = 5;
     public static int columns = 5;
     public static String motionAlg = "random";
+    public static String filename = "";
     
     // Perform simulation
     public static void main(String[] args) {
@@ -49,6 +50,13 @@ public class SyncronizationMain {
                 popSize = Integer.valueOf(args[3]);
                 pf = Float.valueOf(String.valueOf(args[4]));
                 motionAlg = args[5];
+            }
+            
+            if (graphMode.equals("load")) {
+                filename = args[1];
+                popSize = Integer.valueOf(args[2]);
+                pf = Float.valueOf(String.valueOf(args[3]));
+                motionAlg = args[4];
             }
             
             WorldThread w = new WorldThread(popSize, pf);

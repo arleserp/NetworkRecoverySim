@@ -9,6 +9,7 @@
 
 package unalcol.agents.NetworkSim;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import org.apache.commons.collections15.Factory;
 
@@ -25,7 +26,7 @@ public class GraphElements {
     public GraphElements() {
     }
     
-    public static class MyVertex {
+    public static class MyVertex  implements Serializable{
         private String name;
         private boolean packetSwitchCapable;
         private boolean tdmSwitchCapable;

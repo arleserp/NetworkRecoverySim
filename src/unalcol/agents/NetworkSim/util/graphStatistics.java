@@ -26,7 +26,7 @@ public class graphStatistics {
         for (GraphElements.MyVertex v : graph.getVertices()) {
             for (GraphElements.MyVertex w : graph.getVertices()) {
                 if (!w.equals(v)) {
-                    //System.out.println("<" + w + "," + v + ">" + u.getDistance(v, w).doubleValue());
+                    System.out.println("<" + w + "," + v + ">" + u.getDistance(v, w).doubleValue());
                     sum += u.getDistance(v, w).doubleValue();
                 }
             }
