@@ -30,6 +30,7 @@ public class MobileAgent extends Agent implements Serializable {
         data = new ArrayList();
         round = -1;
         id = ida;
+        pheromone = 1.0f;
     }
 
     public void setAttribute(String key, Object value) {

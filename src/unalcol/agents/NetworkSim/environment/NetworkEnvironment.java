@@ -98,8 +98,6 @@ public class NetworkEnvironment extends Environment {
                 case 0: // move
                     GraphElements.MyVertex v = (GraphElements.MyVertex) ac.getAttribute("location");
                     a.setLocation(v);
-                    ArrayList<Object> copy = new ArrayList<>(a.getData());
-                    Iterator<Object> it = copy.iterator();
                     a.setRound(a.getRound() + 1);
                     if(a.getData().size() == getTopology().getVertexCount()){
                         System.out.println("complete" + a.getRound());
@@ -141,7 +139,7 @@ public class NetworkEnvironment extends Environment {
             }
         }
         
-        System.out.println("agent info size:" + anAgent.getData().size());
+        //System.out.println("agent info size:" + anAgent.getData().size());
         return p;
     }
 

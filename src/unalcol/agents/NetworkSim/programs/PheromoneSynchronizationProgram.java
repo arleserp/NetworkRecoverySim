@@ -91,6 +91,7 @@ public class PheromoneSynchronizationProgram implements AgentProgram {
             }
             //dirPos = LevyWalk(proximitySensor, termitesNeighbor);
             //if (!temp.contains(dirPos)) {
+            
             dirPos = temp.get(RandomUtil.nextInt(temp.size()));
             //}
         } else {

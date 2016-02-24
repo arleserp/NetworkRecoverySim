@@ -27,6 +27,7 @@ public class SyncronizationMain {
         if (args.length >= 1) {
             //Pop Size
             System.out.println("graphmode:" + args[0]);
+            
             graphMode = args[0];
             
             if (graphMode.equals("smallworld")) {

@@ -62,6 +62,7 @@ public class WorldThread implements Runnable {
         //channelNumber = ne;
         System.out.println("Pop: " + population);
         System.out.println("Pf: " + pf);
+        System.out.println("Movement: " + SyncronizationMain.motionAlg);
         //System.out.println("Vertex Number: "  + vertexNumber);
         //System.out.println("Channel Number: "  + channelNumber);
     }
@@ -132,9 +133,7 @@ public class WorldThread implements Runnable {
                 world.nObservers();
             }
                  */
-                System.out.println("wepaje");
                 if (world instanceof NetworkEnvironmentPheromone) {
-                    System.out.println("evaporateeee");
                     ((NetworkEnvironmentPheromone) world).evaporatePheromone();
                 }
                 /*
