@@ -83,6 +83,7 @@ public class PheromoneSynchronizationProgram implements AgentProgram {
 
             //store location with the min amount of pheromone
             float min = ((GraphElements.MyVertex) vs.toArray()[dirPos]).getPh();
+            temp.add(dirPos);
             for (int k = 0; k < vs.size(); k++) {
                 if (((GraphElements.MyVertex) vs.toArray()[k]).getPh() == min) {
                     temp.add(k);
