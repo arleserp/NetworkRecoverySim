@@ -102,7 +102,7 @@ public class WorldThread implements Runnable {
         }
 
         graphVisualization = new graphVisualization();
-        world = new NetworkEnvironment(agents, languaje, g);
+        world = new NetworkEnvironmentPheromone(agents, languaje, g);
         world.addObserver(graphVisualization);
         //greport.addObserver(world);
         world.not();
@@ -132,7 +132,9 @@ public class WorldThread implements Runnable {
                 world.nObservers();
             }
                  */
+                System.out.println("wepaje");
                 if (world instanceof NetworkEnvironmentPheromone) {
+                    System.out.println("evaporateeee");
                     ((NetworkEnvironmentPheromone) world).evaporatePheromone();
                 }
                 /*

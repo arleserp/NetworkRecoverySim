@@ -11,6 +11,7 @@ import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironment;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromone;
+import unalcol.agents.NetworkSim.programs.PheromoneSynchronizationProgram;
 import unalcol.agents.NetworkSim.programs.RandomSynchronizationProgram;
 import unalcol.agents.simulate.Environment;
 import unalcol.agents.simulate.util.SimpleLanguage;
@@ -38,6 +39,8 @@ public class ProgramWorldSimpleFactory {
                 program = new RandomSynchronizationProgram(pf);
                 break;
             case "carriers":
+                program = new PheromoneSynchronizationProgram(pf);
+                break;
             default:
                 program = new RandomSynchronizationProgram(pf);
                 break;

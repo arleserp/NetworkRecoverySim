@@ -111,7 +111,7 @@ public class NetworkEnvironmentPheromone extends NetworkEnvironment {
     public void evaporatePheromone() {
         for (GraphElements.MyVertex v : topology.getVertices()) {
             System.out.println(v.toString() + "before:" + v.getPh());
-            v.setPh(v.getPh() - v.getPh() * 0.01f);
+            v.setPh(v.getPh() - v.getPh() * 0.001f);
             System.out.println(v.toString() + "after:" + v.getPh());
         }
     }
