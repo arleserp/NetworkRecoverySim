@@ -14,7 +14,9 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.commons.collections15.Transformer;
 import unalcol.agents.NetworkSim.ActionParameters;
 import unalcol.agents.NetworkSim.GraphElements;
@@ -26,44 +28,16 @@ public class NetworkEnvironment extends Environment {
     public int[][] structure = null;
     public SimpleLanguage language = null;
     Date date;
-    Hashtable<String, ArrayList> mbuffer = new Hashtable();
     public Graph<GraphElements.MyVertex, String> topology;
     GraphElements.MyVertex currentNode = null;
     String currentEdge = null;
     String lastactionlog;
     public ArrayList<GraphElements.MyVertex> visitedNodes = new ArrayList();
     public ArrayList<GraphElements.MyVertex> locationAgents = null;
+    HashMap<Integer, ConcurrentLinkedQueue> mbuffer;
     
     
-    BasicVisualizationServer<GraphElements.MyVertex, String> vv;
-
-    void setVV(BasicVisualizationServer<GraphElements.MyVertex, String> v) {
-        vv = v;
-    }
-    // Transformer maps the vertex number to a vertex property
-    Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
-        @Override
-        public Paint transform(GraphElements.MyVertex i) {
-            System.out.println("callllll" + currentNode);
-           
-            if (getVisitedNodes().contains(i)) {
-                return Color.BLUE;
-            }
-            return Color.RED;
-        }
-    };
-
-    Transformer<String, Paint> edgeColor = new Transformer<String, Paint>() {
-        @Override
-        public Paint transform(String i) {
-            //System.out.println("callllll" + currentNode);
-            if (i.equals(currentEdge)) {
-                return Color.YELLOW;
-            }
-            return Color.BLACK;
-        }
-    };
-
+    
     public int getRowsNumber() {
         return structure.length;
     }
@@ -78,17 +52,41 @@ public class NetworkEnvironment extends Environment {
         ActionParameters ac = (ActionParameters) action;
         currentNode = a.getLocation();
         visitedNodes.add(currentNode);
+        
         getLocationAgents().set(a.getId(), a.getLocation());
-        //(GraphElements.MyVertex) a.getAttribute("ID");
-        //System.out.println("cn" + currentNode);
-//        vv.repaint();
-        String log;
 
+        //detect other agents in network
+        ArrayList<Integer> agentNeighbors = getAgentNeighbors(a);
+        //System.out.println(a.getId() + "agentNeigbors" + agentNeighbors);
+        
+        //serialize messages 
+        String[] message = new String[2]; //msg: [from|msg]
+        message[0] = String.valueOf(a.getId());
+        message[1] = ObjectSerializer.serialize(a.getData());
+        
+        //for each neighbor send a message
+        for (Integer idAgent : agentNeighbors) {
+            NetworkMessageBuffer.getInstance().putMessage(idAgent, message);
+        }
+        
+        String[] inbox = NetworkMessageBuffer.getInstance().getMessage(a.getId());
+
+        //inbox: id | infi 
+        if (inbox != null) {
+            System.out.println("my "+ a.getData().size());
+            ArrayList senderInf = (ArrayList) ObjectSerializer.deserialize(inbox[1]);
+            System.out.println("received" + senderInf.size());
+            // Join ArrayLists
+            a.getData().removeAll(senderInf);
+            a.getData().addAll(senderInf);
+            System.out.println("joined" + a.getData().size());
+        }
+
+        
         if (flag) {
             //Agents can be put to Sleep for some ms
             //sleep is good is graph interface is on
-            agent.sleep(10);
-
+            agent.sleep(3);
             String act = action.getCode();
             String msg = null;
 
@@ -100,21 +98,9 @@ public class NetworkEnvironment extends Environment {
                 case 0: // move
                     GraphElements.MyVertex v = (GraphElements.MyVertex) ac.getAttribute("location");
                     a.setLocation(v);
-    
                     ArrayList<Object> copy = new ArrayList<>(a.getData());
                     Iterator<Object> it = copy.iterator();
-                    /*while(it.hasNext()){
-                        Object x = it.next();
-                        if(x == null){
-                            System.out.println("error!");
-                        }
-                        if (!v.getData().contains(x)) {
-                            v.getData().add(x);
-                        }
-                    }*/
-                    
                     a.setRound(a.getRound() + 1);
-                    
                     if(a.getData().size() == getTopology().getVertexCount()){
                         System.out.println("complete" + a.getRound());
                         a.die();
@@ -143,7 +129,7 @@ public class NetworkEnvironment extends Environment {
         //Load data in Agent
         //clone ArrayList
         ArrayList<Object> copy = new ArrayList<>(anAgent.getLocation().getData());
-        System.out.println("copy" + copy);
+        //System.out.println("copy" + copy);
         Iterator<Object> it = copy.iterator();
         while(it.hasNext()){
             Object x = it.next();
@@ -161,6 +147,7 @@ public class NetworkEnvironment extends Environment {
 
     public NetworkEnvironment(Vector<Agent> _agents, SimpleLanguage _language, Graph<GraphElements.MyVertex, String> gr) {
         super(_agents);
+        this.mbuffer = new HashMap<>();
         int n = _agents.size();
         locationAgents = new ArrayList<>(n);
 
@@ -168,13 +155,11 @@ public class NetworkEnvironment extends Environment {
             MobileAgent ag = (MobileAgent) _agents.get(i);
             locationAgents.add(new GraphElements.MyVertex("null"));
             //System.out.println("creating buffer id" + ag.getAttribute("ID"));
-
+            mbuffer.put(i, new ConcurrentLinkedQueue());
         }
         language = _language;
         date = new Date();
         topology = gr;
-        //r = new reportPajeFormat();
-        //r.addObserver(this);
     }
 
 
@@ -255,6 +240,16 @@ public class NetworkEnvironment extends Environment {
      */
     public void setLocationAgents(ArrayList<GraphElements.MyVertex> locationAgents) {
         this.locationAgents = locationAgents;
+    }
+
+    public ArrayList<Integer> getAgentNeighbors(MobileAgent x) {
+        ArrayList n = new ArrayList();
+        for(int i=0; i < getLocationAgents().size(); i++){
+            if(i != x.getId() && x.getLocation().equals(getLocationAgents().get(i))){
+                n.add(i);
+            }
+        }
+        return n;
     }
 
 }

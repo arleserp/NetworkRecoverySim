@@ -6,8 +6,6 @@
 package unalcol.agents.NetworkSim;
 
 import unalcol.agents.NetworkSim.environment.NetworkEnvironment;
-import static edu.uci.ics.jung.algorithms.metrics.Metrics.clusteringCoefficients;
-import edu.uci.ics.jung.algorithms.shortestpath.DistanceStatistics;
 import edu.uci.ics.jung.graph.Graph;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,8 +16,9 @@ import java.util.Observer;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 import unalcol.agents.simulate.util.SimpleLanguage;
-import unalcol.random.RandomUtil;
 import java.util.Vector;
+import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromone;
+import unalcol.agents.NetworkSim.environment.NetworkMessageBuffer;
 import unalcol.agents.NetworkSim.util.graphStatistics;
 import unalcol.agents.NetworkSim.util.graphVisualization;
 
@@ -61,13 +60,12 @@ public class WorldThread implements Runnable {
         positions = new Hashtable<>();
         //vertexNumber = nv;
         //channelNumber = ne;
-        System.out.println("Pop: "  + population);
-        System.out.println("Pf: "  + pf);
+        System.out.println("Pop: " + population);
+        System.out.println("Pf: " + pf);
         //System.out.println("Vertex Number: "  + vertexNumber);
         //System.out.println("Channel Number: "  + channelNumber);
     }
 
-    
     /**
      *
      * Initializes simulation.
@@ -83,7 +81,6 @@ public class WorldThread implements Runnable {
 
         //report = new reportHealingProgram(population, probFailure, this);
         //greport = new GraphicReportHealingObserver(probFailure);
-
         //Create graph
         Graph<GraphElements.MyVertex, String> g = graphSimpleFactory.createGraph(SyncronizationMain.graphMode);
 
@@ -100,7 +97,7 @@ public class WorldThread implements Runnable {
             a.setLocation(getLocation(g));
             a.setProgram(program);
             a.setAttribute("infi", new ArrayList<String>());
-//          NetworkMessageBuffer.getInstance().createBuffer((String) t.getAttribute("ID"));
+            NetworkMessageBuffer.getInstance().createBuffer(a.getId());
             agents.add(a);
         }
 
@@ -123,44 +120,44 @@ public class WorldThread implements Runnable {
      */
     @Override
     public void run() {
-        //try {
-//        while (!world.isFinished()) {
-//            //Thread.sleep(30);
-//
-//            world.updateSandC();
-//            world.calculateGlobalInfo();
-//
-//            if (world.getAge() % 2 == 0 || world.getAgentsDie() == world.getAgents().size() || world.getRoundGetInfo() != -1) {
-//                world.nObservers();
-//            }
-//
-//            if (world instanceof WorldTemperaturesOneStepLWOnePheromoneEvaporationImpl) {
-//                ((WorldTemperaturesOneStepLWOnePheromoneEvaporationImpl) world).evaporatePheromone();
-//            }
-//
-//            if (world instanceof WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl) {
-//                ((WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl) world).evaporatePheromone();
-//            }
-//
-//            if (world instanceof WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl2) {
-//                ((WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl2) world).evaporatePheromone();
-//            }
-//
-//            if (world instanceof WorldLwphCLwEvapImpl) {
-//                ((WorldLwphCLwEvapImpl) world).evaporatePheromone();
-//            }
-//        }
-        /*} catch (InterruptedException e) {
-         System.out.println("interrupted!");
-         }
-         System.out.println("End WorldThread");*/
+        try {
+            while (true) { //!world.isFinished()) {
+                Thread.sleep(30);
+
+                //System.out.println("halo");
+                /* world.updateSandC();
+            world.calculateGlobalInfo();
+
+            if (world.getAge() % 2 == 0 || world.getAgentsDie() == world.getAgents().size() || world.getRoundGetInfo() != -1) {
+                world.nObservers();
+            }
+                 */
+                if (world instanceof NetworkEnvironmentPheromone) {
+                    ((NetworkEnvironmentPheromone) world).evaporatePheromone();
+                }
+                /*
+            if (world instanceof WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl) {
+                ((WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl) world).evaporatePheromone();
+            }
+
+            if (world instanceof WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl2) {
+                ((WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl2) world).evaporatePheromone();
+            }
+
+            if (world instanceof WorldLwphCLwEvapImpl) {
+                ((WorldLwphCLwEvapImpl) world).evaporatePheromone();
+            }*/
+            }
+        } catch (InterruptedException e) {
+            System.out.println("interrupted!");
+        }
+        /* System.out.println("End WorldThread");*/
     }
 
     private GraphElements.MyVertex getLocation(Graph<GraphElements.MyVertex, String> g) {
         int pos = (int) (Math.random() * g.getVertexCount());
         Collection E = g.getVertices();
-        return  (GraphElements.MyVertex)E.toArray()[pos];
+        return (GraphElements.MyVertex) E.toArray()[pos];
     }
-
 
 }

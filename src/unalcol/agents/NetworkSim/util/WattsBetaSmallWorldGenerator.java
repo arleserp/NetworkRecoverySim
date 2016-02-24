@@ -120,16 +120,16 @@ public class WattsBetaSmallWorldGenerator<V, E> extends Lattice2DGenerator {
         while (edgeList.size() > 0) {
             //Get the next edge
             Object nextEdge = edgeList.removeFirst();
-            System.out.println("next" + nextEdge);
+            //System.out.println("next" + nextEdge);
 
-            System.out.println("g" + g);
-            System.out.println("contains edge" + g.containsEdge(nextEdge));
+            //System.out.println("g" + g);
+            //System.out.println("contains edge" + g.containsEdge(nextEdge));
 
-            System.out.println("incident" + g.getIncidentVertices(nextEdge));
+            //System.out.println("incident" + g.getIncidentVertices(nextEdge));
             Object source = g.getIncidentVertices(nextEdge).toArray()[0];
             Object target = g.getIncidentVertices(nextEdge).toArray()[1];
-            System.out.println("source" + source);
-            System.out.println("dest" + target);
+            //System.out.println("source" + source);
+            //System.out.println("dest" + target);
 
             //Throw a random dart
             double percent = random.nextDouble();
@@ -160,7 +160,7 @@ public class WattsBetaSmallWorldGenerator<V, E> extends Lattice2DGenerator {
                     //Check to see if this edge already exists
                     int edgeCount = 0;
                     Collection edgeIter = g.getNeighbors(source);
-                    System.out.println("ed iter" + edgeIter);
+                    //System.out.println("ed iter" + edgeIter);
                     for (int j = 0; j < edgeIter.size(); j++) {
                         //If this edge already exists
                         candidate = candidate && (edgeIter.toArray()[j] != rndDest);

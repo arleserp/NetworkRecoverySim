@@ -32,11 +32,13 @@ public class GraphElements {
         private boolean tdmSwitchCapable;
         private ArrayList data;
         private float ph = 0.5f;
+        private ArrayList<MobileAgent> agents;
         
         int State;
         
         public MyVertex(String name) {
             this.name = name;
+            agents = new ArrayList<>();
         }
 
         public String getName() {

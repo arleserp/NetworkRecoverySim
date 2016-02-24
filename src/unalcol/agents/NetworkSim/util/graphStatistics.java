@@ -5,9 +5,11 @@
  */
 package unalcol.agents.NetworkSim.util;
 
+import edu.uci.ics.jung.algorithms.shortestpath.DistanceStatistics;
 import edu.uci.ics.jung.algorithms.shortestpath.UnweightedShortestPath;
 import edu.uci.ics.jung.graph.Graph;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import unalcol.agents.NetworkSim.GraphElements;
 
@@ -16,7 +18,8 @@ import unalcol.agents.NetworkSim.GraphElements;
  * @author Arles Rodriguez
  */
 public class graphStatistics {
-
+    public final static HashMap<String, Double> distances = new HashMap<>();
+    
     public static double computeAveragePathLength(Graph<GraphElements.MyVertex, String> graph) {
         double sum = 0;
         double n = graph.getVertexCount();
@@ -26,8 +29,14 @@ public class graphStatistics {
         for (GraphElements.MyVertex v : graph.getVertices()) {
             for (GraphElements.MyVertex w : graph.getVertices()) {
                 if (!w.equals(v)) {
-                    System.out.println("<" + w + "," + v + ">" + u.getDistance(v, w).doubleValue());
-                    sum += u.getDistance(v, w).doubleValue();
+                    //System.out.println("<" + w + "," + v + ">" + u.getDistance(v, w).doubleValue());
+                    //if(distances.containsKey(v+"-"+w)){
+                     //   sum += distances.get(v+"-"+w);
+                    /*}else{*/
+                        double distance = u.getDistance(v, w).doubleValue(); 
+                        sum += distance;                        
+                       /* distances.put(v+"-"+w, distance);
+                    }*/
                 }
             }
 

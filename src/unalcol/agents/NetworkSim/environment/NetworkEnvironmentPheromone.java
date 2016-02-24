@@ -26,8 +26,6 @@ public class NetworkEnvironmentPheromone extends NetworkEnvironment {
         super(_agents, _language, gr);
     }
 
-
-
     @Override
     public boolean act(Agent agent, Action action) {
         boolean flag = (action != null);
@@ -36,6 +34,33 @@ public class NetworkEnvironmentPheromone extends NetworkEnvironment {
         //System.out.println("cn" + currentNode);
         visitedNodes.add(currentNode);
         getLocationAgents().set(a.getId(), a.getLocation());
+
+        //detect other agents in network
+        ArrayList<Integer> agentNeighbors = getAgentNeighbors(a);
+        System.out.println(a.getId() + "agentNeigbors" + agentNeighbors);
+
+        //serialize messages 
+        String[] message = new String[2]; //msg: [from|msg]
+        message[0] = String.valueOf(a.getId());
+        message[1] = ObjectSerializer.serialize(a.getData());
+
+        //for each neighbor send a message
+        for (Integer idAgent : agentNeighbors) {
+            NetworkMessageBuffer.getInstance().putMessage(idAgent, message);
+        }
+
+        String[] inbox = NetworkMessageBuffer.getInstance().getMessage(a.getId());
+
+        //inbox: id | infi 
+        if (inbox != null) {
+            //System.out.println("my "+ a.getData().size());
+            ArrayList senderInf = (ArrayList) ObjectSerializer.deserialize(inbox[1]);
+            //System.out.println("received" + senderInf.size());
+            // Join ArrayLists
+            a.getData().removeAll(senderInf);
+            a.getData().addAll(senderInf);
+            //System.out.println("joined" + a.getData().size());
+        }
 
         if (flag) {
             //Agents can be put to Sleep for some ms
@@ -53,22 +78,22 @@ public class NetworkEnvironmentPheromone extends NetworkEnvironment {
                 case 0: // move
                     GraphElements.MyVertex v = (GraphElements.MyVertex) ac.getAttribute("location");
                     a.setLocation(v);
-    
+
                     ArrayList<Object> copy = new ArrayList<>(a.getData());
                     Iterator<Object> it = copy.iterator();
-                    while(it.hasNext()){
+                    while (it.hasNext()) {
                         Object x = it.next();
                         if (!v.getData().contains(x)) {
                             v.getData().add(x);
                         }
                     }
-                    
+
                     a.setPheromone((float) (a.getPheromone() + 0.01f * (0.5f - a.getPheromone())));
-                    a.getLocation().setPh(a.getLocation().getPh() + 0.01f * (a.getPheromone()- a.getLocation().getPh()));
-                   
+                    a.getLocation().setPh(a.getLocation().getPh() + 0.01f * (a.getPheromone() - a.getLocation().getPh()));
+
                     a.setRound(a.getRound() + 1);
 
-                    if(a.getData().size() == topology.getVertexCount()){
+                    if (a.getData().size() == topology.getVertexCount()) {
                         System.out.println("complete" + a.getRound());
                         a.die();
                     }
@@ -83,13 +108,12 @@ public class NetworkEnvironmentPheromone extends NetworkEnvironment {
         return flag;
     }
 
-
-
-
-
-
-
-
-
+    public void evaporatePheromone() {
+        for (GraphElements.MyVertex v : topology.getVertices()) {
+            System.out.println(v.toString() + "before:" + v.getPh());
+            v.setPh(v.getPh() - v.getPh() * 0.01f);
+            System.out.println(v.toString() + "after:" + v.getPh());
+        }
+    }
 
 }
