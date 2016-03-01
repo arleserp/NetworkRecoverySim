@@ -9,15 +9,11 @@ import unalcol.agents.simulate.*;
 import java.util.Vector;
 
 import edu.uci.ics.jung.graph.*;
-import edu.uci.ics.jung.visualization.BasicVisualizationServer;
-import java.awt.Color;
-import java.awt.Paint;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import org.apache.commons.collections15.Transformer;
 import unalcol.agents.NetworkSim.ActionParameters;
 import unalcol.agents.NetworkSim.GraphElements;
 import unalcol.agents.NetworkSim.MobileAgent;
@@ -35,9 +31,25 @@ public class NetworkEnvironment extends Environment {
     public ArrayList<GraphElements.MyVertex> visitedNodes = new ArrayList();
     public ArrayList<GraphElements.MyVertex> locationAgents = null;
     HashMap<Integer, ConcurrentLinkedQueue> mbuffer;
-    
-    
-    
+    private int roundComplete = -1;
+    private int idBest = -1;
+    private boolean finished = false;
+    private int age;
+
+    /**
+     * @return the idBest
+     */
+    public int getIdBest() {
+        return idBest;
+    }
+
+    /**
+     * @param aIdBest the idBest to set
+     */
+    public void setIdBest(int aIdBest) {
+        idBest = aIdBest;
+    }
+
     public int getRowsNumber() {
         return structure.length;
     }
@@ -52,37 +64,38 @@ public class NetworkEnvironment extends Environment {
         ActionParameters ac = (ActionParameters) action;
         currentNode = a.getLocation();
         visitedNodes.add(currentNode);
-        
+
         getLocationAgents().set(a.getId(), a.getLocation());
 
         //detect other agents in network
         ArrayList<Integer> agentNeighbors = getAgentNeighbors(a);
         //System.out.println(a.getId() + "agentNeigbors" + agentNeighbors);
-        
+
         //serialize messages 
         String[] message = new String[2]; //msg: [from|msg]
         message[0] = String.valueOf(a.getId());
         message[1] = ObjectSerializer.serialize(a.getData());
-        
+
         //for each neighbor send a message
         for (Integer idAgent : agentNeighbors) {
             NetworkMessageBuffer.getInstance().putMessage(idAgent, message);
+            a.incMsgSend();
         }
-        
+
         String[] inbox = NetworkMessageBuffer.getInstance().getMessage(a.getId());
 
         //inbox: id | infi 
         if (inbox != null) {
-            System.out.println("my "+ a.getData().size());
+            a.incMsgRecv();
+            //System.out.println("my " + a.getData().size());
             ArrayList senderInf = (ArrayList) ObjectSerializer.deserialize(inbox[1]);
-            System.out.println("received" + senderInf.size());
+            //System.out.println("received" + senderInf.size());
             // Join ArrayLists
             a.getData().removeAll(senderInf);
             a.getData().addAll(senderInf);
-            System.out.println("joined" + a.getData().size());
+            //System.out.println("joined" + a.getData().size());
         }
 
-        
         if (flag) {
             //Agents can be put to Sleep for some ms
             //sleep is good is graph interface is on
@@ -99,9 +112,16 @@ public class NetworkEnvironment extends Environment {
                     GraphElements.MyVertex v = (GraphElements.MyVertex) ac.getAttribute("location");
                     a.setLocation(v);
                     a.setRound(a.getRound() + 1);
-                    if(a.getData().size() == getTopology().getVertexCount()){
-                        System.out.println("complete" + a.getRound());
-                        a.die();
+                    boolean complete = false;
+                    if (a.getData().size() == topology.getVertexCount()) {
+                        complete = true;
+                    }
+
+                    if (getRoundComplete() == -1 && complete) {
+                        //System.out.println("complete! round" + a.getRound());
+                        setRoundComplete(a.getRound());
+                        setIdBest(a.getId());
+                        updateWorldAge();
                     }
                     break;
                 default:
@@ -111,6 +131,7 @@ public class NetworkEnvironment extends Environment {
                     break;
             }
         }
+        updateWorldAge();
         setChanged();
         notifyObservers();
         return flag;
@@ -123,22 +144,22 @@ public class NetworkEnvironment extends Environment {
         //System.out.println("sense - topology " + topology);
         //Load neighbors 
         p.setAttribute("neighbors", getTopology().getNeighbors(anAgent.getLocation()));
-        
+        //System.out.println("agent" + anAgent.getId() + "- neighbor: " +  getTopology().getNeighbors(anAgent.getLocation()));
         //Load data in Agent
         //clone ArrayList
         ArrayList<Object> copy = new ArrayList<>(anAgent.getLocation().getData());
         //System.out.println("copy" + copy);
         Iterator<Object> it = copy.iterator();
-        while(it.hasNext()){
+        while (it.hasNext()) {
             Object x = it.next();
-            if(x == null){
+            if (x == null) {
                 System.out.println("error 2!");
             }
             if (!anAgent.getData().contains(x)) {
                 anAgent.getData().add(x);
             }
         }
-        
+
         //System.out.println("agent info size:" + anAgent.getData().size());
         return p;
     }
@@ -159,7 +180,6 @@ public class NetworkEnvironment extends Environment {
         date = new Date();
         topology = gr;
     }
-
 
     public Vector<Action> actions() {
         Vector<Action> acts = new Vector<Action>();
@@ -242,12 +262,71 @@ public class NetworkEnvironment extends Environment {
 
     public ArrayList<Integer> getAgentNeighbors(MobileAgent x) {
         ArrayList n = new ArrayList();
-        for(int i=0; i < getLocationAgents().size(); i++){
-            if(i != x.getId() && x.getLocation().equals(getLocationAgents().get(i))){
+        for (int i = 0; i < getLocationAgents().size(); i++) {
+            if (i != x.getId() && x.getLocation().equals(getLocationAgents().get(i))) {
                 n.add(i);
             }
         }
         return n;
+    }
+
+    /**
+     * @return the roundComplete
+     */
+    public int getRoundComplete() {
+        return roundComplete;
+    }
+
+    /**
+     * @param roundComplete the roundComplete to set
+     */
+    public void setRoundComplete(int roundComplete) {
+        this.roundComplete = roundComplete;
+    }
+
+    /**
+     * @return the finished
+     */
+    public boolean isFinished() {
+        return finished;
+    }
+
+    /**
+     * @param finished the finished to set
+     */
+    public void setFinished(boolean finished) {
+        this.finished = finished;
+    }
+
+    public void updateWorldAge() {
+        int average = 0;
+        int agentslive = 0;
+        for (int k = 0; k < this.getAgents().size(); k++) {
+            if ((this.getAgent(k)).status != Action.DIE) {
+                average += ((MobileAgent) this.getAgent(k)).getRound();
+                agentslive++;
+            }
+
+        }
+        if (agentslive != 0) {
+            average /= agentslive;
+            //System.out.println("age:" + average);
+            this.setAge(average);
+        }
+    }
+
+    /**
+     * @return the age
+     */
+    public int getAge() {
+        return age;
+    }
+
+    /**
+     * @param age the age to set
+     */
+    public void setAge(int age) {
+        this.age = age;
     }
 
 }

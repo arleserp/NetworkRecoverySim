@@ -48,7 +48,9 @@ public class NetworkEnvironmentPheromone extends NetworkEnvironment {
 
         //for each neighbor send a message
         for (Integer idAgent : agentNeighbors) {
+            //System.out.println("a" + a.getId() + "send message to" + idAgent);
             NetworkMessageBuffer.getInstance().putMessage(idAgent, message);
+            a.incMsgSend();
         }
 
         String[] inbox = NetworkMessageBuffer.getInstance().getMessage(a.getId());
@@ -57,16 +59,18 @@ public class NetworkEnvironmentPheromone extends NetworkEnvironment {
         int new_size = 0;
         //inbox: id | infi 
         if (inbox != null) {
+            a.incMsgRecv();
+            //System.out.println("a" + a.getId() + "recv message from: " + inbox[0]);
             //System.out.println("my "+ a.getData().size());
             ArrayList senderInf = (ArrayList) ObjectSerializer.deserialize(inbox[1]);
             //System.out.println("received" + senderInf.size());
             // Join ArrayLists
-            
+
             a.getData().removeAll(senderInf);
             a.getData().addAll(senderInf);
             new_size = a.getData().size();
-            
-            if(old_size < new_size){
+
+            if (old_size < new_size) {
                 a.setPheromone(1.0f);
             }
             //System.out.println("joined" + a.getData().size());
@@ -91,9 +95,16 @@ public class NetworkEnvironmentPheromone extends NetworkEnvironment {
                     a.getLocation().setPh(a.getLocation().getPh() + 0.01f * (a.getPheromone() - a.getLocation().getPh()));
                     a.setRound(a.getRound() + 1);
 
+                    boolean complete = false;
                     if (a.getData().size() == topology.getVertexCount()) {
-                        System.out.println("complete" + a.getRound());
-                        a.die();
+                        complete = true;
+                    }
+
+                    if (getRoundComplete() == -1 && complete) {
+                        //System.out.println("complete! round" + a.getRound());
+                        setRoundComplete(a.getRound());
+                        setIdBest(a.getId());
+                        updateWorldAge();
                     }
                     break;
                 default:
@@ -103,6 +114,8 @@ public class NetworkEnvironmentPheromone extends NetworkEnvironment {
                     break;
             }
         }
+
+        updateWorldAge();
         setChanged();
         notifyObservers();
         return flag;

@@ -11,6 +11,7 @@ import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironment;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromone;
+import unalcol.agents.NetworkSim.programs.LevyWalkSynchronizationProgram;
 import unalcol.agents.NetworkSim.programs.PheromoneSynchronizationProgram;
 import unalcol.agents.NetworkSim.programs.RandomSynchronizationProgram;
 import unalcol.agents.simulate.Environment;
@@ -40,6 +41,9 @@ public class ProgramWorldSimpleFactory {
                 break;
             case "carriers":
                 program = new PheromoneSynchronizationProgram(pf);
+                break;
+            case "levywalk":
+                program = new LevyWalkSynchronizationProgram(pf);
                 break;
             default:
                 program = new RandomSynchronizationProgram(pf);

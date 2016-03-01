@@ -35,7 +35,8 @@ public class graphSimpleFactory {
         switch (topology) {
             case "scalefree":
                 Set<GraphElements.MyVertex> seedSet = new HashSet<>();
-                BarabasiAlbertGenerator bag = new BarabasiAlbertGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), 1, 2, seed, seedSet);
+                //chgne
+                BarabasiAlbertGenerator bag = new BarabasiAlbertGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), 1, 1, seed, seedSet);
                 bag.evolveGraph(SyncronizationMain.vertexNumber - 1);
                 g = bag.create();
                 break;

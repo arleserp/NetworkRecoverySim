@@ -19,8 +19,8 @@ import unalcol.agents.simulate.util.SimpleLanguage;
 import java.util.Vector;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromone;
 import unalcol.agents.NetworkSim.environment.NetworkMessageBuffer;
-import unalcol.agents.NetworkSim.util.graphStatistics;
-import unalcol.agents.NetworkSim.util.graphVisualization;
+import unalcol.agents.NetworkSim.util.GraphStatistics;
+import unalcol.agents.NetworkSim.util.GraphVisualizationObserver;
 
 /**
  * Creates a simulation without graphic interface
@@ -85,11 +85,11 @@ public class WorldThread implements Runnable {
         //Create graph
         Graph<GraphElements.MyVertex, String> g = graphSimpleFactory.createGraph(SyncronizationMain.graphMode);
 
-        System.out.println("Average Path Length: " + graphStatistics.computeAveragePathLength(g));
-        Map<GraphElements.MyVertex, Double> m = graphStatistics.clusteringCoefficients(g);
+        System.out.println("Average Path Length: " + GraphStatistics.computeAveragePathLength(g));
+        Map<GraphElements.MyVertex, Double> m = GraphStatistics.clusteringCoefficients(g);
         System.out.println("Clustering coeficients:" + m);
-        System.out.println("Average Clustering Coefficient: " + graphStatistics.averageCC(g));
-        System.out.println("Average degree: " + graphStatistics.averageDegree(g));
+        System.out.println("Average Clustering Coefficient: " + GraphStatistics.averageCC(g));
+        System.out.println("Average degree: " + GraphStatistics.averageDegree(g));
 
         //Creates "Agents"
         for (int i = 0; i < population; i++) {
@@ -102,7 +102,7 @@ public class WorldThread implements Runnable {
             agents.add(a);
         }
 
-        graphVisualization = new graphVisualization();
+        graphVisualization = new GraphVisualizationObserver();
         world = new NetworkEnvironmentPheromone(agents, languaje, g);
         world.addObserver(graphVisualization);
         //greport.addObserver(world);

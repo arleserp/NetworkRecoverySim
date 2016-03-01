@@ -21,6 +21,7 @@ public class SyncronizationMain {
     public static int columns = 5;
     public static String motionAlg = "random";
     public static String filename = "";
+    public static int maxIter = -1;
     
     // Perform simulation
     public static void main(String[] args) {

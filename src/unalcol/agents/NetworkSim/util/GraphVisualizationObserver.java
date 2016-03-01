@@ -5,10 +5,6 @@
  */
 package unalcol.agents.NetworkSim.util;
 
-import edu.uci.ics.jung.algorithms.generators.Lattice2DGenerator;
-import edu.uci.ics.jung.algorithms.generators.random.BarabasiAlbertGenerator;
-import edu.uci.ics.jung.algorithms.generators.random.EppsteinPowerLawGenerator;
-import edu.uci.ics.jung.algorithms.generators.random.KleinbergSmallWorldGenerator;
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
@@ -18,16 +14,19 @@ import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
-import java.util.HashSet;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import org.apache.commons.collections15.Transformer;
-import unalcol.agents.Agent;
-import unalcol.agents.NetworkSim.GraphCreator;
 import unalcol.agents.NetworkSim.GraphElements;
-import unalcol.agents.NetworkSim.MobileAgent;
 import unalcol.agents.NetworkSim.SyncronizationMain;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironment;
 
@@ -35,13 +34,14 @@ import unalcol.agents.NetworkSim.environment.NetworkEnvironment;
  *
  * @author Arles Rodriguez
  */
-public class graphVisualization implements Observer {
+public class GraphVisualizationObserver implements Observer {
 
     JFrame frame;
     BasicVisualizationServer<GraphElements.MyVertex, String> vv = null;
     boolean added = false;
+    boolean isUpdating;
 
-    public graphVisualization() {
+    public GraphVisualizationObserver() {
         frame = new JFrame("Simple Graph View");
         //frame.setSize(1000, 1000);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -49,6 +49,7 @@ public class graphVisualization implements Observer {
         //frame.setPreferredSize(new Dimension(600, 600));
         //frame.setLocationRelativeTo(null);
         // frame.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
+        isUpdating = false;
     }
 
     @Override
@@ -78,18 +79,18 @@ public class graphVisualization implements Observer {
             }
 
             BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
-            vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
+            vv.setPreferredSize(new Dimension(1000, 1000)); //Sets the viewing area size
 
             // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
             // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
             Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
                 @Override
                 public Paint transform(GraphElements.MyVertex i) {
-                    if(n.getLocationAgents().contains(i)){
+                    if (n.getLocationAgents().contains(i)) {
                         return Color.YELLOW;
                     }
                     if (n.getVisitedNodes().contains(i)) {
-                        
+
                         return Color.BLUE;
                     }
                     return Color.RED;
@@ -106,13 +107,25 @@ public class graphVisualization implements Observer {
                 added = true;
                 frame.pack();
                 frame.setVisible(true);
-            } else{
+            } else {
                 frame.repaint();
             }
-            //frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-            //frame.pack();
-            //frame.setVisible(true);
+            if ((SyncronizationMain.maxIter == -1 && n.getIdBest() != -1) || (SyncronizationMain.maxIter >= 0 && n.getAge() >= SyncronizationMain.maxIter) || n.getIdBest() != -1) {
+                //StatsTemperaturesMapImpl sti = new StatsTemperaturesMapImpl("experiment-p-" + ((World) obs).getAgents().size() + "- pf-" + pf + ".csv");
+                if (!isUpdating) {
+                    isUpdating = true;
+                    n.stop();
+                    StatisticsProvider sti;
+                    String filename = "experiment+p+" + n.getAgents().size() + "+pf+" + SyncronizationMain.pf + "+mode+" + SyncronizationMain.motionAlg + "+maxIter+" + SyncronizationMain.maxIter + "+e+" + n.topology.getEdges().size() + "+v+" + n.topology.getVertices().size() + "+" + SyncronizationMain.graphMode + ".csv";
+                    sti = new StatisticsProvider(filename);
+                    sti.printStatistics(n);
+                    
+                    System.out.println("The end" + n.getAge());
+                    
+                    System.exit(0);
+                }
+            }
         }
 
         // Transformer maps the vertex number to a vertex property

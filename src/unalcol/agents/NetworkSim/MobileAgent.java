@@ -11,20 +11,22 @@ import java.util.Hashtable;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 
-
 /**
  *
  * @author Arles Rodriguez
  */
 public class MobileAgent extends Agent implements Serializable {
+
     protected Hashtable<String, Object> properties = new Hashtable<String, Object>();
     //LinkedBlockingQueue<Object> mbuffer = new LinkedBlockingQueue<>();
     private int round;
     private GraphElements.MyVertex location;
     private ArrayList data;
-    private float pheromone; 
+    private float pheromone;
     private int id;
-    
+    private int nMsgSend;
+    private int nMsgRecv;
+
     public MobileAgent(AgentProgram _program, int ida) {
         super(_program);
         data = new ArrayList();
@@ -48,7 +50,7 @@ public class MobileAgent extends Agent implements Serializable {
             return (false);
         }
     }
-    
+
     /**
      * @return the pheromone
      */
@@ -63,7 +65,6 @@ public class MobileAgent extends Agent implements Serializable {
         this.pheromone = pheromone;
     }
 
-
 //    public void putMessage(Object message) {
 //        mbuffer.add(message);
 //    }
@@ -71,8 +72,7 @@ public class MobileAgent extends Agent implements Serializable {
 //    public Object getMessage(){
 //        return mbuffer.poll();
 //    }
- 
-   /**
+    /**
      * @return the round round is defined as the number of iteration by
      * distributed Asynchronous Round-Based Computation Differently from
      * synchronous sys -tems, the rounds are not given for free in an
@@ -97,8 +97,7 @@ public class MobileAgent extends Agent implements Serializable {
 //            return !mbuffer.isEmpty();
 //        }
 //    }
-    
-    public void log(String msg){
+    public void log(String msg) {
         System.out.println("Agent: " + this.getAttribute("ID") + " : " + msg);
     }
 
@@ -143,4 +142,45 @@ public class MobileAgent extends Agent implements Serializable {
     public void setId(int id) {
         this.id = id;
     }
+
+    /**
+     * @return the nMsgSend
+     */
+    public int getnMsgSend() {
+        return nMsgSend;
+    }
+
+    /**
+     * @param nMsgSend the nMsgSend to set
+     */
+    public void setnMsgSend(int nMsgSend) {
+        this.nMsgSend = nMsgSend;
+    }
+
+    /**
+     * @return the nMsgRecv
+     */
+    public int getnMsgRecv() {
+        return nMsgRecv;
+    }
+
+    /**
+     * @param nMsgRecv the nMsgRecv to set
+     */
+    public void setnMsgRecv(int nMsgRecv) {
+        this.nMsgRecv = nMsgRecv;
+    }
+
+    public void incMsgSend() {
+        synchronized (MobileAgent.class) {
+            nMsgSend++;
+        }
+    }
+
+    public void incMsgRecv() {
+        synchronized (MobileAgent.class) {
+            nMsgRecv++;
+        }
+    }
+
 }
