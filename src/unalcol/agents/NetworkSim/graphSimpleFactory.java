@@ -14,6 +14,7 @@ import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.graph.Graph;
 import java.util.HashSet;
 import java.util.Set;
+import unalcol.agents.NetworkSim.util.CommunityNetworkGenerator;
 import unalcol.agents.NetworkSim.util.GraphSerialization;
 import unalcol.agents.NetworkSim.util.WattsBetaSmallWorldGenerator;
 
@@ -36,13 +37,16 @@ public class graphSimpleFactory {
             case "scalefree":
                 Set<GraphElements.MyVertex> seedSet = new HashSet<>();
                 //chgne
-                BarabasiAlbertGenerator bag = new BarabasiAlbertGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), 1, 1, seed, seedSet);
-                bag.evolveGraph(SyncronizationMain.vertexNumber - 1);
+                BarabasiAlbertGenerator bag = new BarabasiAlbertGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.startNodesScaleFree, SyncronizationMain.edgesToAttachScaleFree, seed, seedSet);
+                bag.evolveGraph(SyncronizationMain.numSteps - 1);
                 g = bag.create();
                 break;
             case "smallworld":
-                g = new WattsBetaSmallWorldGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, SyncronizationMain.beta, 2, true).generateGraph();
+                g = new WattsBetaSmallWorldGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, SyncronizationMain.beta, SyncronizationMain.degree, true).generateGraph();
                 break;
+            case "community":
+                g = new CommunityNetworkGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, SyncronizationMain.beta, SyncronizationMain.degree, true, SyncronizationMain.clusters).generateGraph();
+                break;    
             case "kleinberg":
                 g = new KleinbergSmallWorldGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, 0).create();
                 break;

@@ -124,7 +124,6 @@ public class WattsBetaSmallWorldGenerator<V, E> extends Lattice2DGenerator {
 
             //System.out.println("g" + g);
             //System.out.println("contains edge" + g.containsEdge(nextEdge));
-
             //System.out.println("incident" + g.getIncidentVertices(nextEdge));
             Object source = g.getIncidentVertices(nextEdge).toArray()[0];
             Object target = g.getIncidentVertices(nextEdge).toArray()[1];
@@ -149,7 +148,7 @@ public class WattsBetaSmallWorldGenerator<V, E> extends Lattice2DGenerator {
                         k = Math.abs(random.nextInt() % numNodes);
                         rndDest = g.getVertices().toArray()[k];
                     } while (g.getVertices().toArray()[k].equals(source));
-                    
+
                     //reset variable for this pass
                     candidate = true;
 
@@ -178,6 +177,12 @@ public class WattsBetaSmallWorldGenerator<V, E> extends Lattice2DGenerator {
                     }
                 }
 
+                for (Object v : g.getIncidentVertices(nextEdge)) {
+                    if (g.getNeighbors(v).size() == 1) {
+                        candidate = false;
+                        break;
+                    }
+                }
                 //If this is still a candidate, then swap the edges
                 if (candidate) {
                     //Switch in the new Edge

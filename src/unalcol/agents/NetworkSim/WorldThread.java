@@ -85,7 +85,7 @@ public class WorldThread implements Runnable {
         //Create graph
         Graph<GraphElements.MyVertex, String> g = graphSimpleFactory.createGraph(SyncronizationMain.graphMode);
 
-        System.out.println("Average Path Length: " + GraphStatistics.computeAveragePathLength(g));
+       // System.out.println("Average Path Length: " + GraphStatistics.computeAveragePathLength(g));
         Map<GraphElements.MyVertex, Double> m = GraphStatistics.clusteringCoefficients(g);
         System.out.println("Clustering coeficients:" + m);
         System.out.println("Average Clustering Coefficient: " + GraphStatistics.averageCC(g));

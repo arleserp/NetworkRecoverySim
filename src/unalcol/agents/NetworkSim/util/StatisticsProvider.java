@@ -50,7 +50,7 @@ class StatisticsProvider {
                 wrong++;
             }
             data.add((double) count);
-            System.out.println("a" + i + " msg sent:" + a.getnMsgRecv() + "msg recv" + a.getnMsgRecv());
+            //System.out.println("a" + i + " msg sent:" + a.getnMsgRecv() + "msg recv" + a.getnMsgRecv());
             msgin.add((double) a.getnMsgRecv());
             msgout.add((double) a.getnMsgSend());
             //explTerrain.add((double) a.getExploredTerrain());

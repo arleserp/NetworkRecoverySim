@@ -8,6 +8,7 @@ package unalcol.agents.NetworkSim.util;
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.algorithms.layout.TreeLayout;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
@@ -74,12 +75,12 @@ public class GraphVisualizationObserver implements Observer {
                     layout = new ISOMLayout<>(g);
                     break;
                 default:
-                    layout = new CircleLayout<>(g);
+                    layout = new ISOMLayout<>(g);
                     break;
             }
 
             BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
-            vv.setPreferredSize(new Dimension(1000, 1000)); //Sets the viewing area size
+            vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
 
             // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
             // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
@@ -120,7 +121,6 @@ public class GraphVisualizationObserver implements Observer {
                     String filename = "experiment+p+" + n.getAgents().size() + "+pf+" + SyncronizationMain.pf + "+mode+" + SyncronizationMain.motionAlg + "+maxIter+" + SyncronizationMain.maxIter + "+e+" + n.topology.getEdges().size() + "+v+" + n.topology.getVertices().size() + "+" + SyncronizationMain.graphMode + ".csv";
                     sti = new StatisticsProvider(filename);
                     sti.printStatistics(n);
-                    
                     System.out.println("The end" + n.getAge());
                     
                     System.exit(0);
