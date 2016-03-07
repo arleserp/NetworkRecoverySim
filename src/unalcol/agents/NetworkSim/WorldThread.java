@@ -19,6 +19,7 @@ import unalcol.agents.simulate.util.SimpleLanguage;
 import java.util.Vector;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromone;
 import unalcol.agents.NetworkSim.environment.NetworkMessageBuffer;
+import unalcol.agents.NetworkSim.util.GraphStatistics;
 //import unalcol.agents.NetworkSim.util.GraphStatistics;
 import unalcol.agents.NetworkSim.util.GraphVisualizationObserver;
 
