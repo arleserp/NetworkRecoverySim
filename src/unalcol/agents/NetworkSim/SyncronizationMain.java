@@ -10,7 +10,7 @@ package unalcol.agents.NetworkSim;
  * @author Arles Rodriguez
  */
 public class SyncronizationMain {
-
+    
     public static String graphMode = "lattice";
     public static int popSize = 5;
     public static int channelNumber = 5;
@@ -36,18 +36,26 @@ public class SyncronizationMain {
 
             graphMode = args[0];
 
-            if (graphMode.equals("smallworld") || graphMode.equals("community")) {
+            if (graphMode.equals("smallworld")) {
                 vertexNumber = Integer.valueOf(args[1]);
                 beta = Float.valueOf(args[2]);
                 degree = Integer.valueOf(args[3]);
-                clusters =  Integer.valueOf(args[4]);
+                popSize = Integer.valueOf(args[4]);
+                pf = Float.valueOf(String.valueOf(args[5]));
+                motionAlg = args[6];
+            }
+
+            if (graphMode.equals("community")) {
+                vertexNumber = Integer.valueOf(args[1]); 
+                beta = Float.valueOf(args[2]);
+                degree = Integer.valueOf(args[3]);
+                clusters = Integer.valueOf(args[4]);
                 popSize = Integer.valueOf(args[5]);
                 pf = Float.valueOf(String.valueOf(args[6]));
                 motionAlg = args[5];
             }
-
+            
             if (graphMode.equals("scalefree")) {
-
                 startNodesScaleFree = Integer.valueOf(args[1]);
                 edgesToAttachScaleFree = Integer.valueOf(args[2]);
                 numSteps = Integer.valueOf(args[3]);
@@ -74,7 +82,6 @@ public class SyncronizationMain {
             WorldThread w = new WorldThread(popSize, pf);
             w.init();
             w.run();
-
         } else {
             System.out.println("Usage:");
             System.out.println("java -Xmx4200m -classpath NetworkSimulator.jar unalcol.agents.NetworkSim graphmode [smallworld|scalefree|lattice]");

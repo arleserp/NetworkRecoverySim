@@ -83,8 +83,8 @@ class StatisticsProvider {
             //filename = getFileName() + "ds.trace";
             PrintWriter escribir;
             escribir = new PrintWriter(new BufferedWriter(new FileWriter(reportFile, true)));
-            escribir.println(st.get("right") + "," + st.get("wrong") + "," + nr + "," + st.get("nedges") + "," + st.get("nvertex") + "," + st.get("mean") + "," + st.get("stddev") + "," + st.get("avgSend")
-                    + "," + st.get("avgRecv") + "," + st.get("stdDevSend") + "," + st.get("stdDevRecv") + "," + st.get("round"));
+            escribir.println(st.get("right") + "," + st.get("wrong") + ","  + st.get("nvertex") + "," + st.get("nedges")+ "," + st.get("mean") + "," + st.get("stddev") + "," + st.get("avgSend")
+                    + "," + st.get("stdDevSend") + "," + st.get("avgRecv")  + "," + st.get("stdDevRecv") + "," + st.get("round"));
             escribir.close();
         } catch (IOException ex) {
             Logger.getLogger(StatisticsProvider.class.getName()).log(Level.SEVERE, null, ex);

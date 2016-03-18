@@ -118,11 +118,34 @@ public class GraphVisualizationObserver implements Observer {
                     isUpdating = true;
                     n.stop();
                     StatisticsProvider sti;
-                    String filename = "experiment+p+" + n.getAgents().size() + "+pf+" + SyncronizationMain.pf + "+mode+" + SyncronizationMain.motionAlg + "+maxIter+" + SyncronizationMain.maxIter + "+e+" + n.topology.getEdges().size() + "+v+" + n.topology.getVertices().size() + "+" + SyncronizationMain.graphMode + ".csv";
+                    String filename = "exp+ps+" + n.getAgents().size() + "+pf+" + SyncronizationMain.pf + "+mode+" + SyncronizationMain.motionAlg + "+maxIter+" + SyncronizationMain.maxIter + "+e+" + n.topology.getEdges().size() + "+v+" + n.topology.getVertices().size() + "+" + SyncronizationMain.graphMode;
+
+                    if (SyncronizationMain.graphMode.equals("smallworld")) {
+                        filename += "+beta+" + SyncronizationMain.beta;
+                        filename += "+degree+" + SyncronizationMain.degree;
+                    }
+
+                    if (SyncronizationMain.graphMode.equals("community")) {
+                        filename += "+beta+" + SyncronizationMain.beta;
+                        filename += "+degree+" + SyncronizationMain.degree;
+                        filename += "+clusters+" + SyncronizationMain.clusters;
+                    }
+
+                    if (SyncronizationMain.graphMode.equals("scalefree")) {
+                        filename += "+stnds+" + SyncronizationMain.startNodesScaleFree;
+                        filename += "+edgetat+" + SyncronizationMain.edgesToAttachScaleFree;
+                        filename += "+numsteps+" + SyncronizationMain.numSteps;
+                    }
+
+                    if (SyncronizationMain.graphMode.equals("lattice")) {
+                        filename += "+rows+" +  SyncronizationMain.rows;
+                        filename += "+col+" + SyncronizationMain.columns;
+                    }
+                    filename += ".csv";
+
                     sti = new StatisticsProvider(filename);
                     sti.printStatistics(n);
                     System.out.println("The end" + n.getAge());
-                    
                     System.exit(0);
                 }
             }
