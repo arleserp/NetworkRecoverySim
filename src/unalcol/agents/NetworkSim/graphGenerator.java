@@ -7,7 +7,9 @@
 package unalcol.agents.NetworkSim;
 
 import edu.uci.ics.jung.graph.Graph;
+import java.util.Map;
 import unalcol.agents.NetworkSim.util.GraphSerialization;
+import unalcol.agents.NetworkSim.util.GraphStatistics;
 
 /**
  *
@@ -82,8 +84,17 @@ public class graphGenerator {
             }
 
             
+                        
             Graph<GraphElements.MyVertex, String> g = graphSimpleFactorySave.createGraph(graphMode);
             GraphSerialization.saveSerializedGraph(filename, g);
+            
+            System.out.println("Average Path Length: " + GraphStatistics.computeAveragePathLength(g));
+            Map<GraphElements.MyVertex, Double> m = GraphStatistics.clusteringCoefficients(g);
+            System.out.println("Clustering coeficients:" + m);
+            System.out.println("Average Clustering Coefficient: " + GraphStatistics.averageCC(g));
+            System.out.println("Average degree: " + GraphStatistics.averageDegree(g));
+
+
             //WorldThread w = new WorldThread(popSize, pf);
             //w.init();
             //w.run();
