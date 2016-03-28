@@ -17,7 +17,7 @@ import unalcol.agents.NetworkSim.GraphElements;
  *
  * @author Arles Rodriguez
  */
-public class graphStatistics {
+public class GraphStats {
     public final static HashMap<String, Double> distances = new HashMap<>();
     
     public static double computeAveragePathLength(Graph<GraphElements.MyVertex, String> graph) {
@@ -33,13 +33,17 @@ public class graphStatistics {
                     //if(distances.containsKey(v+"-"+w)){
                      //   sum += distances.get(v+"-"+w);
                     /*}else{*/
+                    if(u.getDistance(v, w) != null){
                         double distance = u.getDistance(v, w).doubleValue(); 
-                        sum += distance;                        
+                        sum += distance;   
+                    }else{
+                        System.out.println("Graph is not connected now!");
+                        return -1;
+                    }
                        /* distances.put(v+"-"+w, distance);
                     }*/
                 }
             }
-
         }
         return sum / (n * (n - 1));
     }
