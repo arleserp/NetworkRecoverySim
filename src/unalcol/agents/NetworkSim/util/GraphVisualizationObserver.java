@@ -175,11 +175,11 @@ public class GraphVisualizationObserver implements Observer {
                     try {
                         PrintWriter escribir;
                         escribir = new PrintWriter(new BufferedWriter(new FileWriter(graphStats, true)));
-                        escribir.println("Average Path Length: " + GraphStatistics.computeAveragePathLength(g));
-                        Map<GraphElements.MyVertex, Double> m = GraphStatistics.clusteringCoefficients(g);
+                        escribir.println("Average Path Length: " + GraphStats.computeAveragePathLength(g));
+                        Map<GraphElements.MyVertex, Double> m = GraphStats.clusteringCoefficients(g);
                         escribir.println("Clustering coeficients:" + m);
-                        escribir.println("Average Clustering Coefficient: " + GraphStatistics.averageCC(g));
-                        escribir.println("Average degree: " + GraphStatistics.averageDegree(g));
+                        escribir.println("Average Clustering Coefficient: " + GraphStats.averageCC(g));
+                        escribir.println("Average degree: " + GraphStats.averageDegree(g));
                         escribir.close();
                     } catch (IOException ex) {
                         Logger.getLogger(StatisticsProvider.class.getName()).log(Level.SEVERE, null, ex);

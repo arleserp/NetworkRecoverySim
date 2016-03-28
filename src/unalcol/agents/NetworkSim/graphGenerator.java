@@ -7,7 +7,7 @@ package unalcol.agents.NetworkSim;
 
 import edu.uci.ics.jung.graph.Graph;
 import unalcol.agents.NetworkSim.util.GraphSerialization;
-import unalcol.agents.NetworkSim.util.GraphStatistics;
+import unalcol.agents.NetworkSim.util.GraphStats;
 
 /**
  *
@@ -74,7 +74,7 @@ public class graphGenerator {
             do {
                 g = graphSimpleFactorySave.createGraph(graphMode);
                 GraphSerialization.saveSerializedGraph(filename, g);
-            } while(GraphStatistics.computeAveragePathLength(g) == -1); 
+            } while(GraphStats.computeAveragePathLength(g) == -1); 
             
             //WorldThread w = new WorldThread(popSize, pf);
             //w.init();

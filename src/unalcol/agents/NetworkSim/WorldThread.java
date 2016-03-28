@@ -28,7 +28,7 @@ import static jdk.nashorn.internal.objects.ArrayBufferView.buffer;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromone;
 import unalcol.agents.NetworkSim.environment.NetworkMessageBuffer;
 import unalcol.agents.NetworkSim.util.GraphSerialization;
-import unalcol.agents.NetworkSim.util.GraphStatistics;
+import unalcol.agents.NetworkSim.util.GraphStats;
 //import unalcol.agents.NetworkSim.util.GraphStatistics;
 import unalcol.agents.NetworkSim.util.GraphVisualizationObserver;
 import unalcol.agents.NetworkSim.util.HashtableOperations;
@@ -101,10 +101,10 @@ public class WorldThread implements Runnable {
         Graph<GraphElements.MyVertex, String> g = graphSimpleFactory.createGraph(SyncronizationMain.graphMode);
 
         // System.out.println("Average Path Length: " + GraphStatistics.computeAveragePathLength(g));
-        Map<GraphElements.MyVertex, Double> m = GraphStatistics.clusteringCoefficients(g);
+        Map<GraphElements.MyVertex, Double> m = GraphStats.clusteringCoefficients(g);
         System.out.println("Clustering coeficients:" + m);
-        System.out.println("Average Clustering Coefficient: " + GraphStatistics.averageCC(g));
-        System.out.println("Average degree: " + GraphStatistics.averageDegree(g));
+        System.out.println("Average Clustering Coefficient: " + GraphStats.averageCC(g));
+        System.out.println("Average degree: " + GraphStats.averageDegree(g));
 
         if (SyncronizationMain.filenameLoc.length() > 1) {
             loadLocations();
