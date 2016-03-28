@@ -443,6 +443,8 @@ public class BoxPlotRoundNumber extends ApplicationFrame {
     private String getTitle(ArrayList<Double> pf) {
         String s = " with a pf=";
 
+        
+        
         for (int i = 0; i < pf.size(); i++) {
             s += pf.get(i);
             if (i != pf.size() - 1) {
