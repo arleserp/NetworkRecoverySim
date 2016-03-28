@@ -27,6 +27,7 @@ public class SyncronizationMain {
     public static int edgesToAttachScaleFree = 2;
     public static int numSteps = 5;
     public static int degree = 2;
+    public static String filenameLoc = "";
 
     // Perform simulation
     public static void main(String[] args) {
@@ -43,6 +44,9 @@ public class SyncronizationMain {
                 popSize = Integer.valueOf(args[4]);
                 pf = Float.valueOf(String.valueOf(args[5]));
                 motionAlg = args[6];
+                if(args.length > 6){
+                    filenameLoc = args[7];
+                }
             }
 
             if (graphMode.equals("community")) {
@@ -53,6 +57,9 @@ public class SyncronizationMain {
                 popSize = Integer.valueOf(args[5]);
                 pf = Float.valueOf(String.valueOf(args[6]));
                 motionAlg = args[5];
+                if(args.length > 5){
+                    filenameLoc = args[6];
+                }
             }
             
             if (graphMode.equals("scalefree")) {
@@ -62,6 +69,9 @@ public class SyncronizationMain {
                 popSize = Integer.valueOf(args[4]);
                 pf = Float.valueOf(String.valueOf(args[5]));
                 motionAlg = args[6];
+                if(args.length > 6){
+                    filenameLoc = args[7];
+                }
             }
 
             if (graphMode.equals("lattice")) {
@@ -70,6 +80,9 @@ public class SyncronizationMain {
                 popSize = Integer.valueOf(args[3]);
                 pf = Float.valueOf(String.valueOf(args[4]));
                 motionAlg = args[5];
+                if(args.length > 5){
+                    filenameLoc = args[6];
+                }
             }
 
             if (graphMode.equals("load")) {
@@ -77,6 +90,9 @@ public class SyncronizationMain {
                 popSize = Integer.valueOf(args[2]);
                 pf = Float.valueOf(String.valueOf(args[3]));
                 motionAlg = args[4];
+                if(args.length > 4){
+                    filenameLoc = args[5];
+                }
             }
 
             WorldThread w = new WorldThread(popSize, pf);

@@ -14,6 +14,7 @@ import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.graph.Graph;
 import java.util.HashSet;
 import java.util.Set;
+import unalcol.agents.NetworkSim.util.CommunityNetworkGenerator;
 import unalcol.agents.NetworkSim.util.WattsBetaSmallWorldGenerator;
 
 /**
@@ -35,13 +36,17 @@ public class graphSimpleFactorySave {
         switch (topology) {
             case "scalefree":
                 Set<GraphElements.MyVertex> seedSet = new HashSet<>();
-                BarabasiAlbertGenerator bag = new BarabasiAlbertGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), 1, 2, seed, seedSet);
-                bag.evolveGraph(graphGenerator.vertexNumber - 1);
+                //chgne
+                BarabasiAlbertGenerator bag = new BarabasiAlbertGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.startNodesScaleFree, graphGenerator.edgesToAttachScaleFree, seed, seedSet);
+                bag.evolveGraph(graphGenerator.numSteps - 1);
                 g = bag.create();
                 break;
             case "smallworld":
-                g = new WattsBetaSmallWorldGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.vertexNumber, graphGenerator.beta, 2, true).generateGraph();
+                g = new WattsBetaSmallWorldGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.vertexNumber, graphGenerator.beta, graphGenerator.degree, true).generateGraph();
                 break;
+            case "community":
+                g = new CommunityNetworkGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.vertexNumber, graphGenerator.beta, graphGenerator.degree, true, graphGenerator.clusters).generateGraph();
+                break;    
             case "kleinberg":
                 g = new KleinbergSmallWorldGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.vertexNumber, 0).create();
                 break;
@@ -50,7 +55,7 @@ public class graphSimpleFactorySave {
                 //layout = new CircleLayout<>(g);
                 break;
             default:
-                g = new EppsteinPowerLawGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.rows, SyncronizationMain.columns, 5).create();
+                g = new EppsteinPowerLawGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.rows, graphGenerator.columns, 5).create();
                 break;
         }
 

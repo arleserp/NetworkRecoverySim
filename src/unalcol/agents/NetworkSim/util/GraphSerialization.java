@@ -21,6 +21,8 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import unalcol.agents.NetworkSim.SyncronizationMain;
+import static unalcol.agents.NetworkSim.SyncronizationMain.graphMode;
 
 /**
  *
@@ -85,7 +87,7 @@ public class GraphSerialization {
             file = new FileInputStream(filename);
             InputStream buffer = new BufferedInputStream(file);
             ObjectInput input = new ObjectInputStream(buffer);
-            h  = (Graph) input.readObject();
+            h = (Graph) input.readObject();
 
         } catch (FileNotFoundException ex) {
             Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
@@ -95,6 +97,36 @@ public class GraphSerialization {
             Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
         }
         System.out.println("h" + h.toString());
+
+        String[] graphparameters = filename.split(filename);
+        System.out.println("grappat" + graphparameters);
+
+        SyncronizationMain.graphMode = graphparameters[0];
+         
+        if (graphparameters[0].equals("smallworld")) {
+            SyncronizationMain.vertexNumber = Integer.valueOf(graphparameters[2]);
+            SyncronizationMain.beta = Float.valueOf(graphparameters[4]);
+            SyncronizationMain.degree = Integer.valueOf(graphparameters[6]);
+        }
+
+        if (graphparameters[0].equals("community")) {
+            SyncronizationMain.vertexNumber = Integer.valueOf(graphparameters[2]);
+            SyncronizationMain.beta = Float.valueOf(graphparameters[4]);
+            SyncronizationMain.degree = Integer.valueOf(graphparameters[6]);
+            SyncronizationMain.clusters = Integer.valueOf(graphparameters[8]);
+        }
+
+        if (graphparameters[0].equals("scalefree")) {
+            SyncronizationMain.startNodesScaleFree = Integer.valueOf(graphparameters[2]);
+            SyncronizationMain.edgesToAttachScaleFree = Integer.valueOf(graphparameters[4]);
+            SyncronizationMain.numSteps = Integer.valueOf(graphparameters[6]);
+        }
+
+        if (graphMode.equals("lattice")) {
+            SyncronizationMain.rows = Integer.valueOf(graphparameters[2]);
+            SyncronizationMain.columns = Integer.valueOf(graphparameters[4]);
+        }
+
         return h;
     }
 

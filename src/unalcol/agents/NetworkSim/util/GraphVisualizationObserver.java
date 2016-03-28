@@ -8,24 +8,29 @@ package unalcol.agents.NetworkSim.util;
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.algorithms.layout.TreeLayout;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
+import edu.uci.ics.jung.visualization.VisualizationImageServer;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import edu.uci.ics.jung.visualization.renderers.Renderer.Edge;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
+import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+import javax.xml.soap.Node;
 import org.apache.commons.collections15.Transformer;
 import unalcol.agents.NetworkSim.GraphElements;
 import unalcol.agents.NetworkSim.SyncronizationMain;
@@ -66,6 +71,9 @@ public class GraphVisualizationObserver implements Observer {
                     layout = new ISOMLayout<>(g);
                     break;
                 case "smallworld":
+                    layout = new CircleLayout<>(g);
+                    break;
+                case "community":
                     layout = new CircleLayout<>(g);
                     break;
                 case "kleinberg":
@@ -138,10 +146,44 @@ public class GraphVisualizationObserver implements Observer {
                     }
 
                     if (SyncronizationMain.graphMode.equals("lattice")) {
-                        filename += "+rows+" +  SyncronizationMain.rows;
+                        filename += "+rows+" + SyncronizationMain.rows;
                         filename += "+col+" + SyncronizationMain.columns;
                     }
+                    String fileImage = filename + ".jpg";
+                    String graphStats = filename + "gstats.csv";
                     filename += ".csv";
+                    //draw graph
+                    VisualizationImageServer<GraphElements.MyVertex, String> vis
+                            = new VisualizationImageServer<>(vv.getGraphLayout(),
+                                    vv.getGraphLayout().getSize());
+
+                    BufferedImage image = (BufferedImage) vis.getImage(
+                            new Point2D.Double(vv.getGraphLayout().getSize().getWidth() / 2,
+                                    vv.getGraphLayout().getSize().getHeight() / 2),
+                            new Dimension(vv.getGraphLayout().getSize()));
+
+// Write image to a png file
+                    File outputfile = new File(fileImage + ".png");
+
+                    try {
+                        ImageIO.write(image, "png", outputfile);
+                    } catch (IOException e) {
+                        // Exception handling
+                    }
+                    //
+
+                    try {
+                        PrintWriter escribir;
+                        escribir = new PrintWriter(new BufferedWriter(new FileWriter(graphStats, true)));
+                        escribir.println("Average Path Length: " + GraphStatistics.computeAveragePathLength(g));
+                        Map<GraphElements.MyVertex, Double> m = GraphStatistics.clusteringCoefficients(g);
+                        escribir.println("Clustering coeficients:" + m);
+                        escribir.println("Average Clustering Coefficient: " + GraphStatistics.averageCC(g));
+                        escribir.println("Average degree: " + GraphStatistics.averageDegree(g));
+                        escribir.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(StatisticsProvider.class.getName()).log(Level.SEVERE, null, ex);
+                    }
 
                     sti = new StatisticsProvider(filename);
                     sti.printStatistics(n);

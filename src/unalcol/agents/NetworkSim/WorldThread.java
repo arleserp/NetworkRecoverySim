@@ -7,6 +7,11 @@ package unalcol.agents.NetworkSim;
 
 import unalcol.agents.NetworkSim.environment.NetworkEnvironment;
 import edu.uci.ics.jung.graph.Graph;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -17,11 +22,17 @@ import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 import unalcol.agents.simulate.util.SimpleLanguage;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import static jdk.nashorn.internal.objects.ArrayBufferView.buffer;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromone;
 import unalcol.agents.NetworkSim.environment.NetworkMessageBuffer;
+import unalcol.agents.NetworkSim.util.GraphSerialization;
 import unalcol.agents.NetworkSim.util.GraphStatistics;
 //import unalcol.agents.NetworkSim.util.GraphStatistics;
 import unalcol.agents.NetworkSim.util.GraphVisualizationObserver;
+import unalcol.agents.NetworkSim.util.HashtableOperations;
+import unalcol.agents.NetworkSim.util.StringSerializer;
 
 /**
  * Creates a simulation without graphic interface
@@ -45,6 +56,8 @@ public class WorldThread implements Runnable {
     int width;
     int height;
     private Observer graphVisualization;
+    ArrayList<GraphElements.MyVertex> locations;
+    int indexLoc;
 
     /**
      * Creates a simulation without graphic interface
@@ -64,6 +77,7 @@ public class WorldThread implements Runnable {
         System.out.println("Pop: " + population);
         System.out.println("Pf: " + pf);
         System.out.println("Movement: " + SyncronizationMain.motionAlg);
+        indexLoc = 0;
         //System.out.println("Vertex Number: "  + vertexNumber);
         //System.out.println("Channel Number: "  + channelNumber);
     }
@@ -86,17 +100,23 @@ public class WorldThread implements Runnable {
         //Create graph
         Graph<GraphElements.MyVertex, String> g = graphSimpleFactory.createGraph(SyncronizationMain.graphMode);
 
-       // System.out.println("Average Path Length: " + GraphStatistics.computeAveragePathLength(g));
+        // System.out.println("Average Path Length: " + GraphStatistics.computeAveragePathLength(g));
         Map<GraphElements.MyVertex, Double> m = GraphStatistics.clusteringCoefficients(g);
         System.out.println("Clustering coeficients:" + m);
         System.out.println("Average Clustering Coefficient: " + GraphStatistics.averageCC(g));
         System.out.println("Average degree: " + GraphStatistics.averageDegree(g));
 
+        if (SyncronizationMain.filenameLoc.length() > 1) {
+            loadLocations();
+        }
+
         //Creates "Agents"
         for (int i = 0; i < population; i++) {
             AgentProgram program = ProgramWorldSimpleFactory.createProgram(probFailure, SyncronizationMain.motionAlg);
             MobileAgent a = new MobileAgent(program, i);
-            a.setLocation(getLocation(g));
+            GraphElements.MyVertex tmp = getLocation(g);
+            System.out.println("tmp" + tmp);
+            a.setLocation(tmp);
             a.setProgram(program);
             a.setAttribute("infi", new ArrayList<String>());
             NetworkMessageBuffer.getInstance().createBuffer(a.getId());
@@ -156,10 +176,25 @@ public class WorldThread implements Runnable {
         /* System.out.println("End WorldThread");*/
     }
 
+    public void loadLocations() {
+        locations = (ArrayList<GraphElements.MyVertex>) StringSerializer.loadDeserializeObject(SyncronizationMain.filenameLoc);
+    }
+
     private GraphElements.MyVertex getLocation(Graph<GraphElements.MyVertex, String> g) {
-        int pos = (int) (Math.random() * g.getVertexCount());
-        Collection E = g.getVertices();
-        return (GraphElements.MyVertex) E.toArray()[pos];
+        if (SyncronizationMain.filenameLoc.length() > 1) {
+            GraphElements.MyVertex tmp = locations.get(indexLoc++);
+            for(GraphElements.MyVertex v : g.getVertices()){
+                if(v.toString().equals(tmp.toString())){
+                    return v;
+                }
+            }
+            System.out.println("null???");
+            return null;
+        } else {
+            int pos = (int) (Math.random() * g.getVertexCount());
+            Collection E = g.getVertices();
+            return (GraphElements.MyVertex) E.toArray()[pos];
+        }
     }
 
 }

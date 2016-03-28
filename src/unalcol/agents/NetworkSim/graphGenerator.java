@@ -3,17 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package unalcol.agents.NetworkSim;
 
 import edu.uci.ics.jung.graph.Graph;
 import unalcol.agents.NetworkSim.util.GraphSerialization;
+import unalcol.agents.NetworkSim.util.GraphStatistics;
 
 /**
  *
  * @author Arles Rodriguez
  */
 public class graphGenerator {
+
     public static String graphMode = "lattice";
     public static int popSize = 5;
     public static int channelNumber = 5;
@@ -29,8 +30,7 @@ public class graphGenerator {
     public static int startNodesScaleFree = 4;
     public static int edgesToAttachScaleFree = 4;
     public static int numSteps = 100;
-    
-    
+
     // Perform simulation
     public static void main(String[] args) {
         if (args.length >= 1) {
@@ -38,52 +38,44 @@ public class graphGenerator {
             System.out.println("graphmode:" + args[0]);
             graphMode = args[0];
 
+            filename = graphMode;
+
             if (graphMode.equals("smallworld")) {
                 vertexNumber = Integer.valueOf(args[1]);
                 beta = Float.valueOf(args[2]);
                 degree = Integer.valueOf(args[3]);
-                popSize = Integer.valueOf(args[4]);
-                pf = Float.valueOf(String.valueOf(args[5]));
-                motionAlg = args[6];
+                filename += "+v+" + vertexNumber + "+beta+" + beta + "+degree+" + degree;
             }
 
             if (graphMode.equals("community")) {
-                vertexNumber = Integer.valueOf(args[1]); 
+                vertexNumber = Integer.valueOf(args[1]);
                 beta = Float.valueOf(args[2]);
                 degree = Integer.valueOf(args[3]);
                 clusters = Integer.valueOf(args[4]);
-                popSize = Integer.valueOf(args[5]);
-                pf = Float.valueOf(String.valueOf(args[6]));
-                motionAlg = args[5];
+                filename += "+v+" + vertexNumber + "+beta+" + beta + "+degree+" + degree + "+clusters+" + clusters;
             }
-            
+
             if (graphMode.equals("scalefree")) {
                 startNodesScaleFree = Integer.valueOf(args[1]);
                 edgesToAttachScaleFree = Integer.valueOf(args[2]);
                 numSteps = Integer.valueOf(args[3]);
-                popSize = Integer.valueOf(args[4]);
-                pf = Float.valueOf(String.valueOf(args[5]));
-                motionAlg = args[6];
+                filename += "+sn+" + startNodesScaleFree + "+eta+" + edgesToAttachScaleFree + "+numSt+" + numSteps;
             }
 
             if (graphMode.equals("lattice")) {
                 rows = Integer.valueOf(args[1]);
                 columns = Integer.valueOf(args[2]);
-                popSize = Integer.valueOf(args[3]);
-                pf = Float.valueOf(String.valueOf(args[4]));
-                motionAlg = args[5];
+                filename += "+r+" + rows + "+c+" + columns;
             }
 
-            if (graphMode.equals("load")) {
-                filename = args[1];
-                popSize = Integer.valueOf(args[2]);
-                pf = Float.valueOf(String.valueOf(args[3]));
-                motionAlg = args[4];
-            }
-
+            filename += ".graph";
             
-            Graph<GraphElements.MyVertex, String> g = graphSimpleFactorySave.createGraph(graphMode);
-            GraphSerialization.saveSerializedGraph(filename, g);
+            Graph<GraphElements.MyVertex, String> g;
+            do {
+                g = graphSimpleFactorySave.createGraph(graphMode);
+                GraphSerialization.saveSerializedGraph(filename, g);
+            } while(GraphStatistics.computeAveragePathLength(g) == -1); 
+            
             //WorldThread w = new WorldThread(popSize, pf);
             //w.init();
             //w.run();
