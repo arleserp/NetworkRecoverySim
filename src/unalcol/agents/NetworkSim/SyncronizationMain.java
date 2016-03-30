@@ -10,7 +10,7 @@ package unalcol.agents.NetworkSim;
  * @author Arles Rodriguez
  */
 public class SyncronizationMain {
-    
+
     public static String graphMode = "lattice";
     public static int popSize = 5;
     public static int channelNumber = 5;
@@ -44,24 +44,30 @@ public class SyncronizationMain {
                 popSize = Integer.valueOf(args[4]);
                 pf = Float.valueOf(String.valueOf(args[5]));
                 motionAlg = args[6];
-                if(args.length > 6){
+                if (args.length > 6) {
                     filenameLoc = args[7];
+                }
+                if (args.length > 7) {
+                    maxIter = Integer.valueOf(args[8]);
                 }
             }
 
             if (graphMode.equals("community")) {
-                vertexNumber = Integer.valueOf(args[1]); 
+                vertexNumber = Integer.valueOf(args[1]);
                 beta = Float.valueOf(args[2]);
                 degree = Integer.valueOf(args[3]);
                 clusters = Integer.valueOf(args[4]);
                 popSize = Integer.valueOf(args[5]);
                 pf = Float.valueOf(String.valueOf(args[6]));
                 motionAlg = args[5];
-                if(args.length > 5){
+                if (args.length > 5) {
                     filenameLoc = args[6];
                 }
+                if (args.length > 6) {
+                    maxIter = Integer.valueOf(args[7]);
+                }
             }
-            
+
             if (graphMode.equals("scalefree")) {
                 startNodesScaleFree = Integer.valueOf(args[1]);
                 edgesToAttachScaleFree = Integer.valueOf(args[2]);
@@ -69,8 +75,11 @@ public class SyncronizationMain {
                 popSize = Integer.valueOf(args[4]);
                 pf = Float.valueOf(String.valueOf(args[5]));
                 motionAlg = args[6];
-                if(args.length > 6){
+                if (args.length > 6) {
                     filenameLoc = args[7];
+                }
+                if (args.length > 7) {
+                    maxIter = Integer.valueOf(args[8]);
                 }
             }
 
@@ -80,8 +89,11 @@ public class SyncronizationMain {
                 popSize = Integer.valueOf(args[3]);
                 pf = Float.valueOf(String.valueOf(args[4]));
                 motionAlg = args[5];
-                if(args.length > 5){
+                if (args.length > 5) {
                     filenameLoc = args[6];
+                }
+                if (args.length > 6) {
+                    maxIter = Integer.valueOf(args[7]);
                 }
             }
 
@@ -90,11 +102,14 @@ public class SyncronizationMain {
                 popSize = Integer.valueOf(args[2]);
                 pf = Float.valueOf(String.valueOf(args[3]));
                 motionAlg = args[4];
-                if(args.length > 4){
+                if (args.length > 4) {
                     filenameLoc = args[5];
                 }
+                if(args.length > 5){
+                    maxIter = Integer.valueOf(args[6]);
+                }
             }
-
+            System.out.println("MaxIter" + maxIter);
             WorldThread w = new WorldThread(popSize, pf);
             w.init();
             w.run();

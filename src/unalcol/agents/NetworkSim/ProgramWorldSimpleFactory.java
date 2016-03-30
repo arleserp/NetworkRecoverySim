@@ -42,6 +42,9 @@ public class ProgramWorldSimpleFactory {
             case "carriers":
                 program = new PheromoneSynchronizationProgram(pf);
                 break;
+            case "carriersnoevap":
+                program = new PheromoneSynchronizationProgram(pf);
+                break;
             case "levywalk":
                 program = new LevyWalkSynchronizationProgram(pf);
                 break;

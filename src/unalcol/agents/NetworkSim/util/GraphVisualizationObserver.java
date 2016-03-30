@@ -120,7 +120,7 @@ public class GraphVisualizationObserver implements Observer {
                 frame.repaint();
             }
 
-            if ((SyncronizationMain.maxIter == -1 && n.getIdBest() != -1) || (SyncronizationMain.maxIter >= 0 && n.getAge() >= SyncronizationMain.maxIter) || n.getIdBest() != -1) {
+            if ((SyncronizationMain.maxIter == -1 && n.getIdBest() != -1) || (SyncronizationMain.maxIter >= 0 && n.getAge() >= SyncronizationMain.maxIter)) {
                 //StatsTemperaturesMapImpl sti = new StatsTemperaturesMapImpl("experiment-p-" + ((World) obs).getAgents().size() + "- pf-" + pf + ".csv");
                 if (!isUpdating) {
                     isUpdating = true;
@@ -150,7 +150,7 @@ public class GraphVisualizationObserver implements Observer {
                         filename += "+col+" + SyncronizationMain.columns;
                     }
                     String fileImage = filename + ".jpg";
-                    String graphStats = filename + "gstats.csv";
+                    String graphStats = filename + ".gstats.csv";
                     filename += ".csv";
                     //draw graph
                     VisualizationImageServer<GraphElements.MyVertex, String> vis

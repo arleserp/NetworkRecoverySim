@@ -11,6 +11,7 @@ import edu.uci.ics.jung.graph.Graph;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import unalcol.agents.NetworkSim.GraphCreator;
 import unalcol.agents.NetworkSim.GraphElements;
 
 /**
@@ -48,6 +49,11 @@ public class GraphStats {
         return sum / (n * (n - 1));
     }
 
+    
+  
+
+    
+    
     public static Map clusteringCoefficients(Graph g) {
         return edu.uci.ics.jung.algorithms.metrics.Metrics.clusteringCoefficients(g);
     }

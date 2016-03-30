@@ -154,7 +154,7 @@ public class WorldThread implements Runnable {
                 world.nObservers();
             }
                  */
-                if (world instanceof NetworkEnvironmentPheromone) {
+                if (world instanceof NetworkEnvironmentPheromone && SyncronizationMain.motionAlg.equals("carriers")) {
                     ((NetworkEnvironmentPheromone) world).evaporatePheromone();
                 }
                 /*

@@ -101,6 +101,7 @@ public class BoxPlotRoundNumber extends ApplicationFrame {
     public BoxPlotRoundNumber(final String title, ArrayList<Double> pf) {
         super(title);
         final BoxAndWhiskerCategoryDataset dataset = createSampleDataset(pf);
+      
         final CategoryAxis xAxis = new CategoryAxis("");
         //final NumberAxis yAxis = new NumberAxis("Round number");
         final NumberAxis yAxis = new NumberAxis("");
@@ -184,7 +185,7 @@ public class BoxPlotRoundNumber extends ApplicationFrame {
             }
 
             // System.out.println(file.getName() + "extension" + extension);
-            if (file.isFile() && extension.equals("csv") && file.getName().startsWith("exp")) {
+            if (file.isFile() && extension.equals("csv") && file.getName().startsWith("exp")  && !file.getName().contains("gstats")) {
                 System.out.println(file.getName());
                 System.out.println("get: " + file.getName());
                 String[] filenamep = file.getName().split(Pattern.quote("+"));
@@ -267,6 +268,7 @@ public class BoxPlotRoundNumber extends ApplicationFrame {
                             dataset.add(list, popsize, getTechniqueName(mode)+graphtype+fn2);
                         } else {
                             dataset.add(list, String.valueOf(popsize) + "-" + pf, getTechniqueName(mode)+"+"+graphtype+fn2);
+                        
                         }
                     }
                 //}
@@ -293,7 +295,7 @@ public class BoxPlotRoundNumber extends ApplicationFrame {
             }
 
             // System.out.println(file.getName() + "extension" + extension);
-            if (file.isFile() && extension.equals("csv") && file.getName().startsWith("exp")) {
+            if (file.isFile() && extension.equals("csv") && file.getName().startsWith("exp")  && !file.getName().contains("gstats")) {
                 System.out.println(file.getName());
                 System.out.println("get: " + file.getName());
                 String[] filenamep = file.getName().split(Pattern.quote("+"));

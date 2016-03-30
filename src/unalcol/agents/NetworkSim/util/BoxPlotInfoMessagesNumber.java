@@ -184,7 +184,7 @@ public class BoxPlotInfoMessagesNumber extends ApplicationFrame {
             }
 
             // System.out.println(file.getName() + "extension" + extension);
-            if (file.isFile() && extension.equals("csv") && file.getName().startsWith("exp")) {
+            if (file.isFile() && extension.equals("csv") && file.getName().startsWith("exp")  && !file.getName().contains("gstats")) {
                 System.out.println(file.getName());
                 System.out.println("get: " + file.getName());
                 String[] filenamep = file.getName().split(Pattern.quote("+"));
@@ -293,7 +293,7 @@ public class BoxPlotInfoMessagesNumber extends ApplicationFrame {
             }
 
             // System.out.println(file.getName() + "extension" + extension);
-            if (file.isFile() && extension.equals("csv") && file.getName().startsWith("exp")) {
+            if (file.isFile() && extension.equals("csv") && file.getName().startsWith("exp")  && !file.getName().contains("gstats")) {
                 System.out.println(file.getName());
                 System.out.println("get: " + file.getName());
                 String[] filenamep = file.getName().split(Pattern.quote("+"));

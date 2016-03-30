@@ -34,7 +34,7 @@ public class GraphCreator {
         Vector agentes = new Vector();
         //would not be duplicated
 //        Language languaje;
-//        AgentProgram program;
+//        AgentProgram program;x
 //        GenerateIntegerDataSet dataset;
 
 //        VertexFactory(Language lang, AgentProgram ap) {
