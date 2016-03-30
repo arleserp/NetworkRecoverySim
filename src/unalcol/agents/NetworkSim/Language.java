@@ -7,3 +7,4 @@ public class Language extends SimpleLanguage {
     super( _percepts, _actions );
   }
 }
+
