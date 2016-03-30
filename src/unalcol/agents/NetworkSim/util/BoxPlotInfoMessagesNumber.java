@@ -5,7 +5,6 @@
  */
 package unalcol.agents.NetworkSim.util;
 
-
 /* ===========================================================
  * JFreeChart : a free chart library for the Java(tm) platform
  * ===========================================================

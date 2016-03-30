@@ -31,6 +31,7 @@ public class graphGenerator {
     public static int edgesToAttachScaleFree = 4;
     public static int numSteps = 100;
 
+    
     // Perform simulation
     public static void main(String[] args) {
         if (args.length >= 1) {

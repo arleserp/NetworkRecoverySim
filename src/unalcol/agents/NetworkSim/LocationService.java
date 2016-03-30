@@ -20,6 +20,7 @@ import unalcol.agents.NetworkSim.util.GraphSerialization;
 import unalcol.agents.NetworkSim.util.StringSerializer;
 
 /**
+ * 
  *
  * @author Arles Rodriguez
  */

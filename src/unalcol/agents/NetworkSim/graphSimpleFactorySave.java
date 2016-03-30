@@ -51,7 +51,7 @@ public class graphSimpleFactorySave {
             }
         }
     }
-
+ 
     public static Graph<GraphElements.MyVertex, String> createGraph(String topology) {
         //Network creation
         //GraphCreator.VertexFactory v =  new GraphCreator.VertexFactory(languaje, ap, dataset);

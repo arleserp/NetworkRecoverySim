@@ -1,21 +1,13 @@
 package unalcol.agents.NetworkSim.environment;
 
-import java.util.Hashtable;
 
 import unalcol.agents.simulate.util.*;
 import unalcol.agents.*;
-import unalcol.agents.simulate.*;
 
 import java.util.Vector;
 
 import edu.uci.ics.jung.graph.*;
-import edu.uci.ics.jung.visualization.BasicVisualizationServer;
-import java.awt.Color;
-import java.awt.Paint;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import org.apache.commons.collections15.Transformer;
 import unalcol.agents.NetworkSim.ActionParameters;
 import unalcol.agents.NetworkSim.GraphElements;
 import unalcol.agents.NetworkSim.MobileAgent;
@@ -121,6 +113,7 @@ public class NetworkEnvironmentPheromone extends NetworkEnvironment {
         return flag;
     }
 
+    
     public void evaporatePheromone() {
         for (GraphElements.MyVertex v : topology.getVertices()) {
             //System.out.println(v.toString() + "before:" + v.getPh());

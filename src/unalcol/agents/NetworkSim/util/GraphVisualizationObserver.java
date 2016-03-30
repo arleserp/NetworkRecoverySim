@@ -120,6 +120,7 @@ public class GraphVisualizationObserver implements Observer {
                 frame.repaint();
             }
 
+            
             if ((SyncronizationMain.maxIter == -1 && n.getIdBest() != -1) || (SyncronizationMain.maxIter >= 0 && n.getAge() >= SyncronizationMain.maxIter)) {
                 //StatsTemperaturesMapImpl sti = new StatsTemperaturesMapImpl("experiment-p-" + ((World) obs).getAgents().size() + "- pf-" + pf + ".csv");
                 if (!isUpdating) {
