@@ -181,6 +181,8 @@ public class GraphVisualizationObserver implements Observer {
                         escribir.println("Clustering coeficients:" + m);
                         escribir.println("Average Clustering Coefficient: " + GraphStats.averageCC(g));
                         escribir.println("Average degree: " + GraphStats.averageDegree(g));
+                        escribir.println("StdDev Average Path Length: " + GraphStats.computeStdDevAveragePathLength(g));
+                        escribir.println("StdDev Degree: " + GraphStats.computeStdDevAveragePathLength(g));
                         escribir.close();
                     } catch (IOException ex) {
                         Logger.getLogger(StatisticsProvider.class.getName()).log(Level.SEVERE, null, ex);

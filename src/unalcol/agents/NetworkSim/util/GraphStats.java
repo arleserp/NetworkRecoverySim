@@ -5,13 +5,12 @@
  */
 package unalcol.agents.NetworkSim.util;
 
-import edu.uci.ics.jung.algorithms.shortestpath.DistanceStatistics;
 import edu.uci.ics.jung.algorithms.shortestpath.UnweightedShortestPath;
 import edu.uci.ics.jung.graph.Graph;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import unalcol.agents.NetworkSim.GraphCreator;
 import unalcol.agents.NetworkSim.GraphElements;
 
 
@@ -51,6 +50,39 @@ public class GraphStats {
     }
 
     
+    public static double computeStdDevAveragePathLength(Graph<GraphElements.MyVertex, String> graph) {
+        double sum = 0;
+        double n = graph.getVertexCount();
+        //Transformer<GraphElements.MyVertex, Double> distances = DistanceStatistics.averageDistances(graph, new UnweightedShortestPath<>(graph));
+        UnweightedShortestPath u = new UnweightedShortestPath(graph);
+        
+        ArrayList<Double> data = new ArrayList();
+       
+        for (GraphElements.MyVertex v : graph.getVertices()) {
+            for (GraphElements.MyVertex w : graph.getVertices()) {
+                if (!w.equals(v)) {
+                    //System.out.println("<" + w + "," + v + ">" + u.getDistance(v, w).doubleValue());
+                    //if(distances.containsKey(v+"-"+w)){
+                     //   sum += distances.get(v+"-"+w);
+                    /*}else{*/
+                    if(u.getDistance(v, w) != null){
+                        double distance = u.getDistance(v, w).doubleValue(); 
+                        sum += distance;   
+                    }else{
+                        System.out.println("Graph is not connected now!");
+                        return -1;
+                    }
+                       /* distances.put(v+"-"+w, distance);
+                    }*/
+                }
+            }
+            data.add(sum/n-1);
+        }
+        StatisticsNormalDist st = new StatisticsNormalDist(data, data.size());
+        System.out.println("mean"+ st.getMean() + ", stdDev" + st.getStdDev());
+        return st.getStdDev();
+    }
+  
   
 
     
@@ -77,4 +109,17 @@ public class GraphStats {
         }
         return sum / g.getVertexCount();
     }
+    
+    public static Double StdDevDegree(Graph g) {
+        ArrayList<Double> dataDegree = new ArrayList<>();
+        Collection vertices = g.getVertices();
+        //double sum = 0;
+        for (Object v : vertices) {
+            //sum += g.degree((GraphElements.MyVertex) v);
+            dataDegree.add((double)g.degree((GraphElements.MyVertex) v));
+        }
+        StatisticsNormalDist st = new StatisticsNormalDist(dataDegree, dataDegree.size());
+        return st.getStdDev();
+    }
+    
 }
