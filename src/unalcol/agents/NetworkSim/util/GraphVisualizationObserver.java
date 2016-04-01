@@ -154,7 +154,7 @@ public class GraphVisualizationObserver implements Observer {
                     String graphStats = filename + ".gstats.csv";
                     filename += ".csv";
                     //draw graph
-                    VisualizationImageServer<GraphElements.MyVertex, String> vis
+                    /*VisualizationImageServer<GraphElements.MyVertex, String> vis
                             = new VisualizationImageServer<>(vv.getGraphLayout(),
                                     vv.getGraphLayout().getSize());
 
@@ -171,7 +171,7 @@ public class GraphVisualizationObserver implements Observer {
                     } catch (IOException e) {
                         // Exception handling
                     }
-                    //
+                    //*/
 
                     try {
                         PrintWriter escribir;
