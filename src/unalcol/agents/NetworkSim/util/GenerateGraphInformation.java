@@ -599,6 +599,7 @@ public class GenerateGraphInformation extends ApplicationFrame {
         g.GenerateAvgClusterGraphInformation();
         /*if (args.length > 1) {
             mazeMode = args[1];
+        
         }
         
         /*ArrayList<Double> failureProbs = getFailureProbs();
