@@ -8,11 +8,6 @@ package unalcol.agents.NetworkSim;
 
 import unalcol.agents.NetworkSim.environment.NetworkEnvironment;
 import edu.uci.ics.jung.graph.Graph;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -23,16 +18,11 @@ import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 import unalcol.agents.simulate.util.SimpleLanguage;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import static jdk.nashorn.internal.objects.ArrayBufferView.buffer;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromone;
 import unalcol.agents.NetworkSim.environment.NetworkMessageBuffer;
-import unalcol.agents.NetworkSim.util.GraphSerialization;
 import unalcol.agents.NetworkSim.util.GraphStats;
 //import unalcol.agents.NetworkSim.util.GraphStatistics;
 import unalcol.agents.NetworkSim.util.GraphVisualizationObserver;
-import unalcol.agents.NetworkSim.util.HashtableOperations;
 import unalcol.agents.NetworkSim.util.StringSerializer;
 
 /**
