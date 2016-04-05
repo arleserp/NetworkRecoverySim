@@ -48,8 +48,7 @@ public class GraphStats {
         }
         return sum / (n * (n - 1));
     }
-
-    
+  
     public static double computeStdDevAveragePathLength(Graph<GraphElements.MyVertex, String> graph) {
         double sum = 0;
         double n = graph.getVertexCount();
@@ -59,6 +58,7 @@ public class GraphStats {
         ArrayList<Double> data = new ArrayList();
        
         for (GraphElements.MyVertex v : graph.getVertices()) {
+            sum = 0;
             for (GraphElements.MyVertex w : graph.getVertices()) {
                 if (!w.equals(v)) {
                     //System.out.println("<" + w + "," + v + ">" + u.getDistance(v, w).doubleValue());
@@ -83,9 +83,6 @@ public class GraphStats {
         return st.getStdDev();
     }
   
-  
-
-    
     
     public static Map clusteringCoefficients(Graph g) {
         return edu.uci.ics.jung.algorithms.metrics.Metrics.clusteringCoefficients(g);

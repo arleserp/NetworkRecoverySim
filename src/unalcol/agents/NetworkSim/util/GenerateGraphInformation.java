@@ -51,6 +51,7 @@ package unalcol.agents.NetworkSim.util;
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.algorithms.shortestpath.UnweightedShortestPath;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.VisualizationImageServer;
@@ -71,12 +72,13 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
-
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -84,15 +86,18 @@ import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.BoxAndWhiskerToolTipGenerator;
+
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
 import org.jfree.chart.title.TextTitle;
+import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
+import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.util.Log;
 import org.jfree.util.LogContext;
 import unalcol.agents.NetworkSim.GraphElements;
-import unalcol.agents.NetworkSim.SyncronizationMain;
+import static unalcol.agents.NetworkSim.util.GraphStats.clusteringCoefficients;
 
 /**
  * Demonstration of a box-and-whisker chart using a {@link CategoryPlot}.
@@ -114,9 +119,9 @@ public class GenerateGraphInformation extends ApplicationFrame {
      *
      * @param title the frame title.
      */
-/*    public GenerateGraphInformation(final String title, ArrayList<Double> pf) {
-        super(title);
-//        final BoxAndWhiskerCategoryDataset dataset = createSampleDataset(pf);
+    public void GenerateAvgDistanceGraphInformation() {
+        //super(title);
+        final BoxAndWhiskerCategoryDataset dataset = getAvgPathBoxPlotStats();
         final CategoryAxis xAxis = new CategoryAxis("");
         //final NumberAxis yAxis = new NumberAxis("Round number");
         final NumberAxis yAxis = new NumberAxis("");
@@ -134,7 +139,7 @@ public class GenerateGraphInformation extends ApplicationFrame {
         xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
 
         final JFreeChart chart = new JFreeChart(
-                "Information Collected",
+                "Average Distance",
                 new Font("SansSerif", Font.BOLD, 18),
                 plot,
                 true
@@ -145,12 +150,7 @@ public class GenerateGraphInformation extends ApplicationFrame {
         setContentPane(chartPanel);
 
         TextTitle legendText = null;
-        if (pf.size() == 1) {
-            legendText = new TextTitle("Population Size");
-        } else {
-            legendText = new TextTitle("Population Size - Probability of Failure");
-        }
-
+        legendText = new TextTitle("");
         legendText.setFont(font);
         legendText.setPosition(RectangleEdge.BOTTOM);
         chart.addSubtitle(legendText);
@@ -158,36 +158,131 @@ public class GenerateGraphInformation extends ApplicationFrame {
 
         FileOutputStream output;
         try {
-            output = new FileOutputStream("InfoCollected" + pf + ".jpg");
+            output = new FileOutputStream("Average Distance" + ".jpg");
             ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, 1200, 800, null);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(GenerateGraphInformation.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(GenerateGraphInformation.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-    }*/
+    }
 
     /**
-     * Creates a sample dataset.
+     * Creates a new demo.
      *
-     * @return A sample dataset.
+     * @param title the frame title.
      */
-    /* private BoxAndWhiskerCategoryDataset createSampleDataset() {
+    public void GenerateAvgDegreeGraphInformation() {
+        //super(title);
+        final BoxAndWhiskerCategoryDataset dataset = getAvgDegreeBoxPlotStats();
+        final CategoryAxis xAxis = new CategoryAxis("");
+        //final NumberAxis yAxis = new NumberAxis("Round number");
+        final NumberAxis yAxis = new NumberAxis("");
+        yAxis.setAutoRangeIncludesZero(false);
+        final BoxAndWhiskerRenderer renderer = new BoxAndWhiskerRenderer();
+        renderer.setFillBox(false);
+        renderer.setToolTipGenerator(new BoxAndWhiskerToolTipGenerator());
+        final CategoryPlot plot = new CategoryPlot(dataset, xAxis, yAxis, renderer);
 
+        Font font = new Font("Dialog", Font.PLAIN, 14);
+        xAxis.setTickLabelFont(font);
+        yAxis.setTickLabelFont(font);
+        yAxis.setLabelFont(font);
+        xAxis.setMaximumCategoryLabelLines(4);
+        xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+
+        final JFreeChart chart = new JFreeChart(
+                "Average Degree",
+                new Font("SansSerif", Font.BOLD, 18),
+                plot,
+                true
+        );
+
+        final ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new java.awt.Dimension(1600, 800));
+        setContentPane(chartPanel);
+
+        TextTitle legendText = null;
+        legendText = new TextTitle("");
+        legendText.setFont(font);
+        legendText.setPosition(RectangleEdge.BOTTOM);
+        chart.addSubtitle(legendText);
+        chart.getLegend().setItemFont(font);
+
+        FileOutputStream output;
+        try {
+            output = new FileOutputStream("Average Degree" + ".jpg");
+            ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, 1200, 800, null);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(GenerateGraphInformation.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(GenerateGraphInformation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    
+        /**
+     * Creates a new demo.
+     *
+     * @param title the frame title.
+     */
+    public void GenerateAvgClusterGraphInformation() {
+        //super(title);
+        final BoxAndWhiskerCategoryDataset dataset = getAvgClusteringBoxPlotStats();
+        final CategoryAxis xAxis = new CategoryAxis("");
+        //final NumberAxis yAxis = new NumberAxis("Round number");
+        final NumberAxis yAxis = new NumberAxis("");
+        yAxis.setAutoRangeIncludesZero(false);
+        final BoxAndWhiskerRenderer renderer = new BoxAndWhiskerRenderer();
+        renderer.setFillBox(false);
+        renderer.setToolTipGenerator(new BoxAndWhiskerToolTipGenerator());
+        final CategoryPlot plot = new CategoryPlot(dataset, xAxis, yAxis, renderer);
+
+        Font font = new Font("Dialog", Font.PLAIN, 14);
+        xAxis.setTickLabelFont(font);
+        yAxis.setTickLabelFont(font);
+        yAxis.setLabelFont(font);
+        xAxis.setMaximumCategoryLabelLines(4);
+        xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+
+        final JFreeChart chart = new JFreeChart(
+                "Average Cluster Coefficient",
+                new Font("SansSerif", Font.BOLD, 18),
+                plot,
+                true
+        );
+
+        final ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new java.awt.Dimension(1600, 800));
+        setContentPane(chartPanel);
+
+        TextTitle legendText = null;
+        legendText = new TextTitle("");
+        legendText.setFont(font);
+        legendText.setPosition(RectangleEdge.BOTTOM);
+        chart.addSubtitle(legendText);
+        chart.getLegend().setItemFont(font);
+
+        FileOutputStream output;
+        try {
+            output = new FileOutputStream("Cluster Coefficient" + ".jpg");
+            ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, 1200, 800, null);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(GenerateGraphInformation.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(GenerateGraphInformation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    
+    private BoxAndWhiskerCategoryDataset getAvgPathBoxPlotStats() {
+        final DefaultBoxAndWhiskerCategoryDataset dataset
+                = new DefaultBoxAndWhiskerCategoryDataset();
         String sDirectorio = experimentsDir;
+        System.out.println("experiments dir" + sDirectorio);
         File f = new File(sDirectorio);
         String extension;
         File[] files = f.listFiles();
-        Hashtable<String, String> Pop = new Hashtable<>();
-        PrintWriter escribir;
-        Scanner sc = null;
-        ArrayList<Integer> aPops = new ArrayList<>();
-        ArrayList<Double> aPf = new ArrayList<>();
-        ArrayList<String> aTech = new ArrayList<>();
-
-        final DefaultBoxAndWhiskerCategoryDataset dataset
-                = new DefaultBoxAndWhiskerCategoryDataset();
 
         for (File file : files) {
             extension = "";
@@ -198,97 +293,171 @@ public class GenerateGraphInformation extends ApplicationFrame {
             }
 
             // System.out.println(file.getName() + "extension" + extension);
-            if (file.isFile() && extension.equals("csv") && file.getName().startsWith("exp") && !file.getName().contains("gstats")) {
+            if (file.isFile() && extension.equals("graph")) {
+                final List list = new ArrayList();
+
                 System.out.println(file.getName());
                 System.out.println("get: " + file.getName());
                 String[] filenamep = file.getName().split(Pattern.quote("+"));
+                System.out.println("mode" + filenamep[0]);
+                String mode = filenamep[0];
 
-                //System.out.println("file" + filenamep[8]);
-                int popsize = Integer.valueOf(filenamep[2]);
-                double pf = Double.valueOf(filenamep[4]);
-                String mode = filenamep[6];
-                String graphtype;
-
-                int maxIter = -1;
-                //if (!filenamep[8].isEmpty()) {
-                maxIter = Integer.valueOf(filenamep[8]);
-                //}
-                graphtype = filenamep[13];
-
-                System.out.println("psize:" + popsize);
-                System.out.println("pf:" + pf);
-                System.out.println("mode:" + mode);
-                System.out.println("maxIter:" + maxIter);
-                System.out.println("graph type:" + graphtype);
-
-                //String[] aMode = {"random", "levywalk", "sandc", "sandclw"};
-                //String[] aMode = {"levywalk", "lwphevap", "hybrid", "hybrid3", "hybrid4", "sequential"};
-                //if (/*Pf == pf && *//*isInMode(aMode, mode)) {
-                final List list = new ArrayList();
+                Graph<GraphElements.MyVertex, String> g = null;
+                System.out.println("file" + file.getName());
                 try {
-                    sc = new Scanner(file);
-
+                    FileInputStream fileInputStream = new FileInputStream(file);
+                    InputStream buffer = new BufferedInputStream(fileInputStream);
+                    ObjectInput input = new ObjectInputStream(buffer);
+                    g = (Graph) input.readObject();
                 } catch (FileNotFoundException ex) {
-                    Logger.getLogger(GenerateGraphInformation.class
-                            .getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                int agentsCorrect = 0;
-                int worldSize = 0;
-                double averageExplored = 0.0;
-                int bestRoundNumber = 0;
-                double avgSend = 0;
-                double avgRecv = 0;
-                double avgdataExplInd = 0;
-                ArrayList<Double> acSt = new ArrayList<>();
-                ArrayList<Double> avgExp = new ArrayList<>();
-                ArrayList<Double> bestR = new ArrayList<>();
-                ArrayList<Double> avSnd = new ArrayList<>();
-                ArrayList<Double> avRecv = new ArrayList<>();
-                ArrayList<Double> avIndExpl = new ArrayList<>();
-
-                String[] data = null;
-                while (sc.hasNext()) {
-                    String line = sc.nextLine();
-                    //System.out.println("line:" + line);
-                    data = line.split(",");
-                    agentsCorrect = Integer.valueOf(data[0]);
-                    //agentsIncorrect = Integer.valueOf(data[1]); // not used
-                    worldSize = Integer.valueOf(data[2]);
-                    averageExplored = Double.valueOf(data[4]);
-                    // data[3] stdavgExplored - not used
-                    bestRoundNumber = Integer.valueOf(data[10]);
-                    avgSend = Double.valueOf(data[8]);
-                    avgRecv = Double.valueOf(data[6]);
-
-                    //Add Data and generate statistics 
-                    acSt.add((double) agentsCorrect);
-                    avgExp.add(averageExplored);
-                    avSnd.add(avgSend);
-                    avRecv.add(avgRecv);
-                    avIndExpl.add(avgdataExplInd);
-                    //if (bestRoundNumber != 0 && bestRoundNumber != -1) {
-                    list.add(averageExplored);
-                    //}
-                }
-                LOGGER.debug("Adding series " + i);
-                LOGGER.debug(list.toString());
-
-                String[] filenametmp = file.getName().split(Pattern.quote(graphtype));
-                String fn2 = filenametmp[1].replace(".graph.csv", "");
-                if (Pf.contains(pf)) {
-                    /*pf == 1.0E-4 || pf == 3.0E-4*/
- /*if (Pf.size() == 1) {
-                        dataset.add(list, popsize, getTechniqueName(mode) + graphtype + fn2);
-                    } else {
-                        dataset.add(list, String.valueOf(popsize) + "-" + pf, getTechniqueName(mode) + "+" + graphtype + fn2);
+                System.out.println("graph" + g.toString());
+                UnweightedShortestPath u = new UnweightedShortestPath(g);
+                double n = g.getVertexCount();
+                double sum;
+                for (GraphElements.MyVertex v : g.getVertices()) {
+                    sum = 0;
+                    for (GraphElements.MyVertex w : g.getVertices()) {
+                        if (!w.equals(v)) {
+                            if (u.getDistance(v, w) != null) {
+                                double distance = u.getDistance(v, w).doubleValue();
+                                sum += distance;
+                            } else {
+                                System.out.println("Graph is not connected now!");
+                            }
+                        }
                     }
+                    list.add(sum / n - 1);
                 }
-                //}
+                String fileImage = file.getName().replace("graph", "");
+                dataset.add(list, 10, fileImage);
+                //dataset.add(list, popsize, getTechniqueName(mode) + graphtype + fn2);
             }
-
         }
         return dataset;
-    }*/
+    }
+
+    private BoxAndWhiskerCategoryDataset getAvgClusteringBoxPlotStats() {
+        final DefaultBoxAndWhiskerCategoryDataset dataset
+                = new DefaultBoxAndWhiskerCategoryDataset();
+        String sDirectorio = experimentsDir;
+        System.out.println("experiments dir" + sDirectorio);
+        File f = new File(sDirectorio);
+        String extension;
+        File[] files = f.listFiles();
+
+        for (File file : files) {
+            extension = "";
+            int i = file.getName().lastIndexOf('.');
+            int p = Math.max(file.getName().lastIndexOf('/'), file.getName().lastIndexOf('\\'));
+            if (i > p) {
+                extension = file.getName().substring(i + 1);
+            }
+
+            // System.out.println(file.getName() + "extension" + extension);
+            if (file.isFile() && extension.equals("graph")) {
+                final List list = new ArrayList();
+
+                System.out.println(file.getName());
+                System.out.println("get: " + file.getName());
+                String[] filenamep = file.getName().split(Pattern.quote("+"));
+                System.out.println("mode" + filenamep[0]);
+                String mode = filenamep[0];
+
+                Graph<GraphElements.MyVertex, String> g = null;
+                System.out.println("file" + file.getName());
+                try {
+                    FileInputStream fileInputStream = new FileInputStream(file);
+                    InputStream buffer = new BufferedInputStream(fileInputStream);
+                    ObjectInput input = new ObjectInputStream(buffer);
+                    g = (Graph) input.readObject();
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                System.out.println("graph" + g.toString());
+                Map<GraphElements.MyVertex, Double> m = clusteringCoefficients(g);
+                Collection<Double> val = m.values();
+                for (Double v : val) {
+                    list.add(v);
+                }
+                String fileImage = file.getName().replace("graph", "");
+                dataset.add(list, 10, fileImage);
+            }
+        }
+        return dataset;
+    }
+
+    private BoxAndWhiskerCategoryDataset getAvgDegreeBoxPlotStats() {
+        final DefaultBoxAndWhiskerCategoryDataset dataset
+                = new DefaultBoxAndWhiskerCategoryDataset();
+        String sDirectorio = experimentsDir;
+        System.out.println("experiments dir" + sDirectorio);
+        File f = new File(sDirectorio);
+        String extension;
+        File[] files = f.listFiles();
+
+        for (File file : files) {
+            extension = "";
+            int i = file.getName().lastIndexOf('.');
+            int p = Math.max(file.getName().lastIndexOf('/'), file.getName().lastIndexOf('\\'));
+            if (i > p) {
+                extension = file.getName().substring(i + 1);
+            }
+
+            // System.out.println(file.getName() + "extension" + extension);
+            if (file.isFile() && extension.equals("graph")) {
+                final List list = new ArrayList();
+
+                System.out.println(file.getName());
+                System.out.println("get: " + file.getName());
+                String[] filenamep = file.getName().split(Pattern.quote("+"));
+                System.out.println("mode" + filenamep[0]);
+                String mode = filenamep[0];
+
+                Graph<GraphElements.MyVertex, String> g = null;
+                System.out.println("file" + file.getName());
+                try {
+                    FileInputStream fileInputStream = new FileInputStream(file);
+                    InputStream buffer = new BufferedInputStream(fileInputStream);
+                    ObjectInput input = new ObjectInputStream(buffer);
+                    g = (Graph) input.readObject();
+
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(GraphSerialization.class
+                            .getName()).log(Level.SEVERE, null, ex);
+
+                } catch (IOException ex) {
+                    Logger.getLogger(GraphSerialization.class
+                            .getName()).log(Level.SEVERE, null, ex);
+
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(GraphSerialization.class
+                            .getName()).log(Level.SEVERE, null, ex);
+                }
+                System.out.println("graph" + g.toString());
+                ArrayList<Double> dataDegree = new ArrayList<>();
+                Collection vertices = g.getVertices();
+                //double sum = 0;
+                for (Object v : vertices) {
+                    //sum += g.degree((GraphElements.MyVertex) v);
+                    list.add((double) g.degree((GraphElements.MyVertex) v));
+                }
+                String fileImage = file.getName().replace("graph", "");
+                dataset.add(list, 10, fileImage);
+                //dataset.add(list, popsize, getTechniqueName(mode) + graphtype + fn2);
+            }
+        }
+        return dataset;
+    }
 
     private static void getGraphStats() {
         String sDirectorio = experimentsDir;
@@ -320,12 +489,18 @@ public class GenerateGraphInformation extends ApplicationFrame {
                     InputStream buffer = new BufferedInputStream(fileInputStream);
                     ObjectInput input = new ObjectInputStream(buffer);
                     g = (Graph) input.readObject();
+
                 } catch (FileNotFoundException ex) {
-                    Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GraphSerialization.class
+                            .getName()).log(Level.SEVERE, null, ex);
+
                 } catch (IOException ex) {
-                    Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GraphSerialization.class
+                            .getName()).log(Level.SEVERE, null, ex);
+
                 } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GraphSerialization.class
+                            .getName()).log(Level.SEVERE, null, ex);
                 }
                 System.out.println("graph" + g.toString());
                 String graphStats = file.getName().replace("graph", "graphstats");
@@ -340,8 +515,10 @@ public class GenerateGraphInformation extends ApplicationFrame {
                     escribir.println("StdDev Average Path Length: " + GraphStats.computeStdDevAveragePathLength(g));
                     escribir.println("StdDev Degree: " + GraphStats.StdDevDegree(g));
                     escribir.close();
+
                 } catch (IOException ex) {
-                    Logger.getLogger(StatisticsProvider.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(StatisticsProvider.class
+                            .getName()).log(Level.SEVERE, null, ex);
                 }
 
                 //draw graph
@@ -379,17 +556,14 @@ public class GenerateGraphInformation extends ApplicationFrame {
                         new Point2D.Double(vv.getGraphLayout().getSize().getWidth() / 2,
                                 vv.getGraphLayout().getSize().getHeight() / 2),
                         new Dimension(vv.getGraphLayout().getSize()));
-
                 // Write image to a png file
-                File outputfile = new File(fileImage + ".png");
+                File outputfile = new File(fileImage + "png");
 
                 try {
                     ImageIO.write(image, "png", outputfile);
                 } catch (IOException e) {
                     // Exception handling
                 }
-                //*/
-
             }
         }
 
@@ -418,11 +592,15 @@ public class GenerateGraphInformation extends ApplicationFrame {
 
         //GenerateGraphInformation demo = new GenerateGraphInformation(null);
         GenerateGraphInformation.getGraphStats();
+        GenerateGraphInformation g = new GenerateGraphInformation(experimentsDir);
+
+        g.GenerateAvgDegreeGraphInformation();
+        g.GenerateAvgDistanceGraphInformation();
+        g.GenerateAvgClusterGraphInformation();
         /*if (args.length > 1) {
             mazeMode = args[1];
         }
         
-
         /*ArrayList<Double> failureProbs = getFailureProbs();
 
         for (Double pf : failureProbs) {
