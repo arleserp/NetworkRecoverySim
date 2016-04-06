@@ -6,6 +6,16 @@
 package unalcol.agents.NetworkSim;
 
 import edu.uci.ics.jung.graph.Graph;
+import static unalcol.agents.NetworkSim.SyncronizationMain.beta;
+import static unalcol.agents.NetworkSim.SyncronizationMain.clusters;
+import static unalcol.agents.NetworkSim.SyncronizationMain.degree;
+import static unalcol.agents.NetworkSim.SyncronizationMain.filenameLoc;
+import static unalcol.agents.NetworkSim.SyncronizationMain.graphMode;
+import static unalcol.agents.NetworkSim.SyncronizationMain.maxIter;
+import static unalcol.agents.NetworkSim.SyncronizationMain.motionAlg;
+import static unalcol.agents.NetworkSim.SyncronizationMain.pf;
+import static unalcol.agents.NetworkSim.SyncronizationMain.popSize;
+import static unalcol.agents.NetworkSim.SyncronizationMain.vertexNumber;
 import unalcol.agents.NetworkSim.util.GraphSerialization;
 import unalcol.agents.NetworkSim.util.GraphStats;
 
@@ -31,7 +41,6 @@ public class graphGenerator {
     public static int edgesToAttachScaleFree = 4;
     public static int numSteps = 100;
 
-    
     // Perform simulation
     public static void main(String[] args) {
         if (args.length >= 1) {
@@ -56,6 +65,14 @@ public class graphGenerator {
                 filename += "+v+" + vertexNumber + "+beta+" + beta + "+degree+" + degree + "+clusters+" + clusters;
             }
 
+            if (graphMode.equals("communitycircle")) {
+                vertexNumber = Integer.valueOf(args[1]);
+                beta = Float.valueOf(args[2]);
+                degree = Integer.valueOf(args[3]);
+                clusters = Integer.valueOf(args[4]);
+                filename += "+v+" + vertexNumber + "+beta+" + beta + "+degree+" + degree + "+clusters+" + clusters;
+            }
+
             if (graphMode.equals("scalefree")) {
                 startNodesScaleFree = Integer.valueOf(args[1]);
                 edgesToAttachScaleFree = Integer.valueOf(args[2]);
@@ -70,13 +87,13 @@ public class graphGenerator {
             }
 
             filename += ".graph";
-            
+
             Graph<GraphElements.MyVertex, String> g;
             do {
                 g = graphSimpleFactorySave.createGraph(graphMode);
                 GraphSerialization.saveSerializedGraph(filename, g);
-            } while(GraphStats.computeAveragePathLength(g) == -1); 
-            
+            } while (GraphStats.computeAveragePathLength(g) == -1);
+
             //WorldThread w = new WorldThread(popSize, pf);
             //w.init();
             //w.run();

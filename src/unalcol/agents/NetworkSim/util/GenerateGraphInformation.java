@@ -590,26 +590,13 @@ public class GenerateGraphInformation extends ApplicationFrame {
             experimentsDir = args[0];
         }
 
-        //GenerateGraphInformation demo = new GenerateGraphInformation(null);
+      
         GenerateGraphInformation.getGraphStats();
         GenerateGraphInformation g = new GenerateGraphInformation(experimentsDir);
 
         g.GenerateAvgDegreeGraphInformation();
         g.GenerateAvgDistanceGraphInformation();
         g.GenerateAvgClusterGraphInformation();
-        /*if (args.length > 1) {
-            mazeMode = args[1];
-        
-        }
-        
-        /*ArrayList<Double> failureProbs = getFailureProbs();
-
-        for (Double pf : failureProbs) {
-            ArrayList<Double> pfi = new ArrayList<>();
-            pfi.add(pf);
-            final GenerateGraphInformation demo = new GenerateGraphInformation("Information Collected", pfi);
-        }
-         */
     }
 
     public GenerateGraphInformation(String title) {

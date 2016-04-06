@@ -14,6 +14,7 @@ import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.graph.Graph;
 import java.util.HashSet;
 import java.util.Set;
+import unalcol.agents.NetworkSim.util.CommunityCircleNetworkGenerator;
 import unalcol.agents.NetworkSim.util.CommunityNetworkGenerator;
 import unalcol.agents.NetworkSim.util.GraphSerialization;
 import unalcol.agents.NetworkSim.util.WattsBetaSmallWorldGenerator;
@@ -47,6 +48,9 @@ public class graphSimpleFactory {
             case "community":
                 g = new CommunityNetworkGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, SyncronizationMain.beta, SyncronizationMain.degree, true, SyncronizationMain.clusters).generateGraph();
                 break;    
+            case "communitycircle":
+                g = new CommunityCircleNetworkGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, SyncronizationMain.beta, SyncronizationMain.degree, true, SyncronizationMain.clusters).generateGraph();
+                break;
             case "kleinberg":
                 g = new KleinbergSmallWorldGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, 0).create();
                 break;

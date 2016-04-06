@@ -67,6 +67,22 @@ public class SyncronizationMain {
                 }
             }
 
+            if (graphMode.equals("communitycircle")) {
+                vertexNumber = Integer.valueOf(args[1]);
+                beta = Float.valueOf(args[2]);
+                degree = Integer.valueOf(args[3]);
+                clusters = Integer.valueOf(args[4]);
+                popSize = Integer.valueOf(args[5]);
+                pf = Float.valueOf(String.valueOf(args[6]));
+                motionAlg = args[5];
+                if (args.length > 5) {
+                    filenameLoc = args[6];
+                }
+                if (args.length > 6) {
+                    maxIter = Integer.valueOf(args[7]);
+                }
+            }
+
             if (graphMode.equals("scalefree")) {
                 startNodesScaleFree = Integer.valueOf(args[1]);
                 edgesToAttachScaleFree = Integer.valueOf(args[2]);
@@ -104,7 +120,7 @@ public class SyncronizationMain {
                 if (args.length > 4) {
                     filenameLoc = args[5];
                 }
-                if(args.length > 5){
+                if (args.length > 5) {
                     maxIter = Integer.valueOf(args[6]);
                 }
             }

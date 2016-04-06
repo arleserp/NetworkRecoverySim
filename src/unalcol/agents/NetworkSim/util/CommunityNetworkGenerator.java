@@ -17,8 +17,6 @@ import edu.uci.ics.jung.graph.UndirectedSparseGraph;
 
 import java.util.ArrayList;
 import org.apache.commons.collections15.Factory;
-import unalcol.agents.NetworkSim.GraphCreator;
-import unalcol.agents.NetworkSim.SyncronizationMain;
 
 /**
  * WattsBetaSmallWorldGenerator is a graph generator that produces a small world
