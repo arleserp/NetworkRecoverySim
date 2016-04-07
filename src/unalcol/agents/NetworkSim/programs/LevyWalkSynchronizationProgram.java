@@ -25,6 +25,7 @@ public class LevyWalkSynchronizationProgram implements AgentProgram {
     float acumulator;
     int dirPos;
     float T;
+    ArrayList<Integer> direccion;
 
     public LevyWalkSynchronizationProgram(float pf) {
         this.pf = pf;
@@ -32,13 +33,25 @@ public class LevyWalkSynchronizationProgram implements AgentProgram {
         acumulator = 0;
         dirPos = (int) (Math.random() * 8.0);
         T = 1;
+        direccion = new ArrayList<>();
+        for(int i=0; i<8; i++){
+            direccion.add((int)Math.random()*100);
+        }
     }
 
+//Manejar Grados y permutar nodos con base en los vecinos
+   // 2 vecinos 180 180
+   // 5 vecinos 72 grados 
+   // Direecion 
+    //Gnupplot
+    
     @Override
     public Action compute(Percept p) {
         ActionParameters act = new ActionParameters("move");
 
         Collection<GraphElements.MyVertex> vs = (Collection<GraphElements.MyVertex>) p.getAttribute("neighbors");
+        
+        
         
         acumulator += alpha;
         if (acumulator >= T || dirPos >= vs.toArray().length) {
@@ -46,6 +59,9 @@ public class LevyWalkSynchronizationProgram implements AgentProgram {
             dirPos = (int) (Math.random() * vs.toArray().length);
             acumulator = 0;
         }
+        
+        //Generar un vector de dirección Lw
+        
         
         System.out.println("dirPos" + dirPos + " size " + vs.toArray().length);
         act.setAttribute("location", vs.toArray()[dirPos]);
