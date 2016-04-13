@@ -9,15 +9,13 @@ import edu.uci.ics.jung.algorithms.generators.Lattice2DGenerator;
 import edu.uci.ics.jung.algorithms.generators.random.BarabasiAlbertGenerator;
 import edu.uci.ics.jung.algorithms.generators.random.EppsteinPowerLawGenerator;
 import edu.uci.ics.jung.algorithms.generators.random.KleinbergSmallWorldGenerator;
-import edu.uci.ics.jung.algorithms.layout.CircleLayout;
-import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.shortestpath.UnweightedShortestPath;
 import edu.uci.ics.jung.graph.Graph;
 import java.util.HashSet;
 import java.util.Set;
 import unalcol.agents.NetworkSim.util.CommunityCircleNetworkGenerator;
 import unalcol.agents.NetworkSim.util.CommunityNetworkGenerator;
-import unalcol.agents.NetworkSim.util.GraphStats;
+import unalcol.agents.NetworkSim.util.LineGraphGenerator;
 import unalcol.agents.NetworkSim.util.WattsBetaSmallWorldGenerator;
 
 /**
@@ -84,6 +82,12 @@ public class graphSimpleFactorySave {
                 break;
             case "kleinberg":
                 g = new KleinbergSmallWorldGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.vertexNumber, 0).create();
+                break;
+            case "line":
+                g = new LineGraphGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.vertexNumber, false).generateGraph();
+                break;
+            case "circle":
+                g = new LineGraphGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.vertexNumber, true).generateGraph();
                 break;
             case "lattice":
                 g = new Lattice2DGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.rows, graphGenerator.columns, false).create();

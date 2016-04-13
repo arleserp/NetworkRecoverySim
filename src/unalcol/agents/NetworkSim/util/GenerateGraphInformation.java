@@ -538,6 +538,12 @@ public class GenerateGraphInformation extends ApplicationFrame {
                     case "kleinberg":
                         layout = new CircleLayout<>(g);
                         break;
+                    case "circle":
+                        layout = new ISOMLayout<>(g);
+                    break; 
+                    case "line":
+                        layout = new ISOMLayout<>(g);
+                    break;
                     case "lattice":
                         layout = new ISOMLayout<>(g);
                         break;

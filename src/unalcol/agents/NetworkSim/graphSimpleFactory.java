@@ -17,6 +17,7 @@ import java.util.Set;
 import unalcol.agents.NetworkSim.util.CommunityCircleNetworkGenerator;
 import unalcol.agents.NetworkSim.util.CommunityNetworkGenerator;
 import unalcol.agents.NetworkSim.util.GraphSerialization;
+import unalcol.agents.NetworkSim.util.LineGraphGenerator;
 import unalcol.agents.NetworkSim.util.WattsBetaSmallWorldGenerator;
 
 /**
@@ -47,7 +48,7 @@ public class graphSimpleFactory {
                 break;
             case "community":
                 g = new CommunityNetworkGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, SyncronizationMain.beta, SyncronizationMain.degree, true, SyncronizationMain.clusters).generateGraph();
-                break;    
+                break;
             case "communitycircle":
                 g = new CommunityCircleNetworkGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, SyncronizationMain.beta, SyncronizationMain.degree, true, SyncronizationMain.clusters).generateGraph();
                 break;
@@ -57,6 +58,12 @@ public class graphSimpleFactory {
             case "lattice":
                 g = new Lattice2DGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.rows, SyncronizationMain.columns, false).create();
                 //layout = new CircleLayout<>(g);
+                break;
+            case "line":
+                g = new LineGraphGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, false).generateGraph();
+                break;
+            case "circle":
+                g = new LineGraphGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, true).generateGraph();
                 break;
             case "load":
                 g = GraphSerialization.loadDeserializeGraph(SyncronizationMain.filename);

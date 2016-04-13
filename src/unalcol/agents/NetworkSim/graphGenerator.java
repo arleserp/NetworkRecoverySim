@@ -6,16 +6,6 @@
 package unalcol.agents.NetworkSim;
 
 import edu.uci.ics.jung.graph.Graph;
-import static unalcol.agents.NetworkSim.SyncronizationMain.beta;
-import static unalcol.agents.NetworkSim.SyncronizationMain.clusters;
-import static unalcol.agents.NetworkSim.SyncronizationMain.degree;
-import static unalcol.agents.NetworkSim.SyncronizationMain.filenameLoc;
-import static unalcol.agents.NetworkSim.SyncronizationMain.graphMode;
-import static unalcol.agents.NetworkSim.SyncronizationMain.maxIter;
-import static unalcol.agents.NetworkSim.SyncronizationMain.motionAlg;
-import static unalcol.agents.NetworkSim.SyncronizationMain.pf;
-import static unalcol.agents.NetworkSim.SyncronizationMain.popSize;
-import static unalcol.agents.NetworkSim.SyncronizationMain.vertexNumber;
 import unalcol.agents.NetworkSim.util.GraphSerialization;
 import unalcol.agents.NetworkSim.util.GraphStats;
 
@@ -73,6 +63,16 @@ public class graphGenerator {
                 filename += "+v+" + vertexNumber + "+beta+" + beta + "+degree+" + degree + "+clusters+" + clusters;
             }
 
+            if (graphMode.equals("line")) {
+                vertexNumber = Integer.valueOf(args[1]);
+                filename += "+v+" + vertexNumber;
+            }
+
+            if (graphMode.equals("circle")) {
+                vertexNumber = Integer.valueOf(args[1]);
+                filename += "+v+" + vertexNumber;
+            }
+            
             if (graphMode.equals("scalefree")) {
                 startNodesScaleFree = Integer.valueOf(args[1]);
                 edgesToAttachScaleFree = Integer.valueOf(args[2]);
