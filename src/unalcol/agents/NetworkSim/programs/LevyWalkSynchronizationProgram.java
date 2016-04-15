@@ -48,10 +48,7 @@ public class LevyWalkSynchronizationProgram implements AgentProgram {
     @Override
     public Action compute(Percept p) {
         ActionParameters act = new ActionParameters("move");
-
         Collection<GraphElements.MyVertex> vs = (Collection<GraphElements.MyVertex>) p.getAttribute("neighbors");
-        
-        
         
         acumulator += alpha;
         if (acumulator >= T || dirPos >= vs.toArray().length) {
@@ -61,8 +58,6 @@ public class LevyWalkSynchronizationProgram implements AgentProgram {
         }
         
         //Generar un vector de dirección Lw
-        
-        
         System.out.println("dirPos" + dirPos + " size " + vs.toArray().length);
         act.setAttribute("location", vs.toArray()[dirPos]);
         /* If termite has a message then react to this message */
