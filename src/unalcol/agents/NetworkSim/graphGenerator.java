@@ -68,11 +68,16 @@ public class graphGenerator {
                 filename += "+v+" + vertexNumber;
             }
 
+            if (graphMode.equals("hubandspoke")) {
+                vertexNumber = Integer.valueOf(args[1]);
+                filename += "+v+" + vertexNumber;
+            }
+
             if (graphMode.equals("circle")) {
                 vertexNumber = Integer.valueOf(args[1]);
                 filename += "+v+" + vertexNumber;
             }
-            
+
             if (graphMode.equals("scalefree")) {
                 startNodesScaleFree = Integer.valueOf(args[1]);
                 edgesToAttachScaleFree = Integer.valueOf(args[2]);

@@ -48,6 +48,7 @@ package unalcol.agents.NetworkSim.util;
  *               into the demo (DG);
  *
  */
+import edu.uci.ics.jung.algorithms.importance.BetweennessCentrality;
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
@@ -55,6 +56,8 @@ import edu.uci.ics.jung.algorithms.shortestpath.UnweightedShortestPath;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.VisualizationImageServer;
+import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.geom.Point2D;
@@ -73,23 +76,33 @@ import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
+import jdk.nashorn.internal.codegen.CompilerConstants;
+import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.labels.BoxAndWhiskerToolTipGenerator;
 
 import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
+import org.jfree.chart.renderer.category.CategoryItemRenderer;
+import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.chart.title.TextTitle;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 import org.jfree.ui.ApplicationFrame;
@@ -113,6 +126,121 @@ public class GenerateGraphInformation extends ApplicationFrame {
      * Access to logging facilities.
      */
     private static final LogContext LOGGER = Log.createContext(GenerateGraphInformation.class);
+
+    
+    private static void drawHistogramDegree(HashMap<Object, Integer> map, String name) {
+        DefaultCategoryDataset defaultcategorydataset = new DefaultCategoryDataset();
+        for (Object o : map.keySet()) {
+            defaultcategorydataset.addValue(map.get(o), "", ((GraphElements.MyVertex) o).toString());
+        }
+        JFreeChart jfreechart = ChartFactory.createBarChart("Degree " + name, "", "", defaultcategorydataset, PlotOrientation.VERTICAL, true, true, false);
+        jfreechart.getTitle().setFont(new Font("Sans-Serif", Font.PLAIN, 18));
+        jfreechart.setBackgroundPaint(new Color(221, 223, 238));
+        CategoryPlot categoryplot = (CategoryPlot) jfreechart.getPlot();
+        categoryplot.setBackgroundPaint(Color.white);
+        categoryplot.setDomainGridlinePaint(Color.white);
+        categoryplot.setRangeGridlinePaint(Color.gray);
+        categoryplot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
+
+        BarRenderer renderer = (BarRenderer) categoryplot.getRenderer();
+        //categoryplot.setBackgroundPaint(new Color(221, 223, 238));
+
+        renderer.setSeriesPaint(0, new Color(130, 165, 70));
+        renderer.setSeriesPaint(1, new Color(220, 165, 70));
+        renderer.setSeriesPaint(4, new Color(255, 165, 70));
+        renderer.setDrawBarOutline(false);
+        renderer.setShadowVisible(false);
+        // renderer.setMaximumBarWidth(1);
+        renderer.setGradientPaintTransformer(null);
+        renderer.setDefaultBarPainter(new StandardBarPainter());
+
+        categoryplot.setRenderer(renderer);
+
+        NumberAxis numberaxis = (NumberAxis) categoryplot.getRangeAxis();
+        numberaxis.setUpperMargin(0.25D);
+        CategoryItemRenderer categoryitemrenderer = categoryplot.getRenderer();
+        categoryitemrenderer.setBaseItemLabelsVisible(true);
+        //categoryitemrenderer.setBaseItemLabelGenerator(new LabelGenerator(null));
+        numberaxis.setRange(0, 50);
+        //numberaxis.setNumberFormatOverride(NumberFormat.getPercentInstance());
+
+        Font font = new Font("SansSerif", Font.ROMAN_BASELINE, 12);
+        numberaxis.setTickLabelFont(font);
+        CategoryAxis axisd = categoryplot.getDomainAxis();
+        ValueAxis axisr = categoryplot.getRangeAxis();
+        axisd.setTickLabelFont(font);
+        axisr.setTickLabelFont(font);
+
+        final ChartPanel chartPanel = new ChartPanel(jfreechart);
+        chartPanel.setPreferredSize(new java.awt.Dimension(650, 370));
+
+        FileOutputStream output;
+        try {
+            output = new FileOutputStream(name + "degree.jpg");
+            ChartUtilities.writeChartAsJPEG(output, 1.0f, jfreechart, 650, 370, null);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(GenerateGraphInformation.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(GenerateGraphInformation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private static void drawHistogramRank(HashMap<Object, Double> map, String name) {
+        DefaultCategoryDataset defaultcategorydataset = new DefaultCategoryDataset();
+        for (Object o : map.keySet()) {
+            defaultcategorydataset.addValue(map.get(o), "", ((GraphElements.MyVertex) o).toString());
+        }
+        JFreeChart jfreechart = ChartFactory.createBarChart("BetweenessCentrality " + name, "", "", defaultcategorydataset, PlotOrientation.VERTICAL, true, true, false);
+        jfreechart.getTitle().setFont(new Font("Sans-Serif", Font.PLAIN, 18));
+        jfreechart.setBackgroundPaint(new Color(221, 223, 238));
+        CategoryPlot categoryplot = (CategoryPlot) jfreechart.getPlot();
+        categoryplot.setBackgroundPaint(Color.white);
+        categoryplot.setDomainGridlinePaint(Color.white);
+        categoryplot.setRangeGridlinePaint(Color.gray);
+        categoryplot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
+
+        BarRenderer renderer = (BarRenderer) categoryplot.getRenderer();
+        //categoryplot.setBackgroundPaint(new Color(221, 223, 238));
+
+        renderer.setSeriesPaint(0, new Color(130, 165, 70));
+        renderer.setSeriesPaint(1, new Color(220, 165, 70));
+        renderer.setSeriesPaint(4, new Color(255, 165, 70));
+        renderer.setDrawBarOutline(false);
+        renderer.setShadowVisible(false);
+        // renderer.setMaximumBarWidth(1);
+        renderer.setGradientPaintTransformer(null);
+        renderer.setDefaultBarPainter(new StandardBarPainter());
+
+        categoryplot.setRenderer(renderer);
+
+        NumberAxis numberaxis = (NumberAxis) categoryplot.getRangeAxis();
+        numberaxis.setUpperMargin(0.25D);
+        CategoryItemRenderer categoryitemrenderer = categoryplot.getRenderer();
+        categoryitemrenderer.setBaseItemLabelsVisible(true);
+        //categoryitemrenderer.setBaseItemLabelGenerator(new LabelGenerator(null));
+        numberaxis.setRange(0, 1);
+        //numberaxis.setNumberFormatOverride(NumberFormat.getPercentInstance());
+
+        Font font = new Font("SansSerif", Font.ROMAN_BASELINE, 12);
+        numberaxis.setTickLabelFont(font);
+        CategoryAxis axisd = categoryplot.getDomainAxis();
+        ValueAxis axisr = categoryplot.getRangeAxis();
+        axisd.setTickLabelFont(font);
+        axisr.setTickLabelFont(font);
+
+        final ChartPanel chartPanel = new ChartPanel(jfreechart);
+        chartPanel.setPreferredSize(new java.awt.Dimension(650, 370));
+
+        FileOutputStream output;
+        try {
+            output = new FileOutputStream(name + "rank.jpg");
+            ChartUtilities.writeChartAsJPEG(output, 1.0f, jfreechart, 650, 370, null);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(GenerateGraphInformation.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(GenerateGraphInformation.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     /**
      * Creates a new demo.
@@ -160,10 +288,14 @@ public class GenerateGraphInformation extends ApplicationFrame {
         try {
             output = new FileOutputStream("Average Distance" + ".jpg");
             ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, 1200, 800, null);
+
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(GenerateGraphInformation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(GenerateGraphInformation.class
+                    .getName()).log(Level.SEVERE, null, ex);
+
         } catch (IOException ex) {
-            Logger.getLogger(GenerateGraphInformation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(GenerateGraphInformation.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -213,15 +345,18 @@ public class GenerateGraphInformation extends ApplicationFrame {
         try {
             output = new FileOutputStream("Average Degree" + ".jpg");
             ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, 1200, 800, null);
+
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(GenerateGraphInformation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(GenerateGraphInformation.class
+                    .getName()).log(Level.SEVERE, null, ex);
+
         } catch (IOException ex) {
-            Logger.getLogger(GenerateGraphInformation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(GenerateGraphInformation.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    
-        /**
+    /**
      * Creates a new demo.
      *
      * @param title the frame title.
@@ -267,14 +402,17 @@ public class GenerateGraphInformation extends ApplicationFrame {
         try {
             output = new FileOutputStream("Cluster Coefficient" + ".jpg");
             ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, 1200, 800, null);
+
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(GenerateGraphInformation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(GenerateGraphInformation.class
+                    .getName()).log(Level.SEVERE, null, ex);
+
         } catch (IOException ex) {
-            Logger.getLogger(GenerateGraphInformation.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(GenerateGraphInformation.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    
+
     private BoxAndWhiskerCategoryDataset getAvgPathBoxPlotStats() {
         final DefaultBoxAndWhiskerCategoryDataset dataset
                 = new DefaultBoxAndWhiskerCategoryDataset();
@@ -309,12 +447,18 @@ public class GenerateGraphInformation extends ApplicationFrame {
                     InputStream buffer = new BufferedInputStream(fileInputStream);
                     ObjectInput input = new ObjectInputStream(buffer);
                     g = (Graph) input.readObject();
+
                 } catch (FileNotFoundException ex) {
-                    Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GraphSerialization.class
+                            .getName()).log(Level.SEVERE, null, ex);
+
                 } catch (IOException ex) {
-                    Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GraphSerialization.class
+                            .getName()).log(Level.SEVERE, null, ex);
+
                 } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GraphSerialization.class
+                            .getName()).log(Level.SEVERE, null, ex);
                 }
                 System.out.println("graph" + g.toString());
                 UnweightedShortestPath u = new UnweightedShortestPath(g);
@@ -376,12 +520,18 @@ public class GenerateGraphInformation extends ApplicationFrame {
                     InputStream buffer = new BufferedInputStream(fileInputStream);
                     ObjectInput input = new ObjectInputStream(buffer);
                     g = (Graph) input.readObject();
+
                 } catch (FileNotFoundException ex) {
-                    Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GraphSerialization.class
+                            .getName()).log(Level.SEVERE, null, ex);
+
                 } catch (IOException ex) {
-                    Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GraphSerialization.class
+                            .getName()).log(Level.SEVERE, null, ex);
+
                 } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(GraphSerialization.class
+                            .getName()).log(Level.SEVERE, null, ex);
                 }
                 System.out.println("graph" + g.toString());
                 Map<GraphElements.MyVertex, Double> m = clusteringCoefficients(g);
@@ -504,6 +654,7 @@ public class GenerateGraphInformation extends ApplicationFrame {
                 }
                 System.out.println("graph" + g.toString());
                 String graphStats = file.getName().replace("graph", "graphstats");
+
                 try {
                     PrintWriter escribir;
                     escribir = new PrintWriter(new BufferedWriter(new FileWriter(graphStats, true)));
@@ -514,6 +665,31 @@ public class GenerateGraphInformation extends ApplicationFrame {
                     escribir.println("Average degree: " + GraphStats.averageDegree(g));
                     escribir.println("StdDev Average Path Length: " + GraphStats.computeStdDevAveragePathLength(g));
                     escribir.println("StdDev Degree: " + GraphStats.StdDevDegree(g));
+
+                    BetweennessCentrality ranker = new BetweennessCentrality(g);
+
+                    ranker.step();
+                    ranker.setRemoveRankScoresOnFinalize(false);
+                    ranker.evaluate();
+                    //System.out.println("Rank" + ranker.toString());
+                    //ranker.printRankings(true, true);
+                    HashMap<Object, Double> map = new HashMap();
+                    escribir.println("********************Ranker******************************");
+                    for (Object v : g.getVertices()) {
+                        Double rank = ranker.getVertexRankScore(v);
+                        Double normalized = (Double) rank / ((g.getEdgeCount() - 1) * (g.getEdgeCount() - 2) / 2);
+                        map.put(v, normalized);
+                        escribir.println(v + "- rank: " + rank + ", norm: " + normalized);
+                        // System.out.println("Score for " + v + " = " + ranker.getVertexRankScore(v)); 
+                    }
+                    drawHistogramRank(map, file.getName());
+
+                    HashMap<Object, Integer> mapdegree = new HashMap();
+                    Collection vertices = g.getVertices();
+                    for (Object v : vertices) {
+                        mapdegree.put(v, g.degree((GraphElements.MyVertex) v));
+                    }
+                    drawHistogramDegree(mapdegree, file.getName());
                     escribir.close();
 
                 } catch (IOException ex) {
@@ -533,17 +709,17 @@ public class GenerateGraphInformation extends ApplicationFrame {
                         layout = new CircleLayout<>(g);
                         break;
                     case "community":
-                        layout = new CircleLayout<>(g);
+                        layout = new ISOMLayout<>(g);
                         break;
                     case "kleinberg":
                         layout = new CircleLayout<>(g);
                         break;
                     case "circle":
                         layout = new ISOMLayout<>(g);
-                    break; 
+                        break;
                     case "line":
                         layout = new ISOMLayout<>(g);
-                    break;
+                        break;
                     case "lattice":
                         layout = new ISOMLayout<>(g);
                         break;
@@ -554,9 +730,15 @@ public class GenerateGraphInformation extends ApplicationFrame {
 
                 BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
                 vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
+                vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+                vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
+
                 VisualizationImageServer<GraphElements.MyVertex, String> vis
                         = new VisualizationImageServer<>(vv.getGraphLayout(),
                                 vv.getGraphLayout().getSize());
+
+                vis.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<GraphElements.MyVertex>());
+                //vis.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
 
                 BufferedImage image = (BufferedImage) vis.getImage(
                         new Point2D.Double(vv.getGraphLayout().getSize().getWidth() / 2,
@@ -572,6 +754,14 @@ public class GenerateGraphInformation extends ApplicationFrame {
                 }
             }
         }
+
+    }
+
+    public void GenerateBetweenessCentrality() {
+        /*            BetweennessCentrality ranker = new BetweennessCentrality(someGraph);
+        ranker.evaluate();
+        ranker.printRankings();
+         */
 
     }
 
@@ -596,13 +786,13 @@ public class GenerateGraphInformation extends ApplicationFrame {
             experimentsDir = args[0];
         }
 
-      
         GenerateGraphInformation.getGraphStats();
         GenerateGraphInformation g = new GenerateGraphInformation(experimentsDir);
 
         g.GenerateAvgDegreeGraphInformation();
         g.GenerateAvgDistanceGraphInformation();
         g.GenerateAvgClusterGraphInformation();
+
     }
 
     public GenerateGraphInformation(String title) {

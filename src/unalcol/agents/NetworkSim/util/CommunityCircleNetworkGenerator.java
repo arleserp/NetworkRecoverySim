@@ -85,7 +85,7 @@ public class CommunityCircleNetworkGenerator<V, E> extends Lattice2DGenerator {
     public Graph generateGraph() {
         Graph c = new UndirectedSparseGraph();
         ArrayList<Object> a = new ArrayList();
-        
+
         for (int i = 0; i < n_clusters; i++) {
             Graph temp = new WattsBetaSmallWorldGenerator(graph_factory, vertex_factory, edge_factory, numNodes / n_clusters, beta, 2, true).generateGraph();
             for(Object v: temp.getVertices()){
@@ -94,16 +94,21 @@ public class CommunityCircleNetworkGenerator<V, E> extends Lattice2DGenerator {
             for (Object e : temp.getEdges()) {
                 c.addEdge(e, temp.getEndpoints(e));
             }
+            
+            
             int k = Math.abs(random.nextInt() % numNodes/n_clusters);
             a.add(temp.getVertices().toArray()[k]);
             
+            k = Math.abs(random.nextInt() % numNodes/n_clusters);
+            a.add(temp.getVertices().toArray()[k]);
         }
+        
         System.out.println("a" + a);
-        for(int i = 0; i < n_clusters-1; i++){
+        for(int i = 1; i < a.size()-2; i++){
             //int k = Math.abs(random.nextInt() % numNodes/n_clusters);
             c.addEdge(edge_factory.create(), a.get(i), a.get(i+1));
         }
-        c.addEdge(edge_factory.create(), a.get(0), a.get(n_clusters-1));
+        c.addEdge(edge_factory.create(), a.get(0), a.get(a.size()-1));
 
         return c;
     }

@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 import unalcol.agents.NetworkSim.util.CommunityCircleNetworkGenerator;
 import unalcol.agents.NetworkSim.util.CommunityNetworkGenerator;
+import unalcol.agents.NetworkSim.util.HubAndSpokeGraphGenerator;
 import unalcol.agents.NetworkSim.util.LineGraphGenerator;
 import unalcol.agents.NetworkSim.util.WattsBetaSmallWorldGenerator;
 
@@ -85,6 +86,9 @@ public class graphSimpleFactorySave {
                 break;
             case "line":
                 g = new LineGraphGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.vertexNumber, false).generateGraph();
+                break;
+            case "hubandspoke":
+                g = new HubAndSpokeGraphGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.vertexNumber, false).generateGraph();
                 break;
             case "circle":
                 g = new LineGraphGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.vertexNumber, true).generateGraph();
