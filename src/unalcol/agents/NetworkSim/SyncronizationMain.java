@@ -124,7 +124,7 @@ public class SyncronizationMain {
                     maxIter = Integer.valueOf(args[6]);
                 }
             }
-                        
+
             if (graphMode.equals("hubandspoke")) {
                 vertexNumber = Integer.valueOf(args[1]);
                 popSize = Integer.valueOf(args[2]);
@@ -135,6 +135,20 @@ public class SyncronizationMain {
                 }
                 if (args.length > 6) {
                     maxIter = Integer.valueOf(args[6]);
+                }
+            }
+
+            if (graphMode.equals("foresthubandspoke")) {
+                vertexNumber = Integer.valueOf(args[1]);
+                clusters = Integer.valueOf(args[2]);
+                popSize = Integer.valueOf(args[3]);
+                pf = Float.valueOf(String.valueOf(args[4]));
+                motionAlg = args[5];
+                if (args.length > 5) {
+                    filenameLoc = args[6];
+                }
+                if (args.length > 6) {
+                    maxIter = Integer.valueOf(args[7]);
                 }
             }
 

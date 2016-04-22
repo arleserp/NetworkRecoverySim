@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Set;
 import unalcol.agents.NetworkSim.util.CommunityCircleNetworkGenerator;
 import unalcol.agents.NetworkSim.util.CommunityNetworkGenerator;
+import unalcol.agents.NetworkSim.util.ForestHubAnsSpokeGenerator;
 import unalcol.agents.NetworkSim.util.GraphSerialization;
 import unalcol.agents.NetworkSim.util.HubAndSpokeGraphGenerator;
 import unalcol.agents.NetworkSim.util.LineGraphGenerator;
@@ -65,6 +66,9 @@ public class graphSimpleFactory {
                 break;
             case "hubandspoke":
                 g = new HubAndSpokeGraphGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, false).generateGraph();
+                break;
+            case "foresthubandspoke":
+                g = new ForestHubAnsSpokeGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, SyncronizationMain.clusters, false).generateGraph();
                 break;
             case "circle":
                 g = new LineGraphGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, true).generateGraph();
