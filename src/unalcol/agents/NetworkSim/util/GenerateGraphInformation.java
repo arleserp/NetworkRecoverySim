@@ -76,6 +76,7 @@ import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -127,11 +128,16 @@ public class GenerateGraphInformation extends ApplicationFrame {
      */
     private static final LogContext LOGGER = Log.createContext(GenerateGraphInformation.class);
 
-    
     private static void drawHistogramDegree(HashMap<Object, Integer> map, String name) {
         DefaultCategoryDataset defaultcategorydataset = new DefaultCategoryDataset();
-        for (Object o : map.keySet()) {
-            defaultcategorydataset.addValue(map.get(o), "", ((GraphElements.MyVertex) o).toString());
+        Collection<Integer> c = map.values();
+        List<Integer> list = new ArrayList<Integer>(c);
+
+        Collections.sort(list);
+        int j = 0;
+        for (Integer i : list) {
+            defaultcategorydataset.addValue(i, "", String.valueOf(j));
+            j++;
         }
         JFreeChart jfreechart = ChartFactory.createBarChart("Degree " + name, "", "", defaultcategorydataset, PlotOrientation.VERTICAL, true, true, false);
         jfreechart.getTitle().setFont(new Font("Sans-Serif", Font.PLAIN, 18));
@@ -187,9 +193,20 @@ public class GenerateGraphInformation extends ApplicationFrame {
 
     private static void drawHistogramRank(HashMap<Object, Double> map, String name) {
         DefaultCategoryDataset defaultcategorydataset = new DefaultCategoryDataset();
-        for (Object o : map.keySet()) {
-            defaultcategorydataset.addValue(map.get(o), "", ((GraphElements.MyVertex) o).toString());
+
+        Collection<Double> c = map.values();
+        List<Double> list = new ArrayList<Double>(c);
+
+        Collections.sort(list);
+        int j = 0;
+        for (Double i : list) {
+            defaultcategorydataset.addValue(i, "", String.valueOf(j));
+            j++;
         }
+
+        /*for (Object o : map.keySet()) {
+            defaultcategorydataset.addValue(map.get(o), "", ((GraphElements.MyVertex) o).toString());
+        }*/
         JFreeChart jfreechart = ChartFactory.createBarChart("BetweenessCentrality " + name, "", "", defaultcategorydataset, PlotOrientation.VERTICAL, true, true, false);
         jfreechart.getTitle().setFont(new Font("Sans-Serif", Font.PLAIN, 18));
         jfreechart.setBackgroundPaint(new Color(221, 223, 238));
@@ -218,7 +235,7 @@ public class GenerateGraphInformation extends ApplicationFrame {
         CategoryItemRenderer categoryitemrenderer = categoryplot.getRenderer();
         categoryitemrenderer.setBaseItemLabelsVisible(true);
         //categoryitemrenderer.setBaseItemLabelGenerator(new LabelGenerator(null));
-        numberaxis.setRange(0, 1);
+        //numberaxis.setRange(0, 1);
         //numberaxis.setNumberFormatOverride(NumberFormat.getPercentInstance());
 
         Font font = new Font("SansSerif", Font.ROMAN_BASELINE, 12);
@@ -665,7 +682,6 @@ public class GenerateGraphInformation extends ApplicationFrame {
                     escribir.println("Average degree: " + GraphStats.averageDegree(g));
                     escribir.println("StdDev Average Path Length: " + GraphStats.computeStdDevAveragePathLength(g));
                     escribir.println("StdDev Degree: " + GraphStats.StdDevDegree(g));
-
                     BetweennessCentrality ranker = new BetweennessCentrality(g);
 
                     ranker.step();
@@ -674,14 +690,19 @@ public class GenerateGraphInformation extends ApplicationFrame {
                     //System.out.println("Rank" + ranker.toString());
                     //ranker.printRankings(true, true);
                     HashMap<Object, Double> map = new HashMap();
-                    escribir.println("********************Ranker******************************");
+                    //escribir.println("********************Ranker******************************");
                     for (Object v : g.getVertices()) {
                         Double rank = ranker.getVertexRankScore(v);
                         Double normalized = (Double) rank / ((g.getEdgeCount() - 1) * (g.getEdgeCount() - 2) / 2);
                         map.put(v, normalized);
-                        escribir.println(v + "- rank: " + rank + ", norm: " + normalized);
+                        //escribir.println(v + "- rank: " + rank + ", norm: " + normalized);
                         // System.out.println("Score for " + v + " = " + ranker.getVertexRankScore(v)); 
                     }
+                    Collection<Double> c = map.values();
+                    List<Double> list = new ArrayList<Double>(c);
+                    Collections.sort(list);
+                    StatisticsNormalDist st = new StatisticsNormalDist((ArrayList<Double>) list, list.size());
+                    escribir.println("skew Betweeness centrality: " +  st.getSkewness());
                     drawHistogramRank(map, file.getName());
 
                     HashMap<Object, Integer> mapdegree = new HashMap();

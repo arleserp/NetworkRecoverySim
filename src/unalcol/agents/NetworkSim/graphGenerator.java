@@ -76,7 +76,7 @@ public class graphGenerator {
             if (graphMode.equals("foresthubandspoke")) {
                 vertexNumber = Integer.valueOf(args[1]);
                 clusters = Integer.valueOf(args[2]);
-                filename += "+v+" + vertexNumber;
+                filename += "+v+" + vertexNumber + "+clusters+" + clusters;
             }
 
             if (graphMode.equals("circle")) {

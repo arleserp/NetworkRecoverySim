@@ -48,6 +48,8 @@ package unalcol.agents.NetworkSim.util;
  *               into the demo (DG);
  *
  */
+import edu.uci.ics.jung.algorithms.importance.BetweennessCentrality;
+import edu.uci.ics.jung.graph.Graph;
 import java.awt.Font;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -55,6 +57,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -81,6 +84,7 @@ import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.util.Log;
 import org.jfree.util.LogContext;
+import unalcol.agents.NetworkSim.GraphElements;
 
 /**
  * Demonstration of a box-and-whisker chart using a {@link CategoryPlot}.
@@ -99,20 +103,38 @@ public class BoxPlotRoundNumberSort extends ApplicationFrame {
         public int compare(String f1, String f2) {
             String[] filename1 = f1.split(Pattern.quote("+"));
             String[] filename2 = f2.split(Pattern.quote("+"));
-            String mode1 = filename1[6];
-            String graphtype1 = filename1[13];
 
-            String mode2 = filename2[6];
-            String graphtype2 = filename2[13];
+            if (sortCriteria.equals("alg") || sortCriteria.equals("topology")) {
+                String mode1 = filename1[6];
+                String graphtype1 = filename1[13];
 
-            String graphtypeParam1 = graphtype1 + f1.split(graphtype1)[1];
-            String graphtypeParam2 = graphtype2 + f2.split(graphtype2)[1];
+                String mode2 = filename2[6];
+                String graphtype2 = filename2[13];
 
-            if (sortCriteria.equals("alg")) {
-                return mode1.compareTo(mode2);
-            }
-            if (sortCriteria.equals("topology")) {
-                return graphtypeParam1.compareTo(graphtypeParam2);
+                String graphtypeParam1 = graphtype1 + f1.split(graphtype1)[1];
+                String graphtypeParam2 = graphtype2 + f2.split(graphtype2)[1];
+
+                if (sortCriteria.equals("alg")) {
+                    return mode1.compareTo(mode2);
+                }
+                if (sortCriteria.equals("topology")) {
+                    return graphtypeParam1.compareTo(graphtypeParam2);
+                }
+
+                return 0;
+            } else if (sortCriteria.equals("skew")) {
+                String graphtype1 = filename1[13];
+
+                double v1 = Double.valueOf(f1.split("+")[1]);
+                double v2 = Double.valueOf(f2.split("+")[1]);
+
+                if (v1 == v2) {
+                    return 0;
+                } else if (v1 > v2) {
+                    return 1;
+                } else {
+                    return -1;
+                }
             }
             return 0;
         }
@@ -141,12 +163,12 @@ public class BoxPlotRoundNumberSort extends ApplicationFrame {
         renderer.setToolTipGenerator(new BoxAndWhiskerToolTipGenerator());
         final CategoryPlot plot = new CategoryPlot(dataset, xAxis, yAxis, renderer);
 
-        Font font = new Font("Dialog", Font.PLAIN, 14);
+        Font font = new Font("Dialog", Font.PLAIN, 10);
         xAxis.setTickLabelFont(font);
         yAxis.setTickLabelFont(font);
         yAxis.setLabelFont(font);
-        xAxis.setMaximumCategoryLabelLines(4);
-        xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+        xAxis.setMaximumCategoryLabelLines(5);
+        xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
 
         final JFreeChart chart = new JFreeChart(
                 "Round Number" + getTitle(pf),
@@ -306,16 +328,68 @@ public class BoxPlotRoundNumberSort extends ApplicationFrame {
             String fn2 = filenametmp[1].replace(".graph.csv", "");
             if (Pf.contains(pf)) {
                 /*pf == 1.0E-4 || pf == 3.0E-4*/
+
+                String graphfile = graphtype + fn2 + ".graph";
+                Graph<GraphElements.MyVertex, String> g = GraphSerialization.loadDeserializeGraph(graphfile);
+                double skew = getSkewness(g);
+                double kurtosis = getKurtosis(g);
+
                 if (Pf.size() == 1) {
-                    dataset.add(list, popsize, getTechniqueName(mode) + graphtype + fn2);
+                    dataset.add(list, popsize, getTechniqueName(mode) + graphtype + fn2 + "+sk+" + skew + "+k+" + kurtosis);
                 } else {
-                    dataset.add(list, String.valueOf(popsize) + "-" + pf, getTechniqueName(mode) + "+" + graphtype + fn2);
+                    dataset.add(list, String.valueOf(popsize) + "-" + pf, getTechniqueName(mode) + "+" + graphtype + fn2 + "+sk+" + skew + "+k" + getKurtosis(g));
                 }
             }
             //}
         }
 
         return dataset;
+    }
+
+    public Double getSkewness(Graph g) {
+        BetweennessCentrality ranker = new BetweennessCentrality(g);
+        ranker.step();
+        ranker.setRemoveRankScoresOnFinalize(false);
+        ranker.evaluate();
+        //System.out.println("Rank" + ranker.toString());
+        //ranker.printRankings(true, true);
+        HashMap<Object, Double> map = new HashMap();
+        //escribir.println("********************Ranker******************************");
+        for (Object v : g.getVertices()) {
+            Double rank = ranker.getVertexRankScore(v);
+            Double normalized = (Double) rank / ((g.getEdgeCount() - 1) * (g.getEdgeCount() - 2) / 2);
+            map.put(v, normalized);
+            //escribir.println(v + "- rank: " + rank + ", norm: " + normalized);
+            // System.out.println("Score for " + v + " = " + ranker.getVertexRankScore(v)); 
+        }
+        Collection<Double> c = map.values();
+        List<Double> list = new ArrayList<Double>(c);
+        Collections.sort(list);
+        StatisticsNormalDist st = new StatisticsNormalDist((ArrayList<Double>) list, list.size());
+        return st.getSkewness();
+    }
+
+    public Double getKurtosis(Graph g) {
+        BetweennessCentrality ranker = new BetweennessCentrality(g);
+        ranker.step();
+        ranker.setRemoveRankScoresOnFinalize(false);
+        ranker.evaluate();
+        //System.out.println("Rank" + ranker.toString());
+        //ranker.printRankings(true, true);
+        HashMap<Object, Double> map = new HashMap();
+        //escribir.println("********************Ranker******************************");
+        for (Object v : g.getVertices()) {
+            Double rank = ranker.getVertexRankScore(v);
+            Double normalized = (Double) rank / ((g.getEdgeCount() - 1) * (g.getEdgeCount() - 2) / 2);
+            map.put(v, normalized);
+            //escribir.println(v + "- rank: " + rank + ", norm: " + normalized);
+            // System.out.println("Score for " + v + " = " + ranker.getVertexRankScore(v)); 
+        }
+        Collection<Double> c = map.values();
+        List<Double> list = new ArrayList<Double>(c);
+        Collections.sort(list);
+        StatisticsNormalDist st = new StatisticsNormalDist((ArrayList<Double>) list, list.size());
+        return st.getKurtosis(0, list.size());
     }
 
     private static ArrayList<Double> getFailureProbs() {

@@ -6,8 +6,8 @@
 
 package unalcol.agents.NetworkSim.util;
 
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Collections;
 
 
 /**
@@ -50,19 +50,18 @@ public class StatisticsNormalDist {
         return Math.sqrt(temp/(getSize()-1));
     }
 
-    public double median() 
+    public double getMedian() 
     {
-       double[] b = new double[getData().size()];
-       System.arraycopy(getData(), 0, b, 0, b.length);
-       Arrays.sort(b);
-
+       Collections.sort(data);
        if (getData().size() % 2 == 0) 
        {
-          return (b[(b.length / 2) - 1] + b[b.length / 2]) / 2.0;
+          Double a = data.get((data.size() / 2) - 1);
+          Double b = data.get(data.size() / 2); 
+          return  (a+b)/2 ;
        } 
        else 
        {
-          return b[b.length / 2];
+          return data.get(size/2);
        }
     }
 
@@ -93,4 +92,41 @@ public class StatisticsNormalDist {
     public void setSize(int size) {
         this.size = size;
     }
+    
+    public Double getSkewness(){
+        return 3.0*(getMean()- getMedian())/getStdDev();
+    }
+    
+    
+    public Double getKurtosis(final int begin, final int length)
+    {
+        // Initialize the kurtosis
+        double kurt = Double.NaN;
+        //if (test(values, begin, length) && length > 3) {
+        if (length > 3) {
+            // Compute the mean and standard deviation
+            double mean = getMean();
+            double stdDev = getStdDev();
+            // Sum the ^4 of the distance from the mean divided by the
+            // standard deviation
+            double accum3 = 0.0;
+
+            for (int i = begin; i < begin + length; i++) {
+                accum3 += Math.pow(data.get(i) - mean, 4.0);
+            }
+            accum3 /= Math.pow(stdDev, 4.0d);
+
+            // Get N
+            double n0 = length;
+            double coefficientOne =
+                (n0 * (n0 + 1)) / ((n0 - 1) * (n0 - 2) * (n0 - 3));
+            double termTwo =
+                (3 * Math.pow(n0 - 1, 2.0)) / ((n0 - 2) * (n0 - 3));
+
+            // Calculate kurtosis
+            kurt = (coefficientOne * accum3) - termTwo;
+        }
+        return kurt;
+    }
+    
 }
