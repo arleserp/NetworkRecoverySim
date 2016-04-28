@@ -51,9 +51,11 @@ package unalcol.agents.NetworkSim.util;
 import edu.uci.ics.jung.algorithms.importance.BetweennessCentrality;
 import edu.uci.ics.jung.graph.Graph;
 import java.awt.Font;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
@@ -65,6 +67,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -233,7 +236,7 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
         double sumMaximum = 0;
         HashMap<String, Double> hmkurt = new HashMap();
         HashMap<String, Double> hmMax = new HashMap();
-        
+
         final DefaultBoxAndWhiskerCategoryDataset dataset
                 = new DefaultBoxAndWhiskerCategoryDataset();
 
@@ -354,26 +357,41 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
                 listNames.add(series);
             }
         }
-        
+
         List<String> ListNames2 = new ArrayList<>();
         HashMap<String, List> ln2val = new HashMap<>();
+        HashMap<String, Double> ln2kurt = new HashMap<>();
+        HashMap<String, Double> ln2max = new HashMap<>();
         
         for (String t : listNames) {
             System.out.println("sum" + sumKurtosis);
             System.out.println("sum" + sumMaximum);
-            
-            Double val = ((hmkurt.get(t)/sumKurtosis)*0.4 + (hmMax.get(t)/sumMaximum)*0.6);
-            
+
+            Double val = ((hmkurt.get(t) / sumKurtosis) * 0.4 + (hmMax.get(t) / sumMaximum) * 0.6);
+
             String tmo = "coef+" + formatter.format(val) + "+" + t;
             ListNames2.add(tmo);
             ln2val.put(tmo, hmp.get(t));
+            ln2kurt.put(tmo,hmkurt.get(t));
+            ln2max.put(tmo, hmMax.get(t));
         }
-        
+
         Collections.sort(ListNames2, new CustomComparator());
 
+        PrintWriter escribir2 = null;
+        try {
+            escribir2 = new PrintWriter(new BufferedWriter(new FileWriter("test_regresion.csv", true)));
+        } catch (IOException ex) {
+            Logger.getLogger(BoxPlotRoundNumberSortKurt.class.getName()).log(Level.SEVERE, null, ex);
+        }
         for (String x : ListNames2) {
             dataset.add(ln2val.get(x), "", x);
+            StatisticsNormalDist st = new StatisticsNormalDist(new ArrayList<Double>(ln2val.get(x)), ln2val.get(x).size());
+            escribir2.println(ln2kurt.get(x)+";"+ln2max.get(x)+";"+st.getMedian());
         }
+        escribir2.close();
+
+        //
         return dataset;
     }
 
