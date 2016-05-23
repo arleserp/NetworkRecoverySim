@@ -51,9 +51,11 @@ package unalcol.agents.NetworkSim.util;
 import edu.uci.ics.jung.algorithms.importance.BetweennessCentrality;
 import edu.uci.ics.jung.graph.Graph;
 import java.awt.Font;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
@@ -233,7 +235,7 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
         double sumMaximum = 0;
         HashMap<String, Double> hmkurt = new HashMap();
         HashMap<String, Double> hmMax = new HashMap();
-        
+
         final DefaultBoxAndWhiskerCategoryDataset dataset
                 = new DefaultBoxAndWhiskerCategoryDataset();
 
@@ -352,23 +354,26 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
                 hmkurt.put(series, kurtosis);
                 hmMax.put(series, getMaxSkewness(g));
                 listNames.add(series);
+                if (mode.equals("carriers")) {
+                    WriteStatsBetweeness(g, list, "all.statbw");
+                }
             }
         }
-        
+
         List<String> ListNames2 = new ArrayList<>();
         HashMap<String, List> ln2val = new HashMap<>();
-        
+
         for (String t : listNames) {
             System.out.println("sum" + sumKurtosis);
             System.out.println("sum" + sumMaximum);
-            
-            Double val = ((hmkurt.get(t)/sumKurtosis)*0.4 + (hmMax.get(t)/sumMaximum)*0.6);
-            
+
+            Double val = ((hmkurt.get(t) / sumKurtosis) * 0.4 + (hmMax.get(t) / sumMaximum) * 0.6);
+
             String tmo = "coef+" + formatter.format(val) + "+" + t;
             ListNames2.add(tmo);
             ln2val.put(tmo, hmp.get(t));
         }
-        
+
         Collections.sort(ListNames2, new CustomComparator());
 
         for (String x : ListNames2) {
@@ -419,6 +424,39 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
         Collection<Double> c = map.values();
         List<Double> list = new ArrayList<Double>(c);
         return Collections.max(list);
+    }
+
+    public Double WriteStatsBetweeness(Graph g, List<Double> listround, String filename) {
+        BetweennessCentrality ranker = new BetweennessCentrality(g);
+        ranker.step();
+        ranker.setRemoveRankScoresOnFinalize(false);
+        ranker.evaluate();
+        //System.out.println("Rank" + ranker.toString());
+        //ranker.printRankings(true, true);
+        HashMap<Object, Double> map = new HashMap();
+        //escribir.println("********************Ranker******************************");
+        for (Object v : g.getVertices()) {
+            Double rank = ranker.getVertexRankScore(v);
+            Double normalized = (Double) rank / ((g.getEdgeCount() - 1) * (g.getEdgeCount() - 2) / 2);
+            map.put(v, normalized);
+            //escribir.println(v + "- rank: " + rank + ", norm: " + normalized);
+            // System.out.println("Score for " + v + " = " + ranker.getVertexRankScore(v)); 
+        }
+        Collection<Double> c = map.values();
+        List<Double> list = new ArrayList<Double>(c);
+        StatisticsNormalDist st = new StatisticsNormalDist(new ArrayList(list), list.size());
+        StatisticsNormalDist st2 = new StatisticsNormalDist(new ArrayList(listround), listround.size());
+
+        PrintWriter escribir;
+        try {
+            escribir = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)));
+            escribir.println(st.getMedian() + "," + st.getStdDev() + "," + st2.getMedian());
+            escribir.close();
+
+        } catch (IOException ex) {
+            Logger.getLogger(BoxPlotRoundNumberSortKurt.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return st.getMedian();
     }
 
     public Double getKurtosis(Graph g) {

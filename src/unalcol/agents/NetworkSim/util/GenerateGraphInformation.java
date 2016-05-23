@@ -63,6 +63,7 @@ import java.awt.Font;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -671,6 +672,7 @@ public class GenerateGraphInformation extends ApplicationFrame {
                 }
                 System.out.println("graph" + g.toString());
                 String graphStats = file.getName().replace("graph", "graphstats");
+                String rankingsFile = file.getName().replace("graph", "ranking");
 
                 try {
                     PrintWriter escribir;
@@ -682,8 +684,11 @@ public class GenerateGraphInformation extends ApplicationFrame {
                     escribir.println("Average degree: " + GraphStats.averageDegree(g));
                     escribir.println("StdDev Average Path Length: " + GraphStats.computeStdDevAveragePathLength(g));
                     escribir.println("StdDev Degree: " + GraphStats.StdDevDegree(g));
+                    
+                    PrintWriter escribir2 = new PrintWriter(new BufferedWriter(new FileWriter(rankingsFile, true)));
+                    PrintWriter escribir3;
+                    
                     BetweennessCentrality ranker = new BetweennessCentrality(g);
-
                     ranker.step();
                     ranker.setRemoveRankScoresOnFinalize(false);
                     ranker.evaluate();
@@ -691,10 +696,12 @@ public class GenerateGraphInformation extends ApplicationFrame {
                     //ranker.printRankings(true, true);
                     HashMap<Object, Double> map = new HashMap();
                     //escribir.println("********************Ranker******************************");
+
                     for (Object v : g.getVertices()) {
                         Double rank = ranker.getVertexRankScore(v);
                         Double normalized = (Double) rank / ((g.getEdgeCount() - 1) * (g.getEdgeCount() - 2) / 2);
                         map.put(v, normalized);
+                        escribir2.println(normalized);
                         //escribir.println(v + "- rank: " + rank + ", norm: " + normalized);
                         // System.out.println("Score for " + v + " = " + ranker.getVertexRankScore(v)); 
                     }
@@ -712,6 +719,7 @@ public class GenerateGraphInformation extends ApplicationFrame {
                     }
                     drawHistogramDegree(mapdegree, file.getName());
                     escribir.close();
+                    escribir2.close();
 
                 } catch (IOException ex) {
                     Logger.getLogger(StatisticsProvider.class
