@@ -49,6 +49,7 @@ package unalcol.agents.NetworkSim.util;
  *
  */
 import edu.uci.ics.jung.algorithms.importance.BetweennessCentrality;
+import edu.uci.ics.jung.algorithms.shortestpath.DistanceStatistics;
 import edu.uci.ics.jung.graph.Graph;
 import java.awt.Font;
 import java.io.BufferedWriter;
@@ -102,6 +103,14 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
     private static String sortCriteria; //alg|topology
 
     NumberFormat formatter = new DecimalFormat("#0.0000");
+
+    private List<Double> calculateLog(List<Double> listround) {
+        List<Double> roundlog = new ArrayList<Double>();
+        for (Double d : listround) {
+            roundlog.add(Math.log(d));
+        }
+        return roundlog;
+    }
 
     public class CustomComparator implements Comparator<String> {
 
@@ -354,9 +363,7 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
                 hmkurt.put(series, kurtosis);
                 hmMax.put(series, getMaxSkewness(g));
                 listNames.add(series);
-                if (mode.equals("carriers")) {
-                    WriteStatsBetweeness(g, list, "all.statbw");
-                }
+                WriteStatsBetweeness(g, list, mode + "all.statbw");
             }
         }
 
@@ -442,17 +449,19 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
             //escribir.println(v + "- rank: " + rank + ", norm: " + normalized);
             // System.out.println("Score for " + v + " = " + ranker.getVertexRankScore(v)); 
         }
-        Collection<Double> c = map.values();
-        List<Double> list = new ArrayList<Double>(c);
-        StatisticsNormalDist st = new StatisticsNormalDist(new ArrayList(list), list.size());
-        StatisticsNormalDist st2 = new StatisticsNormalDist(new ArrayList(listround), listround.size());
 
+        List<Double> loground = calculateLog(listround);
+
+        Collection<Double> c = map.values();
+        List<Double> listbwvalues = new ArrayList<Double>(c);
+        StatisticsNormalDist st = new StatisticsNormalDist(new ArrayList(listbwvalues), listbwvalues.size());
+        StatisticsNormalDist st2 = new StatisticsNormalDist(new ArrayList(listround), listround.size());
+        StatisticsNormalDist st3 = new StatisticsNormalDist(new ArrayList(loground), loground.size());
         PrintWriter escribir;
         try {
             escribir = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)));
-            escribir.println(st.getMedian() + "," + st.getStdDev() + "," + st2.getMedian());
+            escribir.println(st.getMedian() + "," + st.getStdDev() + "," + st2.getMedian() + "," + st3.getMedian()  + "," + DistanceStatistics.diameter(g));
             escribir.close();
-
         } catch (IOException ex) {
             Logger.getLogger(BoxPlotRoundNumberSortKurt.class.getName()).log(Level.SEVERE, null, ex);
         }
