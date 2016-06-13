@@ -18,6 +18,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
@@ -39,6 +40,7 @@ public class GraphVisualizationObserver implements Observer {
     BasicVisualizationServer<GraphElements.MyVertex, String> vv = null;
     boolean added = false;
     boolean isUpdating;
+    HashMap<Integer, Double> globalInfo = new HashMap();
 
     public GraphVisualizationObserver() {
         frame = new JFrame("Simple Graph View");
@@ -119,9 +121,13 @@ public class GraphVisualizationObserver implements Observer {
                 frame.repaint();
             }
 
-            
-            if ((SyncronizationMain.maxIter == -1 && n.getIdBest() != -1) || (SyncronizationMain.maxIter >= 0 && n.getAge() >= SyncronizationMain.maxIter)) {
+            //System.out.println("World age" + n.getAge() + ", info:" + n.getAmountGlobalInfo());
+            if(!globalInfo.containsKey(n.getAge())){
+                globalInfo.put(n.getAge(), n.getAmountGlobalInfo());
+            }
+            if ((SyncronizationMain.maxIter == -1 && n.getIdBest() != -1) || (SyncronizationMain.maxIter >= 0 && n.getAge() >= SyncronizationMain.maxIter) || n.getAgentsDie() == (n.getAgents().size())) {
                 //StatsTemperaturesMapImpl sti = new StatsTemperaturesMapImpl("experiment-p-" + ((World) obs).getAgents().size() + "- pf-" + pf + ".csv");
+                
                 if (!isUpdating) {
                     isUpdating = true;
                     n.stop();
@@ -156,6 +162,7 @@ public class GraphVisualizationObserver implements Observer {
 
                     sti = new StatisticsProvider(filename);
                     sti.printStatistics(n);
+                    System.out.println("keys" + globalInfo);
                     System.out.println("The end" + n.getAge());
                     System.exit(0);
                 }

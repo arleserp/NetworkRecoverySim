@@ -24,6 +24,7 @@ public class PheromoneSynchronizationProgram implements AgentProgram {
 
     public PheromoneSynchronizationProgram(float pf) {
         this.pf = pf;
+        System.out.println("pf: " + pf);
     }
 
     @Override
@@ -31,8 +32,12 @@ public class PheromoneSynchronizationProgram implements AgentProgram {
         ActionParameters act = new ActionParameters("move");
         int pos;
 
+        if (Math.random() < pf) {
+            return new ActionParameters("die");
+        }
+
         Collection<GraphElements.MyVertex> vs = (Collection<GraphElements.MyVertex>) p.getAttribute("neighbors");
-        pos = (int)carry(vs);
+        pos = (int) carry(vs);
         act.setAttribute("location", vs.toArray()[pos]);
         /* If termite has a message then react to this message */
         return act;
@@ -91,7 +96,7 @@ public class PheromoneSynchronizationProgram implements AgentProgram {
             }
             //dirPos = LevyWalk(proximitySensor, termitesNeighbor);
             //if (!temp.contains(dirPos)) {
-            
+
             dirPos = temp.get(RandomUtil.nextInt(temp.size()));
             //}
         } else {
@@ -103,7 +108,7 @@ public class PheromoneSynchronizationProgram implements AgentProgram {
             dirPos = Roulette(phinv);
             //dirPos = LevyWalk(proximitySensor, termitesNeighbor);
         }
-        
+
         return dirPos;
     }
 

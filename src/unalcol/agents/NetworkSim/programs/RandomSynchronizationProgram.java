@@ -22,12 +22,18 @@ public class RandomSynchronizationProgram implements AgentProgram {
     
     public RandomSynchronizationProgram(float pf) {
         this.pf = pf;
+         System.out.println("pf: " + pf);
     }
 
     @Override
     public Action compute(Percept p) {
+       
         ActionParameters act = new ActionParameters("move");
         int pos;
+        
+        if(Math.random() < pf){
+            return new ActionParameters("die");
+        }
         
         Collection <GraphElements.MyVertex> vs = (Collection <GraphElements.MyVertex>)p.getAttribute("neighbors");
         pos = (int) (Math.random() * vs.size());

@@ -1,6 +1,5 @@
 package unalcol.agents.NetworkSim.environment;
 
-
 import unalcol.agents.simulate.util.*;
 import unalcol.agents.*;
 
@@ -25,6 +24,7 @@ public class NetworkEnvironmentPheromone extends NetworkEnvironment {
         ActionParameters ac = (ActionParameters) action;
         //System.out.println("cn" + currentNode);
         currentNode = a.getLocation();
+        
         visitedNodes.add(currentNode);
 
         getLocationAgents().set(a.getId(), a.getLocation());
@@ -99,6 +99,15 @@ public class NetworkEnvironmentPheromone extends NetworkEnvironment {
                         updateWorldAge();
                     }
                     break;
+                case 1: //die
+                    System.out.println("Agent " + a.getId() + "has failed");
+                    a.die();
+                    increaseAgentsDie();
+                    getLocationAgents().set(a.getId(), null);
+                    a.setLocation(null);
+                    setChanged();
+                    notifyObservers();
+                    return false;
                 default:
                     msg = "[Unknown action " + act
                             + ". Action not executed]";
@@ -113,7 +122,6 @@ public class NetworkEnvironmentPheromone extends NetworkEnvironment {
         return flag;
     }
 
-    
     public void evaporatePheromone() {
         for (GraphElements.MyVertex v : topology.getVertices()) {
             //System.out.println(v.toString() + "before:" + v.getPh());

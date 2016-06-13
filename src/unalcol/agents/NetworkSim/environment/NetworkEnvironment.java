@@ -8,12 +8,13 @@ import unalcol.agents.simulate.*;
 
 import java.util.Vector;
 
-
 import edu.uci.ics.jung.graph.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import unalcol.agents.NetworkSim.ActionParameters;
 import unalcol.agents.NetworkSim.GraphElements;
@@ -29,13 +30,15 @@ public class NetworkEnvironment extends Environment {
     GraphElements.MyVertex currentNode = null;
     String currentEdge = null;
     String lastactionlog;
-    public ArrayList<GraphElements.MyVertex> visitedNodes = new ArrayList();
+    public List<GraphElements.MyVertex> visitedNodes = Collections.synchronizedList(new ArrayList());
+    ;
     public ArrayList<GraphElements.MyVertex> locationAgents = null;
     HashMap<Integer, ConcurrentLinkedQueue> mbuffer;
     private int roundComplete = -1;
     private int idBest = -1;
     private boolean finished = false;
     private int age;
+    public static int agentsDie = 0;
 
     /**
      * @return the idBest
@@ -125,6 +128,14 @@ public class NetworkEnvironment extends Environment {
                         updateWorldAge();
                     }
                     break;
+                case 1: //die
+                    a.die();
+                    a.setLocation(null);
+                    getLocationAgents().set(a.getId(), null);
+                    increaseAgentsDie();
+                    setChanged();
+                    notifyObservers();
+                    return false;
                 default:
                     msg = "[Unknown action " + act
                             + ". Action not executed]";
@@ -191,6 +202,32 @@ public class NetworkEnvironment extends Environment {
         return acts;
     }
 
+    /* @param agentsDie set the number of agents with failures
+     */
+    public void setAgentsDie(int agentsDie) {
+        NetworkEnvironment.agentsDie = agentsDie;
+    }
+
+    /**
+     * increases the number of agents with failures
+     */
+    public void increaseAgentsDie() {
+        synchronized (NetworkEnvironment.class) {
+            NetworkEnvironment.agentsDie++;
+        }
+    }
+
+    /**
+     * increases the number of agents with failures
+     *
+     * @return number of agents with failures
+     */
+    public int getAgentsDie() {
+        synchronized (NetworkEnvironment.class) {
+            return agentsDie;
+        }
+    }
+
     @Override
     public void init(Agent agent) {
         MobileAgent sim_agent = (MobileAgent) agent;
@@ -231,7 +268,7 @@ public class NetworkEnvironment extends Environment {
     /**
      * @return the visitedNodes
      */
-    public ArrayList<GraphElements.MyVertex> getVisitedNodes() {
+    public List<GraphElements.MyVertex> getVisitedNodes() {
         return visitedNodes;
     }
 
@@ -299,6 +336,66 @@ public class NetworkEnvironment extends Environment {
         this.finished = finished;
     }
 
+    /**
+     * Function used to calculate the intersection of all the information that
+     * agent have collected in a determined time.
+     * @return 
+     */
+    /* public void calculateGlobalInfo() {
+        if (!isCalculating) {
+            isCalculating = true;
+            for (int i = 0; i < width; i++) {
+                for (int j = 0; j < height; j++) {
+                    states[i][j].globalInfo = false;
+                }
+            }
+            for (int i = 0; i < width; i++) {
+                for (int j = 0; j < height; j++) {
+                    for (int k = 0; k < this.getAgents().size(); k++) {
+                        MobileAgent t = (MobileAgent)this.getAgent(k);
+                        if (t.status != Action.DIE) {
+                            String loc = i + "-" + j;
+                            if (((Hashtable) t.getAttribute("inf_i")).containsKey(loc)) {
+                                states[i][j].globalInfo = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            isCalculating = false;
+        } else {
+            System.out.println("entra!");
+        }
+    }
+    
+     */
+    public Double getAmountGlobalInfo() {
+        Double amountGlobalInfo = 0.0;
+        for (GraphElements.MyVertex v : topology.getVertices()) {
+            ArrayList<Object> vertex_info = new ArrayList<>(v.getData());
+            //System.out.println("copy" + copy);
+            Iterator<Object> it = vertex_info.iterator();
+            while (it.hasNext()) {
+                Object x = it.next();
+                if (x == null) {
+                    System.out.println("error 2!");
+                }
+                for (Agent m : this.getAgents()) {
+                    MobileAgent n = (MobileAgent) m;
+                    if (n.status != Action.DIE) {
+                        if (n.getData().contains(x)) {
+                            amountGlobalInfo++;
+                            break;
+                        }
+                    }
+                }
+            }
+
+        }
+        return amountGlobalInfo/topology.getVertexCount();
+    }
+
     public void updateWorldAge() {
         int average = 0;
         int agentslive = 0;
@@ -307,7 +404,6 @@ public class NetworkEnvironment extends Environment {
                 average += ((MobileAgent) this.getAgent(k)).getRound();
                 agentslive++;
             }
-
         }
         if (agentslive != 0) {
             average /= agentslive;

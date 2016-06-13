@@ -32,6 +32,8 @@ public class GraphCreator {
 
         int a = 0;
         Vector agentes = new Vector();
+        ArrayList<Double> allData = new ArrayList();
+        
         //would not be duplicated
 //        Language languaje;
 //        AgentProgram program;x
@@ -52,7 +54,11 @@ public class GraphCreator {
         public GraphElements.MyVertex create() {
             GraphElements.MyVertex v = new GraphElements.MyVertex("p"+a++);
             ArrayList Data = new ArrayList();
-            Data.add(Math.random());
+            Double rnd = Math.random();
+            while(!allData.contains(rnd)){
+                rnd = Math.random();
+            }
+            Data.add(rnd);
             v.setData(Data);
             return v;
         }

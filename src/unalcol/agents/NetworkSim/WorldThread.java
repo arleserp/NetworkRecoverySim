@@ -83,7 +83,7 @@ public class WorldThread implements Runnable {
         System.out.println("fp" + probFailure);
 
         String[] _percepts = {"data", "neighbors"};
-        String[] _actions = {"move"};
+        String[] _actions = {"move", "die"};
         SimpleLanguage languaje = new SimpleLanguage(_percepts, _actions);
 
         //report = new reportHealingProgram(population, probFailure, this);
