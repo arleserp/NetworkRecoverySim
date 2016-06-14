@@ -23,6 +23,14 @@ public class StatisticsNormalDist {
         size = s;
     }
     
+    public double getMin(){
+        return Collections.min(data);
+    }
+    
+    public double getMax(){
+        return Collections.max(data);
+    }
+    
     public double getMean()
     {
         double sum = 0.0;

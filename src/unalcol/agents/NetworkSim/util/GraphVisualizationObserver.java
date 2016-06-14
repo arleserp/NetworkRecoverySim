@@ -15,11 +15,13 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;
@@ -74,12 +76,12 @@ public class GraphVisualizationObserver implements Observer {
                 case "kleinberg":
                     layout = new CircleLayout<>(g);
                     break;
-               case "circle":
+                case "circle":
                     layout = new ISOMLayout<>(g);
-                    break; 
-               case "line":
+                    break;
+                case "line":
                     layout = new ISOMLayout<>(g);
-                    break;  
+                    break;
                 case "lattice":
                     layout = new ISOMLayout<>(g);
                     break;
@@ -122,12 +124,12 @@ public class GraphVisualizationObserver implements Observer {
             }
 
             //System.out.println("World age" + n.getAge() + ", info:" + n.getAmountGlobalInfo());
-            if(!globalInfo.containsKey(n.getAge())){
+            if (!globalInfo.containsKey(n.getAge())) {
                 globalInfo.put(n.getAge(), n.getAmountGlobalInfo());
             }
             if ((SyncronizationMain.maxIter == -1 && n.getIdBest() != -1) || (SyncronizationMain.maxIter >= 0 && n.getAge() >= SyncronizationMain.maxIter) || n.getAgentsDie() == (n.getAgents().size())) {
                 //StatsTemperaturesMapImpl sti = new StatsTemperaturesMapImpl("experiment-p-" + ((World) obs).getAgents().size() + "- pf-" + pf + ".csv");
-                
+
                 if (!isUpdating) {
                     isUpdating = true;
                     n.stop();
@@ -156,10 +158,27 @@ public class GraphVisualizationObserver implements Observer {
                         filename += "+col+" + SyncronizationMain.columns;
                     }
                     String fileImage = filename + ".jpg";
-                    
-                    filename += ".csv";
-                    
 
+                    String pref = filename;
+                    pref = pref.replaceAll(".graph", "");
+                    filename += ".csv";
+
+                    String dirName = pref + "+info";
+                    createDir(dirName);
+                    String infoStats = "./" + dirName + "/" + pref + "+" + getFileName() + "+infostats.csv";
+
+                    PrintWriter escribir = null;
+                    try {
+                        escribir = new PrintWriter(new BufferedWriter(new FileWriter(infoStats, true)));
+                    } catch (IOException ex) {
+                        Logger.getLogger(GraphVisualizationObserver.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                    for (int x : globalInfo.keySet()) {
+                        escribir.println(x + "," + globalInfo.get(x));
+                    }
+                    escribir.close();
+                    
                     sti = new StatisticsProvider(filename);
                     sti.printStatistics(n);
                     System.out.println("keys" + globalInfo);
@@ -170,5 +189,38 @@ public class GraphVisualizationObserver implements Observer {
         }
 
         // Transformer maps the vertex number to a vertex property
+    }
+
+    private String getFileName() {
+        Calendar c = new GregorianCalendar();
+        String dia, mes, annio, hora, minutos, segundos;
+        dia = Integer.toString(c.get(Calendar.DATE));
+        mes = Integer.toString(c.get(Calendar.MONTH) + 1);
+        annio = Integer.toString(c.get(Calendar.YEAR));
+        hora = Integer.toString(c.get(Calendar.HOUR_OF_DAY));
+        minutos = Integer.toString(c.get(Calendar.MINUTE));
+        segundos = Integer.toString((c.get(Calendar.SECOND)));
+        return annio + mes + dia + hora + minutos + segundos;
+    }
+
+    private void createDir(String filename) {
+        File theDir = new File(filename);
+
+        // if the directory does not exist, create it
+        if (!theDir.exists()) {
+            System.out.println("creating directory: " + filename);
+            boolean result = false;
+
+            try {
+                theDir.mkdir();
+                result = true;
+            } catch (SecurityException se) {
+                System.out.println("Security Exception!");
+            }
+            if (result) {
+                System.out.println("DIR created");
+            }
+        }
+
     }
 }
