@@ -62,8 +62,7 @@ public class InformationCollectedReport extends ApplicationFrame {
         Scanner sc = null;
         File f = new File(experimentsDir);
         File[] files = f.listFiles();
-        
-
+      
         for (File file : files) {
              if (file.isDirectory() && file.getName().endsWith("info")) {
                 System.out.println("new seriiiiieeeeeeeeeee" + file);
