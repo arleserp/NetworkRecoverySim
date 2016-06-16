@@ -6,7 +6,6 @@
 package unalcol.agents.NetworkSim.util;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Paint;
 import java.io.File;
@@ -29,6 +28,7 @@ import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.labels.AbstractCategoryItemLabelGenerator;
@@ -41,8 +41,6 @@ import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.ui.ApplicationFrame;
-import org.jfree.ui.RefineryUtilities;
-
 
 public class SuccessRatesReport extends ApplicationFrame {
 
@@ -113,9 +111,8 @@ public class SuccessRatesReport extends ApplicationFrame {
             if (i > p) {
                 extension = file.getName().substring(i + 1);
             }
-
             // System.out.println(file.getName() + "extension" + extension);
-            if (file.isFile() && extension.equals("csv") && file.getName().startsWith("experiment") && file.getName().contains(mazeMode)) {
+            if (file.isFile() && extension.equals("csv") && file.getName().startsWith("exp") && !file.getName().contains("gstats")) {
                 System.out.println(file.getName());
                 System.out.println("get: " + file.getName());
                 String[] filenamep = file.getName().split(Pattern.quote("+"));
@@ -207,7 +204,7 @@ public class SuccessRatesReport extends ApplicationFrame {
             }
 
             // System.out.println(file.getName() + "extension" + extension);
-            if (file.isFile() && extension.equals("csv") && file.getName().startsWith("experiment") && file.getName().contains(mazeMode)) {
+            if (file.isFile() && extension.equals("csv") && file.getName().startsWith("exp") && !file.getName().contains("gstats")) {
                 System.out.println(file.getName());
                 System.out.println("get: " + file.getName());
                 String[] filenamep = file.getName().split(Pattern.quote("+"));
@@ -217,22 +214,23 @@ public class SuccessRatesReport extends ApplicationFrame {
                 int popsize = Integer.valueOf(filenamep[2]);
                 double pf = Double.valueOf(filenamep[4]);
                 String mode = filenamep[6];
+                String graphtype = filenamep[13];
 
                 int maxIter = -1;
                 //if (!filenamep[8].isEmpty()) {
                 maxIter = Integer.valueOf(filenamep[8]);
                 //}
-
                 System.out.println("psize:" + popsize);
                 System.out.println("pf:" + pf);
                 System.out.println("mode:" + mode);
                 System.out.println("maxIter:" + maxIter);
+                System.out.println("Graph Type:" + graphtype);
 
                 //String[] aMode = {"random", "levywalk", "sandc", "sandclw"};
                 //String[] aMode = {"lwphclwevap", "lwsandc2", "lwsandc", "lwphevap2", "lwphevap"};
                 // String[] aMode = {"levywalk", "lwphevap", "hybrid"};
                 //String[] aMode = {"levywalk", "lwphevap", "hybrid", "hybrid3", "hybrid4", "sequential"};
-                if (isInMode(aMode, mode)) {
+                //if (isInMode(aMode, mode)) {
                     final List list = new ArrayList();
                     try {
                         sc = new Scanner(file);
@@ -255,6 +253,9 @@ public class SuccessRatesReport extends ApplicationFrame {
                     ArrayList<Double> avRecv = new ArrayList<>();
                     ArrayList<Double> avIndExpl = new ArrayList<>();
 
+                    
+                    
+                    
                     String[] data = null;
                     while (sc.hasNext()) {
                         String line = sc.nextLine();
@@ -262,21 +263,21 @@ public class SuccessRatesReport extends ApplicationFrame {
                         data = line.split(",");
                         agentsCorrect = Integer.valueOf(data[0]);
                         //agentsIncorrect = Integer.valueOf(data[1]); // not used
-                        worldSize = Integer.valueOf(data[3]);
-                        averageExplored = Double.valueOf(data[4]);
+                        //worldSize = Integer.valueOf(data[3]);
+                        //averageExplored = Double.valueOf(data[4]);
                         // data[3] stdavgExplored - not used
-                        bestRoundNumber = Integer.valueOf(data[6]);
-                        avgSend = Double.valueOf(data[7]);
-                        avgRecv = Double.valueOf(data[8]);
-                        avgdataExplInd = Double.valueOf(data[11]);
+//                        bestRoundNumber = Integer.valueOf(data[6]);
+                        //avgSend = Double.valueOf(data[7]);
+                        //avgRecv = Double.valueOf(data[8]);
+                        //avgdataExplInd = Double.valueOf(data[11]);
 
                         //Add Data and generate statistics 
                         acSt.add((double) agentsCorrect);
-                        avgExp.add(averageExplored);
+                        //avgExp.add(averageExplored);
 
-                        avSnd.add(avgSend);
-                        avRecv.add(avgRecv);
-                        avIndExpl.add(avgdataExplInd);
+                        //avSnd.add(avgSend);
+                        //avRecv.add(avgRecv);
+                        //avIndExpl.add(avgdataExplInd);
 
                         sucessfulExp = 0.0;
                         for (int j = 0; j < acSt.size(); j++) {
@@ -284,15 +285,16 @@ public class SuccessRatesReport extends ApplicationFrame {
                                 sucessfulExp++;
                             }
                         }
-
                     }
                     if (Pf.contains(pf)) {
-                        defaultcategorydataset.addValue(((double) sucessfulExp) / acSt.size() * 100.0, "" + popsize, getTechniqueName(mode) + "\nPf:" + pf);
+                        String[] filenametmp = file.getName().split(Pattern.quote(graphtype));
+                        String fn2 = filenametmp[1].replace(".graph.csv", "");
+                        //graphtype + fn2
+                        defaultcategorydataset.addValue(((double) sucessfulExp) / acSt.size() * 100.0, graphtype + fn2, mode);
                         /*pf == 1.0E-4 || pf == 3.0E-4*/
                     }
-                }
+                //}
             }
-
         }
         return defaultcategorydataset;
     }
@@ -310,9 +312,20 @@ public class SuccessRatesReport extends ApplicationFrame {
         BarRenderer renderer = (BarRenderer) categoryplot.getRenderer();
         //categoryplot.setBackgroundPaint(new Color(221, 223, 238));
 
-        renderer.setSeriesPaint(0, new Color(130, 165, 70));
-        renderer.setSeriesPaint(1, new Color(220, 165, 70));
-        renderer.setSeriesPaint(4, new Color(255, 165, 70));
+
+       /* renderer.setSeriesPaint(0, Color.blue);
+        renderer.setSeriesPaint(1, Color.green);
+
+        renderer.setSeriesPaint(2, Color.cyan);
+        renderer.setSeriesPaint(3, Color.cyan);
+
+        renderer.setSeriesPaint(4, Color.green);
+        renderer.setSeriesPaint(5, Color.green);
+
+        renderer.setSeriesPaint(6, Color.yellow);
+        renderer.setSeriesPaint(7, Color.yellow);
+*/
+        
         renderer.setDrawBarOutline(false);
         renderer.setShadowVisible(false);
         // renderer.setMaximumBarWidth(1);
@@ -336,13 +349,19 @@ public class SuccessRatesReport extends ApplicationFrame {
         axisd.setTickLabelFont(font);
         axisr.setTickLabelFont(font);
 
+        axisd.setMaximumCategoryLabelLines(5);
+        axisd.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+        //axisr.setMaximumCategoryLabelLines(5);
+       // axisr.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+        
+        
         final ChartPanel chartPanel = new ChartPanel(jfreechart);
-        chartPanel.setPreferredSize(new java.awt.Dimension(650, 370));
+        chartPanel.setPreferredSize(new java.awt.Dimension(1000, 800));
 
         FileOutputStream output;
         try {
             output = new FileOutputStream("sucessrates1" + pf + mazeMode + ".jpg");
-            ChartUtilities.writeChartAsJPEG(output, 1.0f, jfreechart, 650, 370, null);
+            ChartUtilities.writeChartAsJPEG(output, 1.0f, jfreechart, 1000, 900, null);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(SuccessRatesReport.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -380,21 +399,7 @@ public class SuccessRatesReport extends ApplicationFrame {
         if (args.length > 0) {
             experimentsDir = args[0];
         }
-
-        if (args.length > 1) {
-            mazeMode = args[1];
-        }
-
-        aMode = new String[args.length - 2];
-
-        for (int i = 2; i < args.length; i++) {
-            aMode[i - 2] = args[i];
-        }
-
-        SuccessRatesReport itemlabeldemo2 = new SuccessRatesReport("Sucess Rates");
-        //itemlabeldemo2.pack();
-        //RefineryUtilities.centerFrameOnScreen(itemlabeldemo2);
-        //itemlabeldemo2.setVisible(true);
+        SuccessRatesReport reportSuccessRates = new SuccessRatesReport("Sucess Rates");
     }
 
     private static String getTechniqueName(String mode) {
