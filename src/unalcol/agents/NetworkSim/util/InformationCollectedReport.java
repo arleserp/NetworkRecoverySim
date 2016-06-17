@@ -149,13 +149,8 @@ public class InformationCollectedReport extends ApplicationFrame {
                     StatisticsNormalDist st = null;
                     if (minRoundForall.equals("on")) {
                         ArrayList tmp = new ArrayList();
-                        int i = 0;
-                        for (Double d : InfoByRound.get(k)) {
-                            tmp.add(d);
-                            i++;
-                            if (i >= min_round) {
-                                break;
-                            }
+                        for (int i = 0; i < min_round; i++){
+                            tmp.add(InfoByRound.get(k).get(i));
                         }
                         st = new StatisticsNormalDist(tmp, tmp.size());
                     } else {
