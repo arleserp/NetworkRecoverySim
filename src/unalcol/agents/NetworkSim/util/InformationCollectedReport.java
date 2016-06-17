@@ -38,6 +38,7 @@ import static unalcol.agents.NetworkSim.SyncronizationMain.pf;
 public class InformationCollectedReport extends ApplicationFrame {
 
     private static String experimentsDir = ".";
+    private static String minRoundForall = "off";
 
     /**
      * Access to logging facilities.
@@ -62,9 +63,9 @@ public class InformationCollectedReport extends ApplicationFrame {
         Scanner sc = null;
         File f = new File(experimentsDir);
         File[] files = f.listFiles();
-      
+
         for (File file : files) {
-             if (file.isDirectory() && file.getName().endsWith("info")) {
+            if (file.isDirectory() && file.getName().endsWith("info")) {
                 System.out.println("new seriiiiieeeeeeeeeee" + file);
                 XYSeriesCollection juegoDatos = new XYSeriesCollection();
                 XYSeries minimum = new XYSeries("Minimum");
@@ -73,7 +74,9 @@ public class InformationCollectedReport extends ApplicationFrame {
                 juegoDatos.addSeries(minimum);
                 juegoDatos.addSeries(maximum);
                 juegoDatos.addSeries(median);
-                HashMap<Integer, ArrayList> InfoByRound = new HashMap<>();
+                int min_round = Integer.MAX_VALUE;
+                int last_round = 0;
+                HashMap<Integer, ArrayList<Double>> InfoByRound = new HashMap<>();
                 File subdir = new File(file.getName());
                 File[] filesInfo = subdir.listFiles();
                 for (File fileInfo : filesInfo) {
@@ -114,6 +117,7 @@ public class InformationCollectedReport extends ApplicationFrame {
                         }
 
                         String[] data = null;
+
                         while (sc.hasNext()) {
                             String line = sc.nextLine();
                             //System.out.println("line:" + line);
@@ -126,16 +130,37 @@ public class InformationCollectedReport extends ApplicationFrame {
                             } else {
                                 InfoByRound.get(round).add(info);
                             }
+                            last_round = round;
                         }
                         sc.close();
+
+                        if (last_round < min_round) {
+                            min_round = last_round;
+                        }
                         //LOGGER.debug("Adding series " + i);
                         //LOGGER.debug(list.toString());
                     }
                 }
                 Collection<Integer> unsorted = InfoByRound.keySet();
                 List<Integer> sorted = asSortedList(unsorted);
+                System.out.println("min round" + min_round);
+
                 for (int k : sorted) {
-                    StatisticsNormalDist st = new StatisticsNormalDist(InfoByRound.get(k), InfoByRound.get(k).size());
+                    StatisticsNormalDist st = null;
+                    if (minRoundForall.equals("on")) {
+                        ArrayList tmp = new ArrayList();
+                        int i = 0;
+                        for (Double d : InfoByRound.get(k)) {
+                            tmp.add(d);
+                            i++;
+                            if (i >= min_round) {
+                                break;
+                            }
+                        }
+                        st = new StatisticsNormalDist(tmp, tmp.size());
+                    } else {
+                        st = new StatisticsNormalDist(InfoByRound.get(k), InfoByRound.get(k).size());
+                    }
                     minimum.add(k, st.getMin());
                     maximum.add(k, st.getMax());
                     median.add(k, st.getMedian());
@@ -161,6 +186,10 @@ public class InformationCollectedReport extends ApplicationFrame {
     }
 
     public static void main(final String[] args) {
+
+        if (args.length > 0) {
+            minRoundForall = args[0];
+        }
         final InformationCollectedReport demo = new InformationCollectedReport("Information Collected");
     }
 }
