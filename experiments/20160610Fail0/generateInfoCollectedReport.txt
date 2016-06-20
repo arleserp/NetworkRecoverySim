@@ -1,0 +1,1 @@
+java  -Xmx4200m -classpath NetworkSimulator.jar unalcol.agents.NetworkSim.SyncronizationMain load smallworld+v+100+beta+0.1+degree+2.graph 10 1e-2 carriers smallworld+v+100+beta+0.1+degree+2.loc -1 
