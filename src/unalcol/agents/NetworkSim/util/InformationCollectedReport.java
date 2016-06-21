@@ -27,8 +27,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.util.Log;
 import org.jfree.util.LogContext;
-import static sun.management.ConnectorAddressLink.export;
-import static unalcol.agents.NetworkSim.SyncronizationMain.pf;
+
 
 /**
  * Report of Information Collected
@@ -146,19 +145,18 @@ public class InformationCollectedReport extends ApplicationFrame {
                 System.out.println("min round" + min_round);
 
                 for (int k : sorted) {
-                    StatisticsNormalDist st = null;
+                    StatisticsNormalDist st = new StatisticsNormalDist(InfoByRound.get(k), InfoByRound.get(k).size());
                     if (minRoundForall.equals("on")) {
-                        ArrayList tmp = new ArrayList();
-                        for (int i = 0; i < min_round; i++){
-                            tmp.add(InfoByRound.get(k).get(i));
+                        if (k <= min_round) {
+                            minimum.add(k, st.getMin());
+                            maximum.add(k, st.getMax());
+                            median.add(k, st.getMedian());
                         }
-                        st = new StatisticsNormalDist(tmp, tmp.size());
                     } else {
-                        st = new StatisticsNormalDist(InfoByRound.get(k), InfoByRound.get(k).size());
+                        minimum.add(k, st.getMin());
+                        maximum.add(k, st.getMax());
+                        median.add(k, st.getMedian());
                     }
-                    minimum.add(k, st.getMin());
-                    maximum.add(k, st.getMax());
-                    median.add(k, st.getMedian());
                 }
 
                 JFreeChart chart = ChartFactory.createXYLineChart(
