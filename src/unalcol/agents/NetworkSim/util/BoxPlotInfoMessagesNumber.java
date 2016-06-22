@@ -86,6 +86,7 @@ public class BoxPlotInfoMessagesNumber extends ApplicationFrame {
 
     private static String experimentsDir = ".";
     private static String[] aMode;
+    private static int numberSeries = 0;
 
     /**
      * Access to logging facilities.
@@ -144,7 +145,7 @@ public class BoxPlotInfoMessagesNumber extends ApplicationFrame {
         FileOutputStream output;
         try {
             output = new FileOutputStream("MessagesSent" + pf  + ".jpg");
-            ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, 1200, 800, null);
+            ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, 100*numberSeries, 800, null);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(BoxPlotInfoMessagesNumber.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -184,6 +185,7 @@ public class BoxPlotInfoMessagesNumber extends ApplicationFrame {
 
             // System.out.println(file.getName() + "extension" + extension);
             if (file.isFile() && extension.equals("csv") && file.getName().startsWith("exp")  && !file.getName().contains("gstats")) {
+                numberSeries++;
                 System.out.println(file.getName());
                 System.out.println("get: " + file.getName());
                 String[] filenamep = file.getName().split(Pattern.quote("+"));
