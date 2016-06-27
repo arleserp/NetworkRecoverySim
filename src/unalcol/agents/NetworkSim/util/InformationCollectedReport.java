@@ -5,6 +5,8 @@
  */
 package unalcol.agents.NetworkSim.util;
 
+import java.awt.Color;
+import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,12 +24,14 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.util.Log;
 import org.jfree.util.LogContext;
-
+import org.jfree.util.ShapeUtilities;
 
 /**
  * Report of Information Collected
@@ -144,18 +148,31 @@ public class InformationCollectedReport extends ApplicationFrame {
                 List<Integer> sorted = asSortedList(unsorted);
                 System.out.println("min round" + min_round);
 
+                int mod = 3;
+
+                if (minRoundForall.equals("on")) {
+                    mod = min_round / 25;
+                    //    mod = 10;
+
+                }
                 for (int k : sorted) {
                     StatisticsNormalDist st = new StatisticsNormalDist(InfoByRound.get(k), InfoByRound.get(k).size());
-                    if (minRoundForall.equals("on")) {
-                        if (k <= min_round) {
+
+                    /*if(InfoByRound.get(k).size() > 150){
+                        mod = 10;
+                    }*/
+                    if (k % mod == 0) {
+                        if (minRoundForall.equals("on")) {
+                            if (k <= min_round) {
+                                minimum.add(k, st.getMin());
+                                maximum.add(k, st.getMax());
+                                median.add(k, st.getMedian());
+                            }
+                        } else {
                             minimum.add(k, st.getMin());
                             maximum.add(k, st.getMax());
                             median.add(k, st.getMedian());
                         }
-                    } else {
-                        minimum.add(k, st.getMin());
-                        maximum.add(k, st.getMax());
-                        median.add(k, st.getMedian());
                     }
                 }
 
@@ -164,6 +181,23 @@ public class InformationCollectedReport extends ApplicationFrame {
                         juegoDatos, PlotOrientation.VERTICAL,
                         true, true, false);
 
+                //  chart.setBackgroundPaint(Color.white);
+                final XYPlot plot = chart.getXYPlot();
+                plot.setBackgroundPaint(Color.WHITE);
+                plot.setDomainCrosshairPaint(Color.lightGray);
+                plot.setDomainGridlinesVisible(true);
+                //    plot.setAxisOffset(new Spacer(Spacer.ABSOLUTE, 5.0, 5.0, 5.0, 5.0));
+                plot.setDomainGridlinePaint(Color.lightGray);
+                plot.setRangeGridlinePaint(Color.lightGray);
+
+                final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+                //renderer.setSeriesShapesVisible(1, true);
+                renderer.setBaseShapesVisible(true);
+                Shape cross = ShapeUtilities.createDiagonalCross(3, 1);
+                renderer.setSeriesShape(0, cross);
+                renderer.setSeriesPaint(0, Color.MAGENTA);
+
+                plot.setRenderer(renderer);
                 BufferedImage image = chart.createBufferedImage(600, 600);
                 FileOutputStream output;
                 try {
