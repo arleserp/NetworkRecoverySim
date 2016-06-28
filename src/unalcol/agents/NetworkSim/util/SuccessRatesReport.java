@@ -38,9 +38,11 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.renderer.category.StandardBarPainter;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.ui.ApplicationFrame;
+import org.jfree.ui.RectangleEdge;
 
 public class SuccessRatesReport extends ApplicationFrame {
 
@@ -231,68 +233,64 @@ public class SuccessRatesReport extends ApplicationFrame {
                 // String[] aMode = {"levywalk", "lwphevap", "hybrid"};
                 //String[] aMode = {"levywalk", "lwphevap", "hybrid", "hybrid3", "hybrid4", "sequential"};
                 //if (isInMode(aMode, mode)) {
-                    final List list = new ArrayList();
-                    try {
-                        sc = new Scanner(file);
+                final List list = new ArrayList();
+                try {
+                    sc = new Scanner(file);
 
-                    } catch (FileNotFoundException ex) {
-                        Logger.getLogger(SuccessRatesReport.class
-                                .getName()).log(Level.SEVERE, null, ex);
-                    }
-                    int agentsCorrect = 0;
-                    int worldSize = 0;
-                    double averageExplored = 0.0;
-                    int bestRoundNumber = 0;
-                    double avgSend = 0;
-                    double avgRecv = 0;
-                    double avgdataExplInd = 0;
-                    ArrayList<Double> acSt = new ArrayList<>();
-                    ArrayList<Double> avgExp = new ArrayList<>();
-                    ArrayList<Double> bestR = new ArrayList<>();
-                    ArrayList<Double> avSnd = new ArrayList<>();
-                    ArrayList<Double> avRecv = new ArrayList<>();
-                    ArrayList<Double> avIndExpl = new ArrayList<>();
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(SuccessRatesReport.class
+                            .getName()).log(Level.SEVERE, null, ex);
+                }
+                int agentsCorrect = 0;
+                int worldSize = 0;
+                double averageExplored = 0.0;
+                int bestRoundNumber = 0;
+                double avgSend = 0;
+                double avgRecv = 0;
+                double avgdataExplInd = 0;
+                ArrayList<Double> acSt = new ArrayList<>();
+                ArrayList<Double> avgExp = new ArrayList<>();
+                ArrayList<Double> bestR = new ArrayList<>();
+                ArrayList<Double> avSnd = new ArrayList<>();
+                ArrayList<Double> avRecv = new ArrayList<>();
+                ArrayList<Double> avIndExpl = new ArrayList<>();
 
-                    
-                    
-                    
-                    String[] data = null;
-                    while (sc.hasNext()) {
-                        String line = sc.nextLine();
-                        //System.out.println("line:" + line);
-                        data = line.split(",");
-                        agentsCorrect = Integer.valueOf(data[0]);
-                        //agentsIncorrect = Integer.valueOf(data[1]); // not used
-                        //worldSize = Integer.valueOf(data[3]);
-                        //averageExplored = Double.valueOf(data[4]);
-                        // data[3] stdavgExplored - not used
+                String[] data = null;
+                while (sc.hasNext()) {
+                    String line = sc.nextLine();
+                    //System.out.println("line:" + line);
+                    data = line.split(",");
+                    agentsCorrect = Integer.valueOf(data[0]);
+                    //agentsIncorrect = Integer.valueOf(data[1]); // not used
+                    //worldSize = Integer.valueOf(data[3]);
+                    //averageExplored = Double.valueOf(data[4]);
+                    // data[3] stdavgExplored - not used
 //                        bestRoundNumber = Integer.valueOf(data[6]);
-                        //avgSend = Double.valueOf(data[7]);
-                        //avgRecv = Double.valueOf(data[8]);
-                        //avgdataExplInd = Double.valueOf(data[11]);
+                    //avgSend = Double.valueOf(data[7]);
+                    //avgRecv = Double.valueOf(data[8]);
+                    //avgdataExplInd = Double.valueOf(data[11]);
 
-                        //Add Data and generate statistics 
-                        acSt.add((double) agentsCorrect);
-                        //avgExp.add(averageExplored);
+                    //Add Data and generate statistics 
+                    acSt.add((double) agentsCorrect);
+                    //avgExp.add(averageExplored);
 
-                        //avSnd.add(avgSend);
-                        //avRecv.add(avgRecv);
-                        //avIndExpl.add(avgdataExplInd);
-
-                        sucessfulExp = 0.0;
-                        for (int j = 0; j < acSt.size(); j++) {
-                            if (acSt.get(j) > 0) {
-                                sucessfulExp++;
-                            }
+                    //avSnd.add(avgSend);
+                    //avRecv.add(avgRecv);
+                    //avIndExpl.add(avgdataExplInd);
+                    sucessfulExp = 0.0;
+                    for (int j = 0; j < acSt.size(); j++) {
+                        if (acSt.get(j) > 0) {
+                            sucessfulExp++;
                         }
                     }
-                    if (Pf.contains(pf)) {
-                        String[] filenametmp = file.getName().split(Pattern.quote(graphtype));
-                        String fn2 = filenametmp[1].replace(".graph.csv", "");
-                        //graphtype + fn2
-                        defaultcategorydataset.addValue(((double) sucessfulExp) / acSt.size() * 100.0, graphtype + fn2, mode);
-                        /*pf == 1.0E-4 || pf == 3.0E-4*/
-                    }
+                }
+                if (Pf.contains(pf)) {
+                    String[] filenametmp = file.getName().split(Pattern.quote(graphtype));
+                    String fn2 = filenametmp[1].replace(".graph.csv", "");
+                    //graphtype + fn2
+                    defaultcategorydataset.addValue(((double) sucessfulExp) / acSt.size() * 100.0, graphtype + fn2, mode);
+                    /*pf == 1.0E-4 || pf == 3.0E-4*/
+                }
                 //}
             }
         }
@@ -308,12 +306,17 @@ public class SuccessRatesReport extends ApplicationFrame {
         categoryplot.setDomainGridlinePaint(Color.white);
         categoryplot.setRangeGridlinePaint(Color.gray);
         categoryplot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
+        jfreechart.getLegend().setItemFont(new Font("Palatino", Font.PLAIN, 14));
 
         BarRenderer renderer = (BarRenderer) categoryplot.getRenderer();
         //categoryplot.setBackgroundPaint(new Color(221, 223, 238));
 
+        CategoryPlot plot = jfreechart.getCategoryPlot();
+        LegendTitle legend = new LegendTitle(plot.getRenderer());
 
-       /* renderer.setSeriesPaint(0, Color.blue);
+        Font font3 = new Font("Dialog", Font.PLAIN, 20);
+        legend.setItemFont(font3);
+        /* renderer.setSeriesPaint(0, Color.blue);
         renderer.setSeriesPaint(1, Color.green);
 
         renderer.setSeriesPaint(2, Color.cyan);
@@ -324,8 +327,8 @@ public class SuccessRatesReport extends ApplicationFrame {
 
         renderer.setSeriesPaint(6, Color.yellow);
         renderer.setSeriesPaint(7, Color.yellow);
-*/
-        
+         */
+
         renderer.setDrawBarOutline(false);
         renderer.setShadowVisible(false);
         // renderer.setMaximumBarWidth(1);
@@ -342,7 +345,7 @@ public class SuccessRatesReport extends ApplicationFrame {
         numberaxis.setRange(0, 100);
         //numberaxis.setNumberFormatOverride(NumberFormat.getPercentInstance());
 
-        Font font = new Font("SansSerif", Font.ROMAN_BASELINE, 12);
+        Font font = new Font("SansSerif", Font.ROMAN_BASELINE, 18);
         numberaxis.setTickLabelFont(font);
         CategoryAxis axisd = categoryplot.getDomainAxis();
         ValueAxis axisr = categoryplot.getRangeAxis();
@@ -350,11 +353,10 @@ public class SuccessRatesReport extends ApplicationFrame {
         axisr.setTickLabelFont(font);
 
         axisd.setMaximumCategoryLabelLines(5);
-        axisd.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+        axisd.setCategoryLabelPositions(CategoryLabelPositions.STANDARD);
         //axisr.setMaximumCategoryLabelLines(5);
-       // axisr.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-        
-        
+        // axisr.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+
         final ChartPanel chartPanel = new ChartPanel(jfreechart);
         chartPanel.setPreferredSize(new java.awt.Dimension(1000, 800));
 

@@ -6,6 +6,7 @@
 package unalcol.agents.NetworkSim.util;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -23,6 +24,7 @@ import java.util.regex.Pattern;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -42,7 +44,7 @@ public class InformationCollectedReport extends ApplicationFrame {
 
     private static String experimentsDir = ".";
     private static String minRoundForall = "off";
-
+    private static double maxXvalue = 0.0;
     /**
      * Access to logging facilities.
      */
@@ -198,7 +200,18 @@ public class InformationCollectedReport extends ApplicationFrame {
                 renderer.setSeriesPaint(0, Color.MAGENTA);
 
                 plot.setRenderer(renderer);
+
+                NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
+               // Font font3 = new Font("Dialog", Font.PLAIN, 16); 
+               // domainAxis.setLabelFont(font3);
+                
+                //chart.getLegend().setItemFont(new Font("Palatino", Font.PLAIN, 14));
+                
+                if (maxXvalue != 0) {
+                    domainAxis.setRange(0, maxXvalue);
+                }
                 BufferedImage image = chart.createBufferedImage(600, 600);
+
                 FileOutputStream output;
                 try {
                     output = new FileOutputStream(file.getName() + "globalInfo" + ".jpg");
@@ -217,6 +230,11 @@ public class InformationCollectedReport extends ApplicationFrame {
         if (args.length > 0) {
             minRoundForall = args[0];
         }
+
+        if (args.length > 1) {
+            maxXvalue = Double.valueOf(args[1]);
+        }
+
         final InformationCollectedReport demo = new InformationCollectedReport("Information Collected");
     }
 }
