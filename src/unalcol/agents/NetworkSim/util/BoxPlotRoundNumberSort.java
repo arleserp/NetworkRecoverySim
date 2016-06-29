@@ -50,6 +50,7 @@ package unalcol.agents.NetworkSim.util;
  */
 import edu.uci.ics.jung.algorithms.importance.BetweennessCentrality;
 import edu.uci.ics.jung.graph.Graph;
+import java.awt.Color;
 import java.awt.Font;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -96,6 +97,8 @@ public class BoxPlotRoundNumberSort extends ApplicationFrame {
     private static String experimentsDir = ".";
     private static String[] aMode;
     private static String sortCriteria; //alg|topology
+    private static Integer sizeX = 1200;
+    private static Integer sizeY = 800;
 
     public class CustomComparator implements Comparator<String> {
 
@@ -161,14 +164,30 @@ public class BoxPlotRoundNumberSort extends ApplicationFrame {
         final BoxAndWhiskerRenderer renderer = new BoxAndWhiskerRenderer();
         renderer.setFillBox(false);
         renderer.setToolTipGenerator(new BoxAndWhiskerToolTipGenerator());
+
+        renderer.setFillBox(false);
+        renderer.setMeanVisible(false);
+        renderer.setToolTipGenerator(new BoxAndWhiskerToolTipGenerator());
+        renderer.setFillBox(true);
+        renderer.setSeriesPaint(0, Color.WHITE);
+        renderer.setSeriesPaint(1, Color.LIGHT_GRAY);
+        renderer.setSeriesOutlinePaint(0, Color.BLACK);
+        renderer.setSeriesOutlinePaint(1, Color.BLACK);
+        renderer.setUseOutlinePaintForWhiskers(true);
+        Font legendFont = new Font("SansSerif", Font.PLAIN, 16);
+        renderer.setLegendTextFont(0, legendFont);
+        renderer.setLegendTextFont(1, legendFont);
+        renderer.setMedianVisible(true);
+        renderer.setMeanVisible(false);
+
         final CategoryPlot plot = new CategoryPlot(dataset, xAxis, yAxis, renderer);
 
-        Font font = new Font("Dialog", Font.PLAIN, 10);
+        Font font = new Font("Dialog", Font.PLAIN, 12);
         xAxis.setTickLabelFont(font);
         yAxis.setTickLabelFont(font);
         yAxis.setLabelFont(font);
         xAxis.setMaximumCategoryLabelLines(5);
-        xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+        xAxis.setCategoryLabelPositions(CategoryLabelPositions.STANDARD);
 
         final JFreeChart chart = new JFreeChart(
                 "Round Number" + getTitle(pf),
@@ -178,7 +197,7 @@ public class BoxPlotRoundNumberSort extends ApplicationFrame {
         );
 
         final ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new java.awt.Dimension(1600, 800));
+        chartPanel.setPreferredSize(new java.awt.Dimension(sizeX, sizeY));
         setContentPane(chartPanel);
 
         TextTitle legendText = null;
@@ -196,7 +215,7 @@ public class BoxPlotRoundNumberSort extends ApplicationFrame {
         FileOutputStream output;
         try {
             output = new FileOutputStream("roundnumber1" + "-" + pf + sortCriteria + ".jpg");
-            ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, 1200, 800, null);
+            ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, sizeX , sizeY, null);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(BoxPlotRoundNumberSort.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -335,7 +354,7 @@ public class BoxPlotRoundNumberSort extends ApplicationFrame {
                 double kurtosis = getKurtosis(g);
 
                 if (Pf.size() == 1) {
-                    dataset.add(list, popsize, getTechniqueName(mode) + graphtype + fn2 + "+sk+" + skew + "+k+" + kurtosis);
+                    dataset.add(list, popsize, getTechniqueName(mode) + " "+ graphtype + fn2);
                 } else {
                     dataset.add(list, String.valueOf(popsize) + "-" + pf, getTechniqueName(mode) + "+" + graphtype + fn2 + "+sk+" + skew + "+k" + getKurtosis(g));
                 }
@@ -484,6 +503,15 @@ public class BoxPlotRoundNumberSort extends ApplicationFrame {
         if (args.length > 1) {
             sortCriteria = args[1];
         }
+
+        if (args.length > 2) {
+            sizeX = Integer.valueOf(args[2]);
+        }
+
+        if (args.length > 2) {
+            sizeY = Integer.valueOf(args[2]);
+        }
+
         /*if (args.length > 1) {
             mazeMode = args[1];
         }
@@ -493,7 +521,6 @@ public class BoxPlotRoundNumberSort extends ApplicationFrame {
         for (int i = 2; i < args.length; i++) {
             aMode[i - 2] = args[i];
         }*/
-
         ArrayList<Double> failureProbs = getFailureProbs();
 
         for (Double pf : failureProbs) {

@@ -372,7 +372,6 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
         HashMap<String, List> ln2val = new HashMap<>();
         HashMap<String, Double> ln2kurt = new HashMap<>();
         HashMap<String, Double> ln2max = new HashMap<>();
-        
 
         for (String t : listNames) {
             System.out.println("sum" + sumKurtosis);
@@ -383,7 +382,7 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
             String tmo = "coef+" + formatter.format(val) + "+" + t;
             ListNames2.add(tmo);
             ln2val.put(tmo, hmp.get(t));
-            ln2kurt.put(tmo,hmkurt.get(t));
+            ln2kurt.put(tmo, hmkurt.get(t));
             ln2max.put(tmo, hmMax.get(t));
         }
 
@@ -398,7 +397,9 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
         for (String x : ListNames2) {
             dataset.add(ln2val.get(x), "", x);
             StatisticsNormalDist st = new StatisticsNormalDist(new ArrayList<Double>(ln2val.get(x)), ln2val.get(x).size());
-            escribir2.println(ln2kurt.get(x)+";"+ln2max.get(x)+";"+st.getMedian());
+            if (st.getSize() > 5) {
+                escribir2.println(ln2kurt.get(x) + ";" + ln2max.get(x) + ";" + st.getMedian());
+            }
         }
         escribir2.close();
 
@@ -476,9 +477,11 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
         StatisticsNormalDist st3 = new StatisticsNormalDist(new ArrayList(loground), loground.size());
         PrintWriter escribir;
         try {
-            escribir = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)));
-            escribir.println(st.getMedian() + "," + st.getStdDev() + "," + st2.getMedian() + "," + st3.getMedian()  + "," + DistanceStatistics.diameter(g));
-            escribir.close();
+            if (st3.getSize() > 15 && st2.getSize() > 15) {
+                escribir = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)));
+                escribir.println(st.getMedian() + "," + st.getStdDev() + "," + st2.getMedian() + "," + st3.getMedian() + "," + DistanceStatistics.diameter(g));
+                escribir.close();
+            }
         } catch (IOException ex) {
             Logger.getLogger(BoxPlotRoundNumberSortKurt.class.getName()).log(Level.SEVERE, null, ex);
         }

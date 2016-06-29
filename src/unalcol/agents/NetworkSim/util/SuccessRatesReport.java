@@ -50,6 +50,8 @@ public class SuccessRatesReport extends ApplicationFrame {
     private static String mazeMode = "mazeon";
     private static String[] aMode;
     private static final long serialVersionUID = 1L;
+    private static Integer dimensionX = 800;
+    private static Integer dimensionY = 600;
 
     static class LabelGenerator extends AbstractCategoryItemLabelGenerator implements CategoryItemLabelGenerator {
 
@@ -363,7 +365,7 @@ public class SuccessRatesReport extends ApplicationFrame {
         FileOutputStream output;
         try {
             output = new FileOutputStream("sucessrates1" + pf + mazeMode + ".jpg");
-            ChartUtilities.writeChartAsJPEG(output, 1.0f, jfreechart, 1000, 900, null);
+            ChartUtilities.writeChartAsJPEG(output, 1.0f, jfreechart, dimensionX, dimensionY, null);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(SuccessRatesReport.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -401,6 +403,17 @@ public class SuccessRatesReport extends ApplicationFrame {
         if (args.length > 0) {
             experimentsDir = args[0];
         }
+        
+        if (args.length > 1) {
+            dimensionX = Integer.valueOf(args[1]);
+        }
+        
+        
+        if (args.length > 1) {
+            dimensionY = Integer.valueOf(args[2]);
+        }
+        
+        
         SuccessRatesReport reportSuccessRates = new SuccessRatesReport("Sucess Rates");
     }
 

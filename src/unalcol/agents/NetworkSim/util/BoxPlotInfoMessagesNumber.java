@@ -46,6 +46,7 @@ package unalcol.agents.NetworkSim.util;
  *               into the demo (DG);
  *
  */
+import java.awt.Color;
 import java.awt.Font;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -53,6 +54,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Scanner;
@@ -92,6 +95,50 @@ public class BoxPlotInfoMessagesNumber extends ApplicationFrame {
      * Access to logging facilities.
      */
     private static final LogContext LOGGER = Log.createContext(BoxPlotInfoMessagesNumber.class);
+    private static int dimensionX = 1600;
+    private static int dimensionY = 800;
+    private static String sortCriteria;
+
+    public class CustomComparator implements Comparator<String> {
+
+        @Override
+        public int compare(String f1, String f2) {
+            String[] filename1 = f1.split(Pattern.quote("+"));
+            String[] filename2 = f2.split(Pattern.quote("+"));
+
+            if (sortCriteria.equals("alg") || sortCriteria.equals("topology")) {
+                String mode1 = filename1[6];
+                String graphtype1 = filename1[13];
+
+                String mode2 = filename2[6];
+                String graphtype2 = filename2[13];
+
+                String graphtypeParam1 = graphtype1 + f1.split(graphtype1)[1];
+                String graphtypeParam2 = graphtype2 + f2.split(graphtype2)[1];
+
+                if (sortCriteria.equals("alg")) {
+                    return mode1.compareTo(mode2);
+                }
+                if (sortCriteria.equals("topology")) {
+                    return graphtypeParam1.compareTo(graphtypeParam2);
+                }
+                return 0;
+            } else if (sortCriteria.equals("skew")) {
+                //System.out.println("f1" + f1);
+                //System.out.println("f2" + f2);
+                double v1 = Double.valueOf(f1.split(Pattern.quote("+"))[1]);
+                double v2 = Double.valueOf(f2.split(Pattern.quote("+"))[1]);
+                if (v1 == v2) {
+                    return 0;
+                } else if (v1 > v2) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            }
+            return 0;
+        }
+    }
 
     /**
      * Creates a new demo.
@@ -107,18 +154,28 @@ public class BoxPlotInfoMessagesNumber extends ApplicationFrame {
         yAxis.setAutoRangeIncludesZero(false);
         final BoxAndWhiskerRenderer renderer = new BoxAndWhiskerRenderer();
         renderer.setFillBox(false);
+        renderer.setMeanVisible(false);
         renderer.setToolTipGenerator(new BoxAndWhiskerToolTipGenerator());
+        renderer.setFillBox(true);
+        renderer.setSeriesPaint(0, Color.WHITE);
+        renderer.setSeriesPaint(1, Color.LIGHT_GRAY);
+        renderer.setSeriesOutlinePaint(0, Color.BLACK);
+        renderer.setSeriesOutlinePaint(1, Color.BLACK);
+        renderer.setUseOutlinePaintForWhiskers(true);
+        Font legendFont = new Font("SansSerif", Font.PLAIN, 16);
+        renderer.setLegendTextFont(0, legendFont);
+        renderer.setLegendTextFont(1, legendFont);
+        renderer.setMedianVisible(true);
+        renderer.setMeanVisible(false);
         final CategoryPlot plot = new CategoryPlot(dataset, xAxis, yAxis, renderer);
 
-        Font font = new Font("Dialog", Font.PLAIN, 14);
+        Font font = new Font("Dialog", Font.PLAIN, 10);
         xAxis.setTickLabelFont(font);
         yAxis.setTickLabelFont(font);
         yAxis.setLabelFont(font);
-        xAxis.setMaximumCategoryLabelLines(4);
-        xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
-        
+        xAxis.setCategoryLabelPositions(CategoryLabelPositions.STANDARD);
+        xAxis.setMaximumCategoryLabelLines(5);
 
-        
         final JFreeChart chart = new JFreeChart(
                 "Messages Sent" + getTitle(pf),
                 new Font("SansSerif", Font.BOLD, 18),
@@ -127,7 +184,7 @@ public class BoxPlotInfoMessagesNumber extends ApplicationFrame {
         );
 
         final ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new java.awt.Dimension(1600, 800));
+        chartPanel.setPreferredSize(new java.awt.Dimension(dimensionX, dimensionY));
         setContentPane(chartPanel);
 
         TextTitle legendText = null;
@@ -144,8 +201,8 @@ public class BoxPlotInfoMessagesNumber extends ApplicationFrame {
 
         FileOutputStream output;
         try {
-            output = new FileOutputStream("MessagesSent" + pf  + ".jpg");
-            ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, 100*numberSeries, 800, null);
+            output = new FileOutputStream("MessagesSent" + pf + ".jpg");
+            ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, dimensionX, dimensionY, null);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(BoxPlotInfoMessagesNumber.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -171,6 +228,8 @@ public class BoxPlotInfoMessagesNumber extends ApplicationFrame {
         ArrayList<Integer> aPops = new ArrayList<>();
         ArrayList<Double> aPf = new ArrayList<>();
         ArrayList<String> aTech = new ArrayList<>();
+        ArrayList<String> filenamesSorted = new ArrayList<>();
+        Hashtable<String, File> fileHashtable = new Hashtable<>();
 
         final DefaultBoxAndWhiskerCategoryDataset dataset
                 = new DefaultBoxAndWhiskerCategoryDataset();
@@ -184,7 +243,25 @@ public class BoxPlotInfoMessagesNumber extends ApplicationFrame {
             }
 
             // System.out.println(file.getName() + "extension" + extension);
-            if (file.isFile() && extension.equals("csv") && file.getName().startsWith("exp")  && !file.getName().contains("gstats")) {
+            if (file.isFile() && extension.equals("csv") && file.getName().startsWith("exp") && !file.getName().contains("gstats")) {
+                filenamesSorted.add(file.getName());
+                System.out.println(file.getName());
+                System.out.println("get: " + file.getName());
+                fileHashtable.put(file.getName(), file);
+            }
+        }
+        Collections.sort(filenamesSorted, new CustomComparator());
+        for (String filename : filenamesSorted) {
+            File file = fileHashtable.get(filename);
+            extension = "";
+            int i = file.getName().lastIndexOf('.');
+            int p = Math.max(file.getName().lastIndexOf('/'), file.getName().lastIndexOf('\\'));
+            if (i > p) {
+                extension = file.getName().substring(i + 1);
+            }
+
+            // System.out.println(file.getName() + "extension" + extension);
+            if (file.isFile() && extension.equals("csv") && file.getName().startsWith("exp") && !file.getName().contains("gstats")) {
                 numberSeries++;
                 System.out.println(file.getName());
                 System.out.println("get: " + file.getName());
@@ -211,65 +288,65 @@ public class BoxPlotInfoMessagesNumber extends ApplicationFrame {
                 //String[] aMode = {"random", "levywalk", "sandc", "sandclw"};
                 //String[] aMode = {"levywalk", "lwphevap", "hybrid", "hybrid3", "hybrid4", "sequential"};
                 //if (/*Pf == pf && */isInMode(aMode, mode)) {
-                    final List list = new ArrayList();
-                    try {
-                        sc = new Scanner(file);
+                final List list = new ArrayList();
+                try {
+                    sc = new Scanner(file);
 
-                    } catch (FileNotFoundException ex) {
-                        Logger.getLogger(BoxPlotInfoMessagesNumber.class
-                                .getName()).log(Level.SEVERE, null, ex);
-                    }
-                    int agentsCorrect = 0;
-                    int worldSize = 0;
-                    double averageExplored = 0.0;
-                    int bestRoundNumber = 0;
-                    double avgSend = 0;
-                    double avgRecv = 0;
-                    double avgdataExplInd = 0;
-                    ArrayList<Double> acSt = new ArrayList<>();
-                    ArrayList<Double> avgExp = new ArrayList<>();
-                    ArrayList<Double> bestR = new ArrayList<>();
-                    ArrayList<Double> avSnd = new ArrayList<>();
-                    ArrayList<Double> avRecv = new ArrayList<>();
-                    ArrayList<Double> avIndExpl = new ArrayList<>();
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(BoxPlotInfoMessagesNumber.class
+                            .getName()).log(Level.SEVERE, null, ex);
+                }
+                int agentsCorrect = 0;
+                int worldSize = 0;
+                double averageExplored = 0.0;
+                int bestRoundNumber = 0;
+                double avgSend = 0;
+                double avgRecv = 0;
+                double avgdataExplInd = 0;
+                ArrayList<Double> acSt = new ArrayList<>();
+                ArrayList<Double> avgExp = new ArrayList<>();
+                ArrayList<Double> bestR = new ArrayList<>();
+                ArrayList<Double> avSnd = new ArrayList<>();
+                ArrayList<Double> avRecv = new ArrayList<>();
+                ArrayList<Double> avIndExpl = new ArrayList<>();
 
-                    String[] data = null;
-                    while (sc.hasNext()) {
-                        String line = sc.nextLine();
-                        //System.out.println("line:" + line);
-                        data = line.split(",");
-                        agentsCorrect = Integer.valueOf(data[0]);
-                        //agentsIncorrect = Integer.valueOf(data[1]); // not used
-                        worldSize = Integer.valueOf(data[2]);
-                        averageExplored = Double.valueOf(data[4]);
-                        // data[3] stdavgExplored - not used
-                        bestRoundNumber = Integer.valueOf(data[10]);
-                        avgSend = Double.valueOf(data[8]);
-                        avgRecv = Double.valueOf(data[6]);
-                        
-                        //Add Data and generate statistics 
-                        acSt.add((double) agentsCorrect);
-                        avgExp.add(averageExplored);
-                        avSnd.add(avgSend);
-                        avRecv.add(avgRecv);
-                        avIndExpl.add(avgdataExplInd);
-                        //if (bestRoundNumber != 0 && bestRoundNumber != -1) {
-                            list.add(avgRecv);
-                        //}
+                String[] data = null;
+                while (sc.hasNext()) {
+                    String line = sc.nextLine();
+                    //System.out.println("line:" + line);
+                    data = line.split(",");
+                    agentsCorrect = Integer.valueOf(data[0]);
+                    //agentsIncorrect = Integer.valueOf(data[1]); // not used
+                    worldSize = Integer.valueOf(data[2]);
+                    averageExplored = Double.valueOf(data[4]);
+                    // data[3] stdavgExplored - not used
+                    bestRoundNumber = Integer.valueOf(data[10]);
+                    avgSend = Double.valueOf(data[8]);
+                    avgRecv = Double.valueOf(data[6]);
+
+                    //Add Data and generate statistics 
+                    acSt.add((double) agentsCorrect);
+                    avgExp.add(averageExplored);
+                    avSnd.add(avgSend);
+                    avRecv.add(avgRecv);
+                    avIndExpl.add(avgdataExplInd);
+                    //if (bestRoundNumber != 0 && bestRoundNumber != -1) {
+                    list.add(avgRecv);
+                    //}
+                }
+                LOGGER.debug("Adding series " + i);
+                LOGGER.debug(list.toString());
+
+                String[] filenametmp = file.getName().split(Pattern.quote(graphtype));
+                String fn2 = filenametmp[1].replace(".graph.csv", "");
+                if (Pf.contains(pf)) {
+                    /*pf == 1.0E-4 || pf == 3.0E-4*/
+                    if (Pf.size() == 1) {
+                        dataset.add(list, popsize, getTechniqueName(mode) + "\n" + graphtype + "\n" + fn2);
+                    } else {
+                        dataset.add(list, String.valueOf(popsize) + "-" + pf, getTechniqueName(mode) + "+" + graphtype + fn2);
                     }
-                    LOGGER.debug("Adding series " + i);
-                    LOGGER.debug(list.toString());
-                    
-                    String[] filenametmp = file.getName().split(Pattern.quote(graphtype));
-                    String fn2 = filenametmp[1].replace(".graph.csv", "");
-                    if (Pf.contains(pf)) {
-                        /*pf == 1.0E-4 || pf == 3.0E-4*/
-                        if (Pf.size() == 1) {
-                            dataset.add(list, popsize, getTechniqueName(mode)+graphtype+fn2);
-                        } else {
-                            dataset.add(list, String.valueOf(popsize) + "-" + pf, getTechniqueName(mode)+"+"+graphtype+fn2);
-                        }
-                    }
+                }
                 //}
             }
 
@@ -280,7 +357,7 @@ public class BoxPlotInfoMessagesNumber extends ApplicationFrame {
     private static ArrayList<Double> getFailureProbs() {
         ArrayList<Double> pfs = new ArrayList<>();
         String sDirectorio = experimentsDir;
-        System.out.println("experiments dir" + sDirectorio);
+        System.out.println("experiments dir:" + sDirectorio);
         File f = new File(sDirectorio);
         String extension;
         File[] files = f.listFiles();
@@ -294,7 +371,7 @@ public class BoxPlotInfoMessagesNumber extends ApplicationFrame {
             }
 
             // System.out.println(file.getName() + "extension" + extension);
-            if (file.isFile() && extension.equals("csv") && file.getName().startsWith("exp")  && !file.getName().contains("gstats")) {
+            if (file.isFile() && extension.equals("csv") && file.getName().startsWith("exp") && !file.getName().contains("gstats")) {
                 System.out.println(file.getName());
                 System.out.println("get: " + file.getName());
                 String[] filenamep = file.getName().split(Pattern.quote("+"));
@@ -365,6 +442,17 @@ public class BoxPlotInfoMessagesNumber extends ApplicationFrame {
         if (args.length > 0) {
             experimentsDir = args[0];
         }
+        if (args.length > 1) {
+            dimensionX = Integer.valueOf(args[1]);
+        }
+
+        if (args.length > 2) {
+            dimensionY = Integer.valueOf(args[2]);
+        }
+
+        if (args.length > 3) {
+            sortCriteria = args[3];
+        }
 
         /*if (args.length > 1) {
             mazeMode = args[1];
@@ -375,7 +463,6 @@ public class BoxPlotInfoMessagesNumber extends ApplicationFrame {
         for (int i = 2; i < args.length; i++) {
             aMode[i - 2] = args[i];
         }*/
-
         ArrayList<Double> failureProbs = getFailureProbs();
 
         for (Double pf : failureProbs) {

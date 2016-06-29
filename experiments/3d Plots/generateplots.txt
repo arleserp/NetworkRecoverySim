@@ -86,15 +86,93 @@ Plot 2 same graph maintaining scale:
 xlimi <- c(0 , 0.25)
 ylimi <- c(0, 7)
 
+setwd("C:/Users/arlese.rodriguezp/Documents/NetBeansProjects/networkSimUN/experiments/20160525SelectedExperiments")
 mydata = read.csv("carriersall.statbw")
 colnames(mydata) <- c("median", "stddev", "round", "loground", "diameter")
 plot(mydata[ , 2], mydata[ , 4], xlim=xlimi, ylim=ylimi, pch=2, xlab="Std Dev Betweeness Centrality",  ylab="Logarithm of Round Number")              
 abline(lm(mydata[ , 4] ~ mydata[ , 2]),lwd=1, lty=1)
 par(new=T)
 mydatar = read.csv("randomall.statbw")
-colnames(mydata) <- c("median", "stddev", "round", "loground", "diameter")
+colnames(mydatar) <- c("median", "stddev", "round", "loground", "diameter")
 plot(mydatar[ , 2], mydatar[ , 4], xlim=xlimi, ylim=ylimi, pch=1, xlab="", ylab="")   
 abline(lm(mydatar[ , 4] ~ mydatar[ , 2]),lwd=1, lty=2)
 
 
+
+
+mydata = read.csv("carriersall.statbw")
+colnames(mydata) <- c("median", "stddev", "round", "loground", "diameter")
+plot(mydata[ , 2], mydata[ , 4], pch=2, xlab="Std Dev Betweeness Centrality",  ylab="Logarithm of Round Number")              
+abline(lm(mydata[ , 4] ~ mydata[ , 2]),lwd=1, lty=1)
+
+par(new=T)
+mydatar = read.csv("randomall.statbw")
+colnames(mydatar) <- c("median", "stddev", "round", "loground", "diameter")
+plot(mydatar[ , 2], mydatar[ , 4],  pch=1, xlab="Std Dev Betweeness Centrality",  ylab="Logarithm of Round Number")   
+abline(lm(mydatar[ , 4] ~ mydatar[ , 2]),lwd=1, lty=2)
+
+
+Diameter
+
+Plot 2 same graph maintaining scale:
+
+xlimi <- c(0 , 0.25)
+ylimi <- c(0, 7)
+
+setwd("C:/Users/arlese.rodriguezp/Documents/NetBeansProjects/networkSimUN/experiments/20160525SelectedExperiments")
+mydata = read.csv("carriersall.statbw")
+colnames(mydata) <- c("median", "stddev", "round", "loground", "diameter")
+plot(mydata[ , 5], mydata[ , 4], xlim=xlimi, ylim=ylimi, pch=2, xlab="Std Dev Betweeness Centrality",  ylab="Logarithm of Round Number")              
+abline(lm(mydata[ , 4] ~ mydata[ , 5]),lwd=1, lty=1)
+par(new=T)
+mydatar = read.csv("randomall.statbw")
+colnames(mydata) <- c("median", "stddev", "round", "loground", "diameter")
+plot(mydatar[ , 5], mydatar[ , 4], xlim=xlimi, ylim=ylimi, pch=1, xlab="", ylab="")   
+abline(lm(mydatar[ , 4] ~ mydatar[ , 5]),lwd=1, lty=2)
+
+
+Failure 0.001
+
+setwd("C:/Users/arlese.rodriguezp/Documents/NetBeansProjects/networkSimUN/experiments/20160622micairesults/statbw")
+mydata = read.csv("carriersall.statbw")
+colnames(mydata) <- c("median", "stddev", "round", "loground", "diameter")
+plot(mydata[ , 2], mydata[ , 4], xlim=xlimi, ylim=ylimi, pch=2, xlab="Std Dev Betweeness Centrality",  ylab="Logarithm of Round Number")              
+abline(lm(mydata[ , 4] ~ mydata[ , 2]),lwd=1, lty=1)
+
+mydatar = read.csv("randomall.statbw")
+colnames(mydatar) <- c("median", "stddev", "round", "loground", "diameter")
+plot(mydatar[ , 2], mydatar[ , 4], xlim=xlimi, ylim=ylimi, pch=1, xlab="", ylab="")   
+plot(mydatar[ , 2], mydatar[ , 4], pch=1, xlab="", ylab="")  
+abline(lm(mydatar[ , 4] ~ mydatar[ , 2]),lwd=1, lty=2)
+
+
+Failure 0.003
+
+setwd("C:/Users/arlese.rodriguezp/Documents/NetBeansProjects/networkSimUN/experiments/20160622micairesults/statbw/0.0003")
+mydata = read.csv("carriersall.statbw")
+colnames(mydata) <- c("median", "stddev", "round", "loground", "diameter")
+plot(mydata[ , 2], mydata[ , 4], pch=2, xlab="Std Dev Betweeness Centrality",  ylab="Logarithm of Round Number")              
+abline(lm(mydata[ , 4] ~ mydata[ , 2]),lwd=1, lty=1)
+
+
+mydatar = read.csv("randomall.statbw")
+colnames(mydatar) <- c("median", "stddev", "round", "loground", "diameter")
+plot(mydatar[ , 2], mydatar[ , 4], pch=1, xlab="", ylab="")   
+plot(mydatar[ , 2], mydatar[ , 4], pch=1, xlab="", ylab="")  
+abline(lm(mydatar[ , 4] ~ mydatar[ , 2]),lwd=1, lty=2)
+
+Failure 0.005
+
+setwd("C:/Users/arlese.rodriguezp/Documents/NetBeansProjects/networkSimUN/experiments/20160610Fail0.001/statbw/0.0005")
+mydata = read.csv("carriersall.statbw")
+colnames(mydata) <- c("median", "stddev", "round", "loground", "diameter")
+plot(mydata[ , 2], mydata[ , 4], pch=2, xlab="Std Dev Betweeness Centrality",  ylab="Logarithm of Round Number")              
+abline(lm(mydata[ , 4] ~ mydata[ , 2]),lwd=1, lty=1)
+
+
+mydatar = read.csv("randomall.statbw")
+colnames(mydatar) <- c("median", "stddev", "round", "loground", "diameter")
+plot(mydatar[ , 2], mydatar[ , 4], pch=1, xlab="", ylab="")   
+plot(mydatar[ , 2], mydatar[ , 4], pch=1, xlab="", ylab="")  
+abline(lm(mydatar[ , 4] ~ mydatar[ , 2]),lwd=1, lty=2)
 
