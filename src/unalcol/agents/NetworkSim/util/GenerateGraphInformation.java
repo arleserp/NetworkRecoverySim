@@ -123,7 +123,8 @@ public class GenerateGraphInformation extends ApplicationFrame {
 
     private static String experimentsDir = ".";
     private static String[] aMode;
-
+    private static Integer sizeX = 1200;
+    private static Integer sizeY = 800;
     /**
      * Access to logging facilities.
      */

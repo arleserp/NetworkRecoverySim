@@ -45,6 +45,8 @@ public class InformationCollectedReport extends ApplicationFrame {
     private static String experimentsDir = ".";
     private static String minRoundForall = "off";
     private static double maxXvalue = 0.0;
+    private static Integer sizeX = 1200;
+    private static Integer sizeY = 800;
     /**
      * Access to logging facilities.
      */
@@ -202,20 +204,22 @@ public class InformationCollectedReport extends ApplicationFrame {
                 plot.setRenderer(renderer);
 
                 NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
-               // Font font3 = new Font("Dialog", Font.PLAIN, 16); 
-               // domainAxis.setLabelFont(font3);
-                
+                Font font3 = new Font("Dialog", Font.PLAIN, 12);
+                domainAxis.setLabelFont(font3);
+
+                NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+                rangeAxis.setLabelFont(font3);
+
                 //chart.getLegend().setItemFont(new Font("Palatino", Font.PLAIN, 14));
-                
                 if (maxXvalue != 0) {
                     domainAxis.setRange(0, maxXvalue);
                 }
-                BufferedImage image = chart.createBufferedImage(600, 600);
+                BufferedImage image = chart.createBufferedImage(sizeX, sizeY);
 
                 FileOutputStream output;
                 try {
                     output = new FileOutputStream(file.getName() + "globalInfo" + ".jpg");
-                    ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, 600, 600, null);
+                    ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, sizeX, sizeY, null);
                 } catch (FileNotFoundException ex) {
                     Logger.getLogger(InformationCollectedReport.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IOException ex) {
@@ -235,6 +239,13 @@ public class InformationCollectedReport extends ApplicationFrame {
             maxXvalue = Double.valueOf(args[1]);
         }
 
+        if (args.length > 2) {
+            sizeX = Integer.valueOf(args[2]);
+        }
+
+        if (args.length > 2) {
+            sizeY = Integer.valueOf(args[3  ]);
+        }
         final InformationCollectedReport demo = new InformationCollectedReport("Information Collected");
     }
 }

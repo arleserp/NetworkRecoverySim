@@ -28,8 +28,9 @@ abline(lm(mydata[ , 4] ~ mydata[ , 2]))
  
 mydata = read.csv("carrierswithoutscalefree.statbw")
 colnames(mydata) <- c("median", "stddev", "round", "loground", "diameter")
-plot(mydata[ , 2], mydata[ , 4],  xlab="Std Dev Betweeness Centrality",  ylab="Logarithm of Round Number")   
+plot(mydata[ , 2], mydata[ , 4],  pch=2, xlab="Std Dev Betweeness Centrality",  ylab="Logarithm of Round Number")   
 abline(lm(mydata[ , 4] ~ mydata[ , 2]))
+
 
 par(new=T)
 par(mar=c(5,4,4,4))

@@ -51,6 +51,7 @@ package unalcol.agents.NetworkSim.util;
 import edu.uci.ics.jung.algorithms.importance.BetweennessCentrality;
 import edu.uci.ics.jung.algorithms.shortestpath.DistanceStatistics;
 import edu.uci.ics.jung.graph.Graph;
+import java.awt.Color;
 import java.awt.Font;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -68,7 +69,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -102,6 +102,8 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
     private static String experimentsDir = ".";
     private static String[] aMode;
     private static String sortCriteria; //alg|topology
+    private static Integer sizeX = 1200;
+    private static Integer sizeY = 800;
 
     NumberFormat formatter = new DecimalFormat("#0.0000");
 
@@ -117,15 +119,18 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
 
         @Override
         public int compare(String f1, String f2) {
+            System.out.println("f1:" + f1);
+            System.out.println("f2:" + f2);
+
             String[] filename1 = f1.split(Pattern.quote("+"));
             String[] filename2 = f2.split(Pattern.quote("+"));
 
             if (sortCriteria.equals("alg") || sortCriteria.equals("topology")) {
-                String mode1 = filename1[6];
-                String graphtype1 = filename1[13];
+                String mode1 = filename1[1];
+                String graphtype1 = filename1[2];
 
-                String mode2 = filename2[6];
-                String graphtype2 = filename2[13];
+                String mode2 = filename2[1];
+                String graphtype2 = filename2[2];
 
                 String graphtypeParam1 = graphtype1 + f1.split(graphtype1)[1];
                 String graphtypeParam2 = graphtype2 + f2.split(graphtype2)[1];
@@ -136,13 +141,12 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
                 if (sortCriteria.equals("topology")) {
                     return graphtypeParam1.compareTo(graphtypeParam2);
                 }
-
                 return 0;
             } else if (sortCriteria.equals("skew")) {
                 //System.out.println("f1" + f1);
                 //System.out.println("f2" + f2);
-                double v1 = Double.valueOf(f1.split(Pattern.quote("+"))[1]);
-                double v2 = Double.valueOf(f2.split(Pattern.quote("+"))[1]);
+                double v1 = Double.valueOf(f1.split(Pattern.quote("+"))[0]);
+                double v2 = Double.valueOf(f2.split(Pattern.quote("+"))[0]);
                 if (v1 == v2) {
                     return 0;
                 } else if (v1 > v2) {
@@ -176,14 +180,30 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
         final BoxAndWhiskerRenderer renderer = new BoxAndWhiskerRenderer();
         renderer.setFillBox(false);
         renderer.setToolTipGenerator(new BoxAndWhiskerToolTipGenerator());
+
+        renderer.setFillBox(false);
+        renderer.setMeanVisible(false);
+        renderer.setToolTipGenerator(new BoxAndWhiskerToolTipGenerator());
+        renderer.setFillBox(true);
+        renderer.setSeriesPaint(0, Color.WHITE);
+        renderer.setSeriesPaint(1, Color.LIGHT_GRAY);
+        renderer.setSeriesOutlinePaint(0, Color.BLACK);
+        renderer.setSeriesOutlinePaint(1, Color.BLACK);
+        renderer.setUseOutlinePaintForWhiskers(true);
+        Font legendFont = new Font("SansSerif", Font.PLAIN, 16);
+        renderer.setLegendTextFont(0, legendFont);
+        renderer.setLegendTextFont(1, legendFont);
+        renderer.setMedianVisible(true);
+        renderer.setMeanVisible(false);
+
         final CategoryPlot plot = new CategoryPlot(dataset, xAxis, yAxis, renderer);
 
-        Font font = new Font("Dialog", Font.PLAIN, 9);
+        Font font = new Font("Dialog", Font.PLAIN, 12);
         xAxis.setTickLabelFont(font);
         yAxis.setTickLabelFont(font);
         yAxis.setLabelFont(font);
         xAxis.setMaximumCategoryLabelLines(3);
-        xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+        xAxis.setCategoryLabelPositions(CategoryLabelPositions.STANDARD);
 
         final JFreeChart chart = new JFreeChart(
                 "Round Number" + getTitle(pf),
@@ -193,7 +213,7 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
         );
 
         final ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new java.awt.Dimension(1800, 1000));
+        chartPanel.setPreferredSize(new java.awt.Dimension(sizeX, sizeY));
         setContentPane(chartPanel);
 
         TextTitle legendText = null;
@@ -211,7 +231,7 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
         FileOutputStream output;
         try {
             output = new FileOutputStream("roundnumber1" + "-" + pf + sortCriteria + ".jpg");
-            ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, 1800, 1000, null);
+            ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, sizeX, sizeY, null);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(BoxPlotRoundNumberSortKurt.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -358,7 +378,7 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
                 double kurtosis = getKurtosis(g);
                 sumKurtosis += kurtosis;
                 sumMaximum += getMaxSkewness(g);
-                String series = ("k*max+" + formatter.format(kurtosis * getMaxSkewness(g)) + "+sk+" + formatter.format(skew) + "+k+" + formatter.format(kurtosis) + "max" + formatter.format(getMaxSkewness(g)) + "+mode+" + getTechniqueName(mode) + graphtype + fn2);
+                String series = (formatter.format(getStdBetwenness(g)) + "+" + getTechniqueName(mode) + "+" + graphtype + fn2);
                 System.out.println("series" + series);
                 hmp.put(series, list);
                 hmkurt.put(series, kurtosis);
@@ -379,7 +399,8 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
 
             Double val = ((hmkurt.get(t) / sumKurtosis) * 0.4 + (hmMax.get(t) / sumMaximum) * 0.6);
 
-            String tmo = "coef+" + formatter.format(val) + "+" + t;
+            //String tmo = "coef+" + formatter.format(val) + "+" + t;
+            String tmo = t;
             ListNames2.add(tmo);
             ln2val.put(tmo, hmp.get(t));
             ln2kurt.put(tmo, hmkurt.get(t));
@@ -449,6 +470,29 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
         Collection<Double> c = map.values();
         List<Double> list = new ArrayList<Double>(c);
         return Collections.max(list);
+    }
+
+    public Double getStdBetwenness(Graph g) {
+        BetweennessCentrality ranker = new BetweennessCentrality(g);
+        ranker.step();
+        ranker.setRemoveRankScoresOnFinalize(false);
+        ranker.evaluate();
+        //System.out.println("Rank" + ranker.toString());
+        //ranker.printRankings(true, true);
+        HashMap<Object, Double> map = new HashMap();
+        //escribir.println("********************Ranker******************************");
+        for (Object v : g.getVertices()) {
+            Double rank = ranker.getVertexRankScore(v);
+            Double normalized = rank / ((g.getEdgeCount() - 1) * (g.getEdgeCount() - 2) / 2);
+            map.put(v, normalized);
+            //escribir.println(v + "- rank: " + rank + ", norm: " + normalized);
+            // System.out.println("Score for " + v + " = " + ranker.getVertexRankScore(v)); 
+        }
+
+        Collection<Double> c = map.values();
+        List<Double> listbwvalues = new ArrayList<>(c);
+        StatisticsNormalDist st = new StatisticsNormalDist(new ArrayList(listbwvalues), listbwvalues.size());
+        return st.getStdDev();
     }
 
     public Double WriteStatsBetweeness(Graph g, List<Double> listround, String filename) {
@@ -606,7 +650,18 @@ public class BoxPlotRoundNumberSortKurt extends ApplicationFrame {
         /*if (args.length > 1) {
             mazeMode = args[1];
         }
+                if (args.length > 1) {
+            sortCriteria = args[1];
+        }*/
 
+        if (args.length > 2) {
+            sizeX = Integer.valueOf(args[2]);
+        }
+
+        if (args.length > 3) {
+            sizeY = Integer.valueOf(args[2]);
+        }
+        /*
         aMode = new String[args.length - 2];
 
         for (int i = 2; i < args.length; i++) {

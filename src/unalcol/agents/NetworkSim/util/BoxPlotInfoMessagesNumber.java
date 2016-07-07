@@ -169,7 +169,7 @@ public class BoxPlotInfoMessagesNumber extends ApplicationFrame {
         renderer.setMeanVisible(false);
         final CategoryPlot plot = new CategoryPlot(dataset, xAxis, yAxis, renderer);
 
-        Font font = new Font("Dialog", Font.PLAIN, 10);
+        Font font = new Font("Dialog", Font.PLAIN, 12);
         xAxis.setTickLabelFont(font);
         yAxis.setTickLabelFont(font);
         yAxis.setLabelFont(font);
