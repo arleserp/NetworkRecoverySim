@@ -102,6 +102,7 @@ public class graphGenerator {
             Graph<GraphElements.MyVertex, String> g;
             do {
                 g = graphSimpleFactorySave.createGraph(graphMode);
+                System.out.println("end create");
                 GraphSerialization.saveSerializedGraph(filename, g);
             } while (GraphStats.computeAveragePathLength(g) == -1);
 

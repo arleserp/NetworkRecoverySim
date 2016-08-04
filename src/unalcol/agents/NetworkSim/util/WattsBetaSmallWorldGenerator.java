@@ -70,7 +70,7 @@ public class WattsBetaSmallWorldGenerator<V, E> extends Lattice2DGenerator {
         this.degree = degree;
         this.vertex_factory = vertex_factory;
         this.edge_factory = edge_factory;
-        //System.out.println("Creating a lattice with n="+nodes+", k="+degree+", and beta="+beta+".");
+        System.out.println("Creating a lattice with n="+numNodes+", k="+degree+", and beta="+beta+".");
     }
 
     /**
@@ -84,11 +84,14 @@ public class WattsBetaSmallWorldGenerator<V, E> extends Lattice2DGenerator {
         int numEdges = 0;
         ArrayList vertices = new ArrayList();
 
+        System.out.println("generateGraph()" + numNodes);
         for (int i = 0; i < numNodes; i++) {
-            //Vertex v = vertex_factory.create();
+            
             g.addVertex(vertex_factory.create());
+            System.out.println("i" + i);
         }
 
+        System.out.println("numNodes" + numNodes);
         //rewire edges
         for (int i = 0; i < numNodes; i++) {
             int start = i - degree;
@@ -122,13 +125,13 @@ public class WattsBetaSmallWorldGenerator<V, E> extends Lattice2DGenerator {
             Object nextEdge = edgeList.removeFirst();
             //System.out.println("next" + nextEdge);
 
-            //System.out.println("g" + g);
-            //System.out.println("contains edge" + g.containsEdge(nextEdge));
-            //System.out.println("incident" + g.getIncidentVertices(nextEdge));
+            System.out.println("g" + g);
+            System.out.println("contains edge" + g.containsEdge(nextEdge));
+            System.out.println("incident" + g.getIncidentVertices(nextEdge));
             Object source = g.getIncidentVertices(nextEdge).toArray()[0];
             Object target = g.getIncidentVertices(nextEdge).toArray()[1];
-            //System.out.println("source" + source);
-            //System.out.println("dest" + target);
+            System.out.println("source" + source);
+            System.out.println("dest" + target);
 
             //Throw a random dart
             double percent = random.nextDouble();

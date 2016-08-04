@@ -9,9 +9,8 @@ import edu.uci.ics.jung.algorithms.generators.Lattice2DGenerator;
 import edu.uci.ics.jung.algorithms.generators.random.BarabasiAlbertGenerator;
 import edu.uci.ics.jung.algorithms.generators.random.EppsteinPowerLawGenerator;
 import edu.uci.ics.jung.algorithms.generators.random.KleinbergSmallWorldGenerator;
-import edu.uci.ics.jung.algorithms.layout.CircleLayout;
-import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.graph.Graph;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import unalcol.agents.NetworkSim.util.CommunityCircleNetworkGenerator;
@@ -41,43 +40,59 @@ public class graphSimpleFactory {
             case "scalefree":
                 Set<GraphElements.MyVertex> seedSet = new HashSet<>();
                 //chgne
-                BarabasiAlbertGenerator bag = new BarabasiAlbertGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.startNodesScaleFree, SyncronizationMain.edgesToAttachScaleFree, seed, seedSet);
-                bag.evolveGraph(SyncronizationMain.numSteps - 1);
+                BarabasiAlbertGenerator bag = new BarabasiAlbertGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SimulationParameters.startNodesScaleFree, SimulationParameters.edgesToAttachScaleFree, seed, seedSet);
+                bag.evolveGraph(SimulationParameters.numSteps - 1);
                 g = bag.create();
+                SimulationParameters.globalData = v.allData;
                 break;
             case "smallworld":
-                g = new WattsBetaSmallWorldGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, SyncronizationMain.beta, SyncronizationMain.degree, true).generateGraph();
+                g = new WattsBetaSmallWorldGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SimulationParameters.vertexNumber, SimulationParameters.beta, SimulationParameters.degree, true).generateGraph();
+                SimulationParameters.globalData = v.allData;
                 break;
             case "community":
-                g = new CommunityNetworkGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, SyncronizationMain.beta, SyncronizationMain.degree, true, SyncronizationMain.clusters).generateGraph();
+                g = new CommunityNetworkGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SimulationParameters.vertexNumber, SimulationParameters.beta, SimulationParameters.degree, true, SimulationParameters.clusters).generateGraph();
+                SimulationParameters.globalData = v.allData;
                 break;
             case "communitycircle":
-                g = new CommunityCircleNetworkGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, SyncronizationMain.beta, SyncronizationMain.degree, true, SyncronizationMain.clusters).generateGraph();
+                g = new CommunityCircleNetworkGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SimulationParameters.vertexNumber, SimulationParameters.beta, SimulationParameters.degree, true, SimulationParameters.clusters).generateGraph();
+                SimulationParameters.globalData = v.allData;
                 break;
             case "kleinberg":
-                g = new KleinbergSmallWorldGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, 0).create();
+                g = new KleinbergSmallWorldGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SimulationParameters.vertexNumber, 0).create();
+                SimulationParameters.globalData = v.allData;
                 break;
             case "lattice":
-                g = new Lattice2DGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.rows, SyncronizationMain.columns, false).create();
+                g = new Lattice2DGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SimulationParameters.rows, SimulationParameters.columns, false).create();
                 //layout = new CircleLayout<>(g);
+                SimulationParameters.globalData = v.allData;
                 break;
             case "line":
-                g = new LineGraphGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, false).generateGraph();
+                g = new LineGraphGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SimulationParameters.vertexNumber, false).generateGraph();
+                SimulationParameters.globalData = v.allData;
                 break;
             case "hubandspoke":
-                g = new HubAndSpokeGraphGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, false).generateGraph();
+                g = new HubAndSpokeGraphGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SimulationParameters.vertexNumber, false).generateGraph();
+                SimulationParameters.globalData = v.allData;
                 break;
             case "foresthubandspoke":
-                g = new ForestHubAnsSpokeGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, SyncronizationMain.clusters, false).generateGraph();
+                g = new ForestHubAnsSpokeGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SimulationParameters.vertexNumber, SimulationParameters.clusters, false).generateGraph();
+                SimulationParameters.globalData = v.allData;
                 break;
             case "circle":
-                g = new LineGraphGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.vertexNumber, true).generateGraph();
+                g = new LineGraphGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SimulationParameters.vertexNumber, true).generateGraph();
+                SimulationParameters.globalData = v.allData;
                 break;
             case "load":
-                g = GraphSerialization.loadDeserializeGraph(SyncronizationMain.filename);
+                g = GraphSerialization.loadDeserializeGraph(SimulationParameters.filename);
+                SimulationParameters.globalData = new ArrayList();
+                for (GraphElements.MyVertex vertex : g.getVertices()) {
+                    SimulationParameters.globalData.removeAll(vertex.getData());
+                    SimulationParameters.globalData.addAll(vertex.getData());
+                }
                 break;
             default:
-                g = new EppsteinPowerLawGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SyncronizationMain.rows, SyncronizationMain.columns, 5).create();
+                g = new EppsteinPowerLawGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SimulationParameters.rows, SimulationParameters.columns, 5).create();
+                SimulationParameters.globalData = v.allData;
                 break;
         }
 

@@ -8,6 +8,7 @@ package unalcol.agents.NetworkSim;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import java.util.ArrayList;
+import java.util.Collections;
 import org.apache.commons.collections15.Factory;
 //import unalcol.agents.AgentProgram;
 //import unalcol.agents.distributed.testing.GenerateIntegerDataSet;
@@ -52,13 +53,16 @@ public class GraphCreator {
 
         @Override
         public GraphElements.MyVertex create() {
+            //System.out.println("create!");
             GraphElements.MyVertex v = new GraphElements.MyVertex("p"+a++);
-            ArrayList Data = new ArrayList();
+            ArrayList Data = (ArrayList) Collections.synchronizedList(new ArrayList());
             Double rnd = Math.random();
-            while(!allData.contains(rnd)){
+            while(allData.contains(rnd)){
                 rnd = Math.random();
             }
             Data.add(rnd);
+            allData.add(rnd);
+            //System.out.println("add"+allData);
             v.setData(Data);
             return v;
         }

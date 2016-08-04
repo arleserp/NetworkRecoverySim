@@ -12,7 +12,6 @@ package unalcol.agents.NetworkSim.util;
  */
 
 
-import edu.uci.ics.jung.graph.Graph;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -28,8 +27,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import unalcol.agents.NetworkSim.SyncronizationMain;
-import static unalcol.agents.NetworkSim.SyncronizationMain.graphMode;
 
 /**
  *

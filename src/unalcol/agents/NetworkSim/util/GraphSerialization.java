@@ -21,8 +21,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import unalcol.agents.NetworkSim.SyncronizationMain;
-import static unalcol.agents.NetworkSim.SyncronizationMain.graphMode;
+import unalcol.agents.NetworkSim.SimulationParameters;
 
 /**
  *
@@ -101,30 +100,30 @@ public class GraphSerialization {
         String[] graphparameters = filename.split(filename);
         System.out.println("grappat" + graphparameters);
 
-        SyncronizationMain.graphMode = graphparameters[0];
+        SimulationParameters.graphMode = graphparameters[0];
          
         if (graphparameters[0].equals("smallworld")) {
-            SyncronizationMain.vertexNumber = Integer.valueOf(graphparameters[2]);
-            SyncronizationMain.beta = Float.valueOf(graphparameters[4]);
-            SyncronizationMain.degree = Integer.valueOf(graphparameters[6]);
+            SimulationParameters.vertexNumber = Integer.valueOf(graphparameters[2]);
+            SimulationParameters.beta = Float.valueOf(graphparameters[4]);
+            SimulationParameters.degree = Integer.valueOf(graphparameters[6]);
         }
 
         if (graphparameters[0].equals("community")) {
-            SyncronizationMain.vertexNumber = Integer.valueOf(graphparameters[2]);
-            SyncronizationMain.beta = Float.valueOf(graphparameters[4]);
-            SyncronizationMain.degree = Integer.valueOf(graphparameters[6]);
-            SyncronizationMain.clusters = Integer.valueOf(graphparameters[8]);
+            SimulationParameters.vertexNumber = Integer.valueOf(graphparameters[2]);
+            SimulationParameters.beta = Float.valueOf(graphparameters[4]);
+            SimulationParameters.degree = Integer.valueOf(graphparameters[6]);
+            SimulationParameters.clusters = Integer.valueOf(graphparameters[8]);
         }
 
         if (graphparameters[0].equals("scalefree")) {
-            SyncronizationMain.startNodesScaleFree = Integer.valueOf(graphparameters[2]);
-            SyncronizationMain.edgesToAttachScaleFree = Integer.valueOf(graphparameters[4]);
-            SyncronizationMain.numSteps = Integer.valueOf(graphparameters[6]);
+            SimulationParameters.startNodesScaleFree = Integer.valueOf(graphparameters[2]);
+            SimulationParameters.edgesToAttachScaleFree = Integer.valueOf(graphparameters[4]);
+            SimulationParameters.numSteps = Integer.valueOf(graphparameters[6]);
         }
 
-        if (graphMode.equals("lattice")) {
-            SyncronizationMain.rows = Integer.valueOf(graphparameters[2]);
-            SyncronizationMain.columns = Integer.valueOf(graphparameters[4]);
+        if (SimulationParameters.graphMode.equals("lattice")) {
+            SimulationParameters.rows = Integer.valueOf(graphparameters[2]);
+            SimulationParameters.columns = Integer.valueOf(graphparameters[4]);
         }
 
         return h;

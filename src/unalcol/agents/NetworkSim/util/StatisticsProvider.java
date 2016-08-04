@@ -14,7 +14,7 @@ import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import unalcol.agents.NetworkSim.MobileAgent;
-import unalcol.agents.NetworkSim.environment.NetworkEnvironment;
+import unalcol.agents.NetworkSim.environment.NetworkEnvironmentCollection;
 
 /**
  *
@@ -28,7 +28,7 @@ class StatisticsProvider {
         reportFile = filename;
     }
 
-    Hashtable getStatisticsInteger(NetworkEnvironment w) {
+    Hashtable getStatisticsInteger(NetworkEnvironmentCollection w) {
         Hashtable Statistics = new Hashtable();
         int right = 0;
         int wrong = 0;
@@ -76,7 +76,7 @@ class StatisticsProvider {
     }
 
     
-    void printStatistics(NetworkEnvironment w) {
+    void printStatistics(NetworkEnvironmentCollection w) {
         Hashtable st = getStatisticsInteger(w);
         try {
             int nr = w.getAgents().size() - ((Integer) st.get("right") + (Integer) st.get("wrong"));

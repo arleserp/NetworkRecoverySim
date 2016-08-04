@@ -1,6 +1,6 @@
 package unalcol.agents.NetworkSim.environment;
 
-import unalcol.agents.NetworkSim.environment.NetworkEnvironment;
+import unalcol.agents.NetworkSim.environment.NetworkEnvironmentCollection;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -77,8 +77,8 @@ public class controlBoard implements Observer {
 
     @Override
     public void update(Observable obs, Object arg) {
-        if (obs instanceof NetworkEnvironment) {
-            NetworkEnvironment t = (NetworkEnvironment) obs;
+        if (obs instanceof NetworkEnvironmentCollection) {
+            NetworkEnvironmentCollection t = (NetworkEnvironmentCollection) obs;
             try (PrintWriter escribir = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)))) {
                 escribir.println(t.getLog());
             } catch (IOException ex) {
@@ -87,7 +87,7 @@ public class controlBoard implements Observer {
         }
     }
 
-    public void addObserver(NetworkEnvironment network) {
+    public void addObserver(NetworkEnvironmentCollection network) {
         network.addObserver(this);
     }
 
