@@ -127,13 +127,12 @@ public class DataReplicationObserver implements Observer {
             if (!globalInfo.containsKey(n.getAge())) {
                 globalInfo.put(n.getAge(), n.getAmountGlobalInfo());
             }
-            if ((SimulationParameters.maxIter == -1 && n.getIdBest() != -1) || (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) || n.getAgentsDie() == (n.getAgents().size())) {
+            if ((SimulationParameters.maxIter == -1 && n.nodesComplete()) || (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) || n.getAgentsDie() == (n.getAgents().size())) {
                 //StatsTemperaturesMapImpl sti = new StatsTemperaturesMapImpl("experiment-p-" + ((World) obs).getAgents().size() + "- pf-" + pf + ".csv");
-
                 if (!isUpdating) {
                     isUpdating = true;
                     n.stop();
-                    StatisticsProvider sti;
+                    StatisticsProviderReplication sti;
                     String filename = "exp+ps+" + n.getAgents().size() + "+pf+" + SimulationParameters.pf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + n.topology.getEdges().size() + "+v+" + n.topology.getVertices().size() + "+" + SimulationParameters.graphMode;
 
                     if (SimulationParameters.graphMode.equals("smallworld")) {
@@ -179,10 +178,10 @@ public class DataReplicationObserver implements Observer {
                     }
                     escribir.close();
                     
-                    sti = new StatisticsProvider(filename);
+                    sti = new StatisticsProviderReplication(filename);
                     
                     //ToFix: Statist
-                    //sti.printStatistics(n);
+                    sti.printStatistics(n);
                     System.out.println("keys" + globalInfo);
                     System.out.println("The end" + n.getAge());
                     System.exit(0);

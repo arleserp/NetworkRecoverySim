@@ -39,7 +39,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             //a.getLocation().getData().removeAll(a.getData());
         }
 
-        System.out.println("vertex" + currentNode.getData().size());
+        //System.out.println("vertex" + currentNode.getData().size());
 
         //detect other agents in network
         ArrayList<Integer> agentNeighbors = getAgentNeighbors(a);
@@ -109,8 +109,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                         System.out.println("complete! round" + a.getRound());
                         setRoundComplete(a.getRound());
                         setIdBest(a.getId());
-                        updateWorldAge();
-                        
+                        updateWorldAge();                        
                     }
                     break;
                 case 1: //die

@@ -62,6 +62,17 @@ public class NetworkEnvironmentReplication extends Environment {
         return structure[0].length;
     }
 
+    public boolean nodesComplete() {
+        int completed = 0;
+        for (GraphElements.MyVertex v : topology.getVertices()) {
+            if (v.getData().size() == topology.getVertices().size()) {
+                completed++;
+            }
+        }
+        //System.out.println("complete eval");
+        return completed == topology.getVertices().size();
+    }
+
     public boolean act(Agent agent, Action action) {
         boolean flag = (action != null);
         MobileAgent a = (MobileAgent) agent;
@@ -121,8 +132,7 @@ public class NetworkEnvironmentReplication extends Environment {
                         complete = true;
                     }
 
-                    System.out.println("vertex" + v.getData().size() + ", data" + v.getData());
-                    
+                    //System.out.println("vertex" + v.getData().size() + ", data" + v.getData());
                     if (getRoundComplete() == -1 && complete) {
                         //System.out.println("complete! round" + a.getRound());
                         setRoundComplete(a.getRound());
@@ -161,7 +171,7 @@ public class NetworkEnvironmentReplication extends Environment {
         //System.out.println("agent" + anAgent.getId() + "- neighbor: " +  getTopology().getNeighbors(anAgent.getLocation()));
         //Load data in Agent
         //clone ArrayList
-        
+
         //getData from the node and put in the agent
         a.getData().removeAll(a.getLocation().getData());
         a.getData().addAll(a.getLocation().getData());
@@ -333,7 +343,8 @@ public class NetworkEnvironmentReplication extends Environment {
     /**
      * Function used to calculate the intersection of all the information that
      * agent have collected in a determined time.
-     * @return 
+     *
+     * @return
      */
     /* public void calculateGlobalInfo() {
         if (!isCalculating) {
@@ -366,28 +377,32 @@ public class NetworkEnvironmentReplication extends Environment {
      */
     public Double getAmountGlobalInfo() {
         Double amountGlobalInfo = 0.0;
+
         for (GraphElements.MyVertex v : topology.getVertices()) {
             ArrayList<Object> vertex_info = new ArrayList<>(v.getData());
             //System.out.println("copy" + copy);
             Iterator<Object> it = vertex_info.iterator();
-            while (it.hasNext()) {
-                Object x = it.next();
-                if (x == null) {
-                    System.out.println("error 2!");
-                }
-                for (Agent m : this.getAgents()) {
-                    MobileAgent n = (MobileAgent) m;
-                    if (n.status != Action.DIE) {
-                        if (n.getData().contains(x)) {
-                            amountGlobalInfo++;
-                            break;
+            synchronized (vertex_info) {
+                while (it.hasNext()) {
+                    Object x = it.next();
+                    if (x == null) {
+                        System.out.println("error 2!");
+                    }
+                    for (Agent m : this.getAgents()) {
+                        MobileAgent n = (MobileAgent) m;
+                        if (n.status != Action.DIE) {
+                            if (n.getData().contains(x)) {
+                                amountGlobalInfo++;
+                                break;
+                            }
                         }
                     }
                 }
             }
 
         }
-        return amountGlobalInfo/topology.getVertexCount();
+
+        return amountGlobalInfo / topology.getVertexCount();
     }
 
     public void updateWorldAge() {
@@ -410,6 +425,7 @@ public class NetworkEnvironmentReplication extends Environment {
      * @return the age
      */
     public int getAge() {
+        //System.out.println("age:" + age);
         return age;
     }
 
