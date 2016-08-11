@@ -33,6 +33,7 @@ public class GraphElements {
         private ArrayList data;
         private float ph = 0.5f;
         private ArrayList<MobileAgent> agents;
+        private String status;
         
         int State;
         
@@ -99,6 +100,20 @@ public class GraphElements {
          */
         public void setPh(float ph) {
             this.ph = ph;
+        }
+
+        /**
+         * @return the status
+         */
+        public String getStatus() {
+            return status;
+        }
+
+        /**
+         * @param status the status to set
+         */
+        public void setStatus(String status) {
+            this.status = status;
         }
     }
     

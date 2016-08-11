@@ -40,7 +40,9 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
         }
 
         //System.out.println("vertex" + currentNode.getData().size());
-
+        /**
+         * Communication among agents is not necessary for this simulation
+         
         //detect other agents in network
         ArrayList<Integer> agentNeighbors = getAgentNeighbors(a);
         //System.out.println(a.getId() + "agentNeigbors" + agentNeighbors);
@@ -79,7 +81,8 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             }
             //System.out.println("joined" + a.getData().size());
         }
-
+        *
+        **/
         if (flag) {
             //Agents can be put to Sleep for some ms
             //sleep is good is graph interface is on

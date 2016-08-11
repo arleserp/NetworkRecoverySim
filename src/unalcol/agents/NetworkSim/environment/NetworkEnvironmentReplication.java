@@ -73,6 +73,8 @@ public class NetworkEnvironmentReplication extends Environment {
         return completed == topology.getVertices().size();
     }
 
+    
+    
     public boolean act(Agent agent, Action action) {
         boolean flag = (action != null);
         MobileAgent a = (MobileAgent) agent;
@@ -81,6 +83,9 @@ public class NetworkEnvironmentReplication extends Environment {
         visitedNodes.add(currentNode);
 
         getLocationAgents().set(a.getId(), a.getLocation());
+
+        /**
+         * Local communication deleted
 
         //detect other agents in network
         ArrayList<Integer> agentNeighbors = getAgentNeighbors(a);
@@ -111,6 +116,9 @@ public class NetworkEnvironmentReplication extends Environment {
             //System.out.println("joined" + a.getData().size());
         }
 
+         * 
+         *
+        **/
         if (flag) {
             //Agents can be put to Sleep for some ms
             //sleep is good is graph interface is on

@@ -5,6 +5,8 @@
  */
 package unalcol.agents.NetworkSim;
 
+import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.UndirectedSparseGraph;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -26,6 +28,8 @@ public class MobileAgent extends Agent implements Serializable {
     private int id;
     private int nMsgSend;
     private int nMsgRecv;
+    private Graph<GraphElements.MyVertex, String> topology;
+    private final GraphCreator.EdgeFactory edge_factory;
 
     public MobileAgent(AgentProgram _program, int ida) {
         super(_program);
@@ -33,6 +37,8 @@ public class MobileAgent extends Agent implements Serializable {
         round = -1;
         id = ida;
         pheromone = 1.0f;
+        topology = new UndirectedSparseGraph(); 
+        edge_factory = new GraphCreator.EdgeFactory();
     }
 
     public void setAttribute(String key, Object value) {
@@ -181,6 +187,27 @@ public class MobileAgent extends Agent implements Serializable {
         synchronized (MobileAgent.class) {
             nMsgRecv++;
         }
+    }
+
+    /**
+     * @return the topology
+     */
+    public Graph<GraphElements.MyVertex, String> getTopology() {
+        return topology;
+    }
+
+    /**
+     * @param topology the topology to set
+     */
+    public void setTopology(Graph<GraphElements.MyVertex, String> topology) {
+        this.topology = topology;
+    }
+
+    /**
+     * @return the edge_factory
+     */
+    public GraphCreator.EdgeFactory getEdge_factory() {
+        return edge_factory;
     }
 
 }

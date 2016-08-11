@@ -55,7 +55,7 @@ public class GraphCreator {
         public GraphElements.MyVertex create() {
             //System.out.println("create!");
             GraphElements.MyVertex v = new GraphElements.MyVertex("p"+a++);
-            ArrayList Data = (ArrayList) Collections.synchronizedList(new ArrayList());
+            ArrayList Data = new ArrayList();
             Double rnd = Math.random();
             while(allData.contains(rnd)){
                 rnd = Math.random();
@@ -72,7 +72,7 @@ public class GraphCreator {
         }
     }
 
-    static class EdgeFactory implements Factory<String> {
+    public static class EdgeFactory implements Factory<String> {
         int chn = 0;
         int input;
 
