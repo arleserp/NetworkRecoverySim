@@ -27,7 +27,8 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
 
         visitedNodes.add(currentNode);
 
-        getLocationAgents().set(a.getId(), a.getLocation());
+        
+        //getLocationAgents().set(a.getId(), a.getLocation());
 
         synchronized (a.getLocation().getData()) {
             //Get data from agent and put information in node
@@ -119,7 +120,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     System.out.println("Agent " + a.getId() + "has failed");
                     a.die();
                     increaseAgentsDie();
-                    getLocationAgents().set(a.getId(), null);
+//                    getLocationAgents().set(a.getId(), null);
                     a.setLocation(null);
                     setChanged();
                     notifyObservers();
@@ -132,6 +133,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             }
         }
 
+        super.evaluateAgentCreation();
         updateWorldAge();
         setChanged();
         notifyObservers();

@@ -14,8 +14,11 @@ import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -28,8 +31,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import org.apache.commons.collections15.Transformer;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import unalcol.agents.NetworkSim.GraphElements;
 import unalcol.agents.NetworkSim.SimulationParameters;
+import static unalcol.agents.NetworkSim.SimulationParameters.pf;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication;
 
 /**
@@ -43,6 +53,8 @@ public class DataReplicationObserver implements Observer {
     boolean added = false;
     boolean isUpdating;
     HashMap<Integer, Double> globalInfo = new HashMap();
+    XYSeries agentsLive;
+    XYSeriesCollection juegoDatos = new XYSeriesCollection();
 
     public DataReplicationObserver() {
         frame = new JFrame("Simple Graph View");
@@ -53,6 +65,8 @@ public class DataReplicationObserver implements Observer {
         //frame.setLocationRelativeTo(null);
         // frame.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
         isUpdating = false;
+        agentsLive = new XYSeries("agentsLive");
+        juegoDatos.addSeries(agentsLive);
     }
 
     @Override
@@ -125,6 +139,10 @@ public class DataReplicationObserver implements Observer {
 
             //System.out.println("World age" + n.getAge() + ", info:" + n.getAmountGlobalInfo());
             if (!globalInfo.containsKey(n.getAge())) {
+                System.out.println("n" + n.getAge() + ", al:" + n.getAgentsLive());
+                synchronized (DataReplicationObserver.class) {
+                    agentsLive.add(n.getAge(), n.getAgentsLive());
+                }
                 globalInfo.put(n.getAge(), n.getAmountGlobalInfo());
             }
             if ((SimulationParameters.maxIter == -1 && n.nodesComplete()) || (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) || n.getAgentsDie() == (n.getAgents().size())) {
@@ -157,7 +175,8 @@ public class DataReplicationObserver implements Observer {
                         filename += "+col+" + SimulationParameters.columns;
                     }
                     String fileImage = filename + ".jpg";
-
+                    String fileImageAgentsLive = filename + "+agentsLive.jpg";
+                    saveImage(fileImageAgentsLive);
                     String pref = filename;
                     pref = pref.replaceAll(".graph", "");
                     filename += ".csv";
@@ -177,9 +196,9 @@ public class DataReplicationObserver implements Observer {
                         escribir.println(x + "," + globalInfo.get(x));
                     }
                     escribir.close();
-                    
+
                     sti = new StatisticsProviderReplication(filename);
-                    
+
                     //ToFix: Statist
                     sti.printStatistics(n);
                     System.out.println("keys" + globalInfo);
@@ -224,4 +243,22 @@ public class DataReplicationObserver implements Observer {
         }
 
     }
+
+    public void saveImage(String filename) {
+        FileOutputStream output;
+        JFreeChart chart = ChartFactory.createXYLineChart(
+                "Agents Live", "round number", "agents",
+                juegoDatos, PlotOrientation.VERTICAL,
+                true, true, false);
+
+        try {
+            output = new FileOutputStream(filename + ".jpg");
+            ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, 400, 400, null);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(DataReplicationObserver.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(DataReplicationObserver.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
 }

@@ -30,6 +30,7 @@ public class MobileAgent extends Agent implements Serializable {
     private int nMsgRecv;
     private Graph<GraphElements.MyVertex, String> topology;
     private final GraphCreator.EdgeFactory edge_factory;
+    
 
     public MobileAgent(AgentProgram _program, int ida) {
         super(_program);

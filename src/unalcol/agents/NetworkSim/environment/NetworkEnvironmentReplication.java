@@ -19,6 +19,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import unalcol.agents.NetworkSim.ActionParameters;
 import unalcol.agents.NetworkSim.GraphElements;
 import unalcol.agents.NetworkSim.MobileAgent;
+import unalcol.agents.NetworkSim.MotionProgramSimpleFactory;
+import unalcol.agents.NetworkSim.SimulationParameters;
 
 public class NetworkEnvironmentReplication extends Environment {
 
@@ -73,8 +75,6 @@ public class NetworkEnvironmentReplication extends Environment {
         return completed == topology.getVertices().size();
     }
 
-    
-    
     public boolean act(Agent agent, Action action) {
         boolean flag = (action != null);
         MobileAgent a = (MobileAgent) agent;
@@ -86,39 +86,35 @@ public class NetworkEnvironmentReplication extends Environment {
 
         /**
          * Local communication deleted
-
-        //detect other agents in network
-        ArrayList<Integer> agentNeighbors = getAgentNeighbors(a);
-        //System.out.println(a.getId() + "agentNeigbors" + agentNeighbors);
-
-        //serialize messages 
-        String[] message = new String[2]; //msg: [from|msg]
-        message[0] = String.valueOf(a.getId());
-        message[1] = ObjectSerializer.serialize(a.getData());
-
-        //for each neighbor send a message
-        for (Integer idAgent : agentNeighbors) {
-            NetworkMessageBuffer.getInstance().putMessage(idAgent, message);
-            a.incMsgSend();
-        }
-
-        String[] inbox = NetworkMessageBuffer.getInstance().getMessage(a.getId());
-
-        //inbox: id | infi 
-        if (inbox != null) {
-            a.incMsgRecv();
-            //System.out.println("my " + a.getData().size());
-            ArrayList senderInf = (ArrayList) ObjectSerializer.deserialize(inbox[1]);
-            //System.out.println("received" + senderInf.size());
-            // Join ArrayLists
-            a.getData().removeAll(senderInf);
-            a.getData().addAll(senderInf);
-            //System.out.println("joined" + a.getData().size());
-        }
-
-         * 
          *
-        **/
+         * //detect other agents in network ArrayList<Integer> agentNeighbors =
+         * getAgentNeighbors(a); //System.out.println(a.getId() +
+         * "agentNeigbors" + agentNeighbors);
+         *
+         * //serialize messages String[] message = new String[2]; //msg:
+         * [from|msg] message[0] = String.valueOf(a.getId()); message[1] =
+         * ObjectSerializer.serialize(a.getData());
+         *
+         * //for each neighbor send a message for (Integer idAgent :
+         * agentNeighbors) {
+         * NetworkMessageBuffer.getInstance().putMessage(idAgent, message);
+         * a.incMsgSend(); }
+         *
+         * String[] inbox =
+         * NetworkMessageBuffer.getInstance().getMessage(a.getId());
+         *
+         * //inbox: id | infi if (inbox != null) { a.incMsgRecv();
+         * //System.out.println("my " + a.getData().size()); ArrayList senderInf
+         * = (ArrayList) ObjectSerializer.deserialize(inbox[1]);
+         * //System.out.println("received" + senderInf.size()); // Join
+         * ArrayLists a.getData().removeAll(senderInf);
+         * a.getData().addAll(senderInf); //System.out.println("joined" +
+         * a.getData().size()); }
+         *
+         *
+         *
+         *
+         */
         if (flag) {
             //Agents can be put to Sleep for some ms
             //sleep is good is graph interface is on
@@ -164,6 +160,7 @@ public class NetworkEnvironmentReplication extends Environment {
             }
         }
         updateWorldAge();
+        evaluateAgentCreation();
         setChanged();
         notifyObservers();
         return flag;
@@ -184,6 +181,9 @@ public class NetworkEnvironmentReplication extends Environment {
         a.getData().removeAll(a.getLocation().getData());
         a.getData().addAll(a.getLocation().getData());
 
+        //Stores agent time, agent time and agent id
+        a.getLocation().saveAgentInfo(a.getData(), a.getId(), a.getRound(), age);
+
         //System.out.println("agent info size:" + anAgent.getData().size());
         return p;
     }
@@ -192,7 +192,7 @@ public class NetworkEnvironmentReplication extends Environment {
         super(_agents);
         this.mbuffer = new HashMap<>();
         int n = _agents.size();
-        locationAgents = new ArrayList<>(n);
+        locationAgents = new ArrayList<>();
 
         for (int i = 0; i < n; i++) {
             MobileAgent ag = (MobileAgent) _agents.get(i);
@@ -237,6 +237,12 @@ public class NetworkEnvironmentReplication extends Environment {
     public int getAgentsDie() {
         synchronized (NetworkEnvironmentReplication.class) {
             return agentsDie;
+        }
+    }
+
+    public int getAgentsLive() {
+        synchronized (NetworkEnvironmentReplication.class) {
+            return this.agents.size() - agentsDie;
         }
     }
 
@@ -300,7 +306,9 @@ public class NetworkEnvironmentReplication extends Environment {
      * @return the locationAgents
      */
     public ArrayList<GraphElements.MyVertex> getLocationAgents() {
-        return locationAgents;
+        synchronized (NetworkEnvironmentReplication.class) {
+            return locationAgents;
+        }
     }
 
     /**
@@ -442,6 +450,30 @@ public class NetworkEnvironmentReplication extends Environment {
      */
     public void setAge(int age) {
         this.age = age;
+    }
+
+    //Example: It is better handshake protocol. J. Gomez
+    public void evaluateAgentCreation() {
+        synchronized (NetworkEnvironmentReplication.class) {
+            for (GraphElements.MyVertex v : topology.getVertices()) {
+                if (Math.abs(v.getLastTimeVisited() - age) > 10) {
+                    System.out.println("create new agent instance...");
+                    AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
+                    MobileAgent a = new MobileAgent(program, agents.size() + 1);
+                    getLocationAgents().add(new GraphElements.MyVertex("null"));
+                    //System.out.println("creating buffer id" + ag.getAttribute("ID"));
+                    //mbuffer.put(agents.size() + 1, new ConcurrentLinkedQueue());
+                    a.setLocation(v);
+                    a.setData(new ArrayList(v.getData()));
+                    a.setArchitecture(this);
+                    this.agents.add(a);
+                    a.live();
+                    Thread t = new Thread(a);
+                    a.setThread(t);
+                    t.start();
+                }
+            }
+        }
     }
 
 }
