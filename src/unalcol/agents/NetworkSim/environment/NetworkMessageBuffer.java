@@ -10,13 +10,16 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Singleton interface for messaging agents
+ *
  * @author Arles Rodriguez
  */
 public class NetworkMessageBuffer {
+
     Hashtable<Integer, LinkedBlockingQueue> mbuffer;
     static final int MAXQUEUE = 5; //Max input buffer size by process
 
     private static class Holder {
+
         static final NetworkMessageBuffer INSTANCE = new NetworkMessageBuffer();
     }
 
@@ -28,10 +31,10 @@ public class NetworkMessageBuffer {
         return Holder.INSTANCE;
     }
 
-    public void createBuffer(Integer pid){
+    public void createBuffer(Integer pid) {
         mbuffer.put(pid, new LinkedBlockingQueue());
     }
-    
+
     public void putMessage(Integer pid, String[] msg) {
         mbuffer.get(pid).add(msg);
     }

@@ -27,13 +27,11 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
 
         visitedNodes.add(currentNode);
 
-        
         //getLocationAgents().set(a.getId(), a.getLocation());
-
         synchronized (a.getLocation().getData()) {
             //Get data from agent and put information in node
-            for(Object data: a.getData()){
-                if(!a.getLocation().getData().contains(data)){
+            for (Object data : a.getData()) {
+                if (!a.getLocation().getData().contains(data)) {
                     a.getLocation().getData().add(data);
                 }
             }
@@ -41,9 +39,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
         }
 
         //System.out.println("vertex" + currentNode.getData().size());
-        /**
-         * Communication among agents is not necessary for this simulation
-         
+        // Communication among agents 
         //detect other agents in network
         ArrayList<Integer> agentNeighbors = getAgentNeighbors(a);
         //System.out.println(a.getId() + "agentNeigbors" + agentNeighbors);
@@ -60,6 +56,8 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             a.incMsgSend();
         }
 
+        System.out.println("a id:" + a.getId());
+
         String[] inbox = NetworkMessageBuffer.getInstance().getMessage(a.getId());
 
         int old_size = a.getData().size();
@@ -67,6 +65,19 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
         //inbox: id | infi 
         if (inbox != null) {
             a.incMsgRecv();
+
+            if (a.getIdFather() == Integer.valueOf(inbox[0])) {
+                System.out.println("My father is alive. Freeing memory");
+
+                a.die();
+                increaseAgentsDie();
+//                    getLocationAgents().set(a.getId(), null);
+                a.setLocation(null);
+                setChanged();
+                notifyObservers();
+                return flag;
+
+            }
             //System.out.println("a" + a.getId() + "recv message from: " + inbox[0]);
             //System.out.println("my "+ a.getData().size());
             ArrayList senderInf = (ArrayList) ObjectSerializer.deserialize(inbox[1]);
@@ -82,8 +93,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             }
             //System.out.println("joined" + a.getData().size());
         }
-        *
-        **/
+
         if (flag) {
             //Agents can be put to Sleep for some ms
             //sleep is good is graph interface is on
@@ -106,14 +116,14 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     boolean complete = false;
                     if (a.getData().size() == topology.getVertexCount()) {
                         complete = true;
-                        
+
                     }
 
                     if (getRoundComplete() == -1 && complete) {
                         System.out.println("complete! round" + a.getRound());
                         setRoundComplete(a.getRound());
                         setIdBest(a.getId());
-                        updateWorldAge();                        
+                        updateWorldAge();
                     }
                     break;
                 case 1: //die

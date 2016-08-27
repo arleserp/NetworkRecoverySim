@@ -30,7 +30,7 @@ public class MobileAgent extends Agent implements Serializable {
     private int nMsgRecv;
     private Graph<GraphElements.MyVertex, String> topology;
     private final GraphCreator.EdgeFactory edge_factory;
-    
+    private int idFather;
 
     public MobileAgent(AgentProgram _program, int ida) {
         super(_program);
@@ -40,6 +40,7 @@ public class MobileAgent extends Agent implements Serializable {
         pheromone = 1.0f;
         topology = new UndirectedSparseGraph(); 
         edge_factory = new GraphCreator.EdgeFactory();
+        idFather = -1;
     }
 
     public void setAttribute(String key, Object value) {
@@ -209,6 +210,20 @@ public class MobileAgent extends Agent implements Serializable {
      */
     public GraphCreator.EdgeFactory getEdge_factory() {
         return edge_factory;
+    }
+
+    /**
+     * @return the idFather
+     */
+    public int getIdFather() {
+        return idFather;
+    }
+
+    /**
+     * @param idFather the idFather to set
+     */
+    public void setIdFather(int idFather) {
+        this.idFather = idFather;
     }
 
 }
