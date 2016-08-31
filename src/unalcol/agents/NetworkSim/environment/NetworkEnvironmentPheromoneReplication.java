@@ -27,7 +27,9 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
 
         visitedNodes.add(currentNode);
 
-        //getLocationAgents().set(a.getId(), a.getLocation());
+        if(a.getLocation() != null){
+            getLocationAgents().put(a.getId(), a.getLocation());
+        }
         synchronized (a.getLocation().getData()) {
             //Get data from agent and put information in node
             for (Object data : a.getData()) {
@@ -56,7 +58,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             a.incMsgSend();
         }
 
-        System.out.println("a id:" + a.getId());
+        //System.out.println("a id:" + a.getId());
 
         String[] inbox = NetworkMessageBuffer.getInstance().getMessage(a.getId());
 
@@ -65,13 +67,12 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
         //inbox: id | infi 
         if (inbox != null) {
             a.incMsgRecv();
-
+            //System.out.println("recibe");
             if (a.getIdFather() == Integer.valueOf(inbox[0])) {
                 System.out.println("My father is alive. Freeing memory");
-
                 a.die();
                 increaseAgentsDie();
-//                    getLocationAgents().set(a.getId(), null);
+                getLocationAgents().put(a.getId(), null);
                 a.setLocation(null);
                 setChanged();
                 notifyObservers();
@@ -130,7 +131,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     System.out.println("Agent " + a.getId() + "has failed");
                     a.die();
                     increaseAgentsDie();
-//                    getLocationAgents().set(a.getId(), null);
+                    getLocationAgents().put(a.getId(), null);
                     a.setLocation(null);
                     setChanged();
                     notifyObservers();

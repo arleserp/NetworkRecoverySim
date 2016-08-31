@@ -112,11 +112,10 @@ public class DataReplicationObserver implements Observer {
             Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
                 @Override
                 public Paint transform(GraphElements.MyVertex i) {
-                    if (n.getLocationAgents().contains(i)) {
+                    if (n.getLocationAgents().containsValue(i)) {
                         return Color.YELLOW;
                     }
                     if (n.getVisitedNodes().contains(i)) {
-
                         return Color.BLUE;
                     }
                     return Color.RED;
@@ -143,11 +142,14 @@ public class DataReplicationObserver implements Observer {
                 synchronized (DataReplicationObserver.class) {
                     agentsLive.add(n.getAge(), n.getAgentsLive());
                 }
+                
                 globalInfo.put(n.getAge(), n.getAmountGlobalInfo());
             }
             if ((SimulationParameters.maxIter == -1 && n.nodesComplete()) || (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) || n.getAgentsDie() == (n.getAgents().size())) {
                 //StatsTemperaturesMapImpl sti = new StatsTemperaturesMapImpl("experiment-p-" + ((World) obs).getAgents().size() + "- pf-" + pf + ".csv");
+                
                 if (!isUpdating) {
+                    System.out.println("stopping simulation");
                     isUpdating = true;
                     n.stop();
                     StatisticsProviderReplication sti;

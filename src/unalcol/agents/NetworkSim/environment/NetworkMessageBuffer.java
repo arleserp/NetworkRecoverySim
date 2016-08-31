@@ -41,7 +41,14 @@ public class NetworkMessageBuffer {
 
     // Called by Consumer
     public String[] getMessage(Integer pid) {
-        return (String[]) (mbuffer.get(pid).poll());
+        try {
+            //System.out.println("agent id" + pid + ", mbuffer" + mbuffer.get(pid).toString());
+            return (String[]) (mbuffer.get(pid).poll());
+        } catch (NullPointerException ex) {
+            System.out.println("Error reading mbuffer for agent:" + pid + "buffer: " + mbuffer);
+            System.exit(1);
+        }
+        return null;
     }
 
 }

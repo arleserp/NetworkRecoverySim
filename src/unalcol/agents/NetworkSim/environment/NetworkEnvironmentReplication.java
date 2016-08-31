@@ -34,8 +34,9 @@ public class NetworkEnvironmentReplication extends Environment {
     String lastactionlog;
     public List<GraphElements.MyVertex> visitedNodes = Collections.synchronizedList(new ArrayList());
     ;
-    public ArrayList<GraphElements.MyVertex> locationAgents = null;
-    HashMap<Integer, ConcurrentLinkedQueue> mbuffer;
+    
+    public HashMap<Integer,GraphElements.MyVertex> locationAgents = null;
+    //private static final HashMap<Integer, ConcurrentLinkedQueue> mbuffer = new HashMap<>();
     private int roundComplete = -1;
     private int idBest = -1;
     private boolean finished = false;
@@ -82,7 +83,7 @@ public class NetworkEnvironmentReplication extends Environment {
         currentNode = a.getLocation();
         visitedNodes.add(currentNode);
 
-        getLocationAgents().set(a.getId(), a.getLocation());
+        getLocationAgents().put(a.getId(), a.getLocation());
 
         /**
          * Local communication deleted
@@ -147,7 +148,7 @@ public class NetworkEnvironmentReplication extends Environment {
                 case 1: //die
                     a.die();
                     a.setLocation(null);
-                    getLocationAgents().set(a.getId(), null);
+                    getLocationAgents().put(a.getId(), null);
                     increaseAgentsDie();
                     setChanged();
                     notifyObservers();
@@ -190,19 +191,20 @@ public class NetworkEnvironmentReplication extends Environment {
 
     public NetworkEnvironmentReplication(Vector<Agent> _agents, SimpleLanguage _language, Graph<GraphElements.MyVertex, String> gr) {
         super(_agents);
-        this.mbuffer = new HashMap<>();
+        //this.mbuffer = 
         int n = _agents.size();
-        locationAgents = new ArrayList<>();
+       // locationAgents = new ArrayList<>();
 
         for (int i = 0; i < n; i++) {
             MobileAgent ag = (MobileAgent) _agents.get(i);
-            locationAgents.add(new GraphElements.MyVertex("null"));
+         //   locationAgents.add(new GraphElements.MyVertex("null"));
             //System.out.println("creating buffer id" + ag.getAttribute("ID"));
-            mbuffer.put(i, new ConcurrentLinkedQueue());
+            //mbuffer.put(i, new ConcurrentLinkedQueue());
         }
         language = _language;
         date = new Date();
         topology = gr;
+        locationAgents = new HashMap<>();
     }
 
     public Vector<Action> actions() {
@@ -305,7 +307,7 @@ public class NetworkEnvironmentReplication extends Environment {
     /**
      * @return the locationAgents
      */
-    public ArrayList<GraphElements.MyVertex> getLocationAgents() {
+    public HashMap<Integer, GraphElements.MyVertex> getLocationAgents() {
         synchronized (NetworkEnvironmentReplication.class) {
             return locationAgents;
         }
@@ -314,7 +316,7 @@ public class NetworkEnvironmentReplication extends Environment {
     /**
      * @param locationAgents the locationAgents to set
      */
-    public void setLocationAgents(ArrayList<GraphElements.MyVertex> locationAgents) {
+    public void setLocationAgents(HashMap<Integer, GraphElements.MyVertex> locationAgents) {
         this.locationAgents = locationAgents;
     }
 
@@ -457,28 +459,33 @@ public class NetworkEnvironmentReplication extends Environment {
     public void evaluateAgentCreation() {
         synchronized (NetworkEnvironmentReplication.class) {
             for (GraphElements.MyVertex v : topology.getVertices()) {
-                if (Math.abs(v.getLastTimeVisited() - age) > 50) {
-                    System.out.println("create new agent instance...");
+                if (Math.abs(v.getLastTimeVisited() - age) > 40) {
+                    //System.out.println("create new agent instance...");
                     AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
-                    
-                    int newAgentID =agents.size() + 1; 
+
+                    int newAgentID = agents.size();
                     System.out.println("");
                     MobileAgent a = new MobileAgent(program, newAgentID);
+
                     
-                    System.out.println("creating buffer id" + newAgentID);
-                    mbuffer.put(newAgentID, new ConcurrentLinkedQueue());
+                    //System.out.println("creating buffer id" + newAgentID);
+                    NetworkMessageBuffer.getInstance().createBuffer(newAgentID);
 
                     //getLocationAgents().add(new GraphElements.MyVertex("null"));
                     a.setId(newAgentID);
                     a.setData(new ArrayList(v.getData()));
-                    a.setArchitecture(this);
+                    
                     a.setIdFather(v.getLastVisitedAgent());
                     this.agents.add(a);
                     a.live();
                     Thread t = new Thread(a);
                     a.setThread(t);
-                    t.start();
                     a.setLocation(v);
+                    a.setArchitecture(this);
+                    //System.out.println("this" + this);
+                    t.start();
+                    
+                    //System.out.println("end creation of agent" + newAgentID);
                 }
             }
         }
