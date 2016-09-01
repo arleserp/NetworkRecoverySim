@@ -459,8 +459,8 @@ public class NetworkEnvironmentReplication extends Environment {
     public void evaluateAgentCreation() {
         synchronized (NetworkEnvironmentReplication.class) {
             for (GraphElements.MyVertex v : topology.getVertices()) {
-                if (Math.abs(v.getLastTimeVisited() - age) > 40) {
-                    //System.out.println("create new agent instance...");
+                if (Math.random()*10 < SimulationParameters.pf) {
+                    System.out.println("create new agent instance...");
                     AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
 
                     int newAgentID = agents.size();
@@ -476,7 +476,9 @@ public class NetworkEnvironmentReplication extends Environment {
                     a.setData(new ArrayList(v.getData()));
                     
                     a.setIdFather(v.getLastVisitedAgent());
+                    a.setRound(age);
                     this.agents.add(a);
+                    
                     a.live();
                     Thread t = new Thread(a);
                     a.setThread(t);
