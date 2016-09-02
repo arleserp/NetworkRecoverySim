@@ -459,7 +459,7 @@ public class NetworkEnvironmentReplication extends Environment {
     public void evaluateAgentCreation() {
         synchronized (NetworkEnvironmentReplication.class) {
             for (GraphElements.MyVertex v : topology.getVertices()) {
-                if (Math.random()*10 < SimulationParameters.pf) {
+                if (Math.random()*5 < SimulationParameters.pf) {
                     System.out.println("create new agent instance...");
                     AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
 

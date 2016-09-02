@@ -101,6 +101,10 @@ public class DataReplicationEscenario implements Runnable {
         System.out.println("Average Clustering Coefficient: " + GraphStats.averageCC(g));
         System.out.println("Average degree: " + GraphStats.averageDegree(g));
 
+        for(GraphElements.MyVertex v: g.getVertices()){
+            //Node n = new node();
+        }
+        
         if (SimulationParameters.filenameLoc.length() > 1) {
             loadLocations();
         }
