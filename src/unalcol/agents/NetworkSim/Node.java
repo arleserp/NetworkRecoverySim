@@ -16,7 +16,12 @@ import unalcol.agents.AgentProgram;
 public class Node extends Agent {
     private GraphElements.MyVertex v;
 
-    public Node(AgentArchitecture _architecture, AgentProgram _program) {
-        super(_architecture, _program);
+    public Node(AgentProgram _program, GraphElements.MyVertex ve) {
+        super(_program);
+        this.v = ve;
+    }
+    
+    public GraphElements.MyVertex getVertex(){
+        return v;
     }
 }

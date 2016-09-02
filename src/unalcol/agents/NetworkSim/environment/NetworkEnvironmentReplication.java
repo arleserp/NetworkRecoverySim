@@ -25,6 +25,20 @@ import unalcol.agents.NetworkSim.SimulationParameters;
 public class NetworkEnvironmentReplication extends Environment {
 
     public static String msg = null;
+
+    /**
+     * @return the totalAgents
+     */
+    public int getTotalAgents() {
+        return totalAgents;
+    }
+
+    /**
+     * @param aTotalAgents the totalAgents to set
+     */
+    public static void setTotalAgents(int aTotalAgents) {
+        totalAgents = aTotalAgents;
+    }
     public int[][] structure = null;
     public SimpleLanguage language = null;
     Date date;
@@ -35,14 +49,15 @@ public class NetworkEnvironmentReplication extends Environment {
     public List<GraphElements.MyVertex> visitedNodes = Collections.synchronizedList(new ArrayList());
     ;
     
-    public HashMap<Integer,GraphElements.MyVertex> locationAgents = null;
+    public HashMap<Integer, GraphElements.MyVertex> locationAgents = null;
     //private static final HashMap<Integer, ConcurrentLinkedQueue> mbuffer = new HashMap<>();
     private int roundComplete = -1;
     private int idBest = -1;
     private boolean finished = false;
     private int age;
     public static int agentsDie = 0;
-
+    private static int totalAgents = 0;
+    
     /**
      * @return the idBest
      */
@@ -169,23 +184,28 @@ public class NetworkEnvironmentReplication extends Environment {
 
     @Override
     public Percept sense(Agent agent) {
-        MobileAgent a = (MobileAgent) agent;
         Percept p = new Percept();
-        //System.out.println("sense - topology " + topology);
-        //Load neighbors 
-        p.setAttribute("neighbors", getTopology().getNeighbors(a.getLocation()));
-        //System.out.println("agent" + anAgent.getId() + "- neighbor: " +  getTopology().getNeighbors(anAgent.getLocation()));
-        //Load data in Agent
-        //clone ArrayList
 
-        //getData from the node and put in the agent
-        a.getData().removeAll(a.getLocation().getData());
-        a.getData().addAll(a.getLocation().getData());
+        if (agent instanceof MobileAgent) {
+            MobileAgent a = (MobileAgent) agent;
 
-        //Stores agent time, agent time and agent id
-        a.getLocation().saveAgentInfo(a.getData(), a.getId(), a.getRound(), age);
+            //System.out.println("sense - topology " + topology);
+            //Load neighbors 
+            p.setAttribute("neighbors", getTopology().getNeighbors(a.getLocation()));
+            //System.out.println("agent" + anAgent.getId() + "- neighbor: " +  getTopology().getNeighbors(anAgent.getLocation()));
+            //Load data in Agent
+            //clone ArrayList
 
-        //System.out.println("agent info size:" + anAgent.getData().size());
+            //getData from the node and put in the agent
+            a.getData().removeAll(a.getLocation().getData());
+            a.getData().addAll(a.getLocation().getData());
+
+            //Stores agent time, agent time and agent id
+            a.getLocation().saveAgentInfo(a.getData(), a.getId(), a.getRound(), age);
+
+            //System.out.println("agent info size:" + anAgent.getData().size());
+        }
+        
         return p;
     }
 
@@ -193,14 +213,20 @@ public class NetworkEnvironmentReplication extends Environment {
         super(_agents);
         //this.mbuffer = 
         int n = _agents.size();
-       // locationAgents = new ArrayList<>();
+        // locationAgents = new ArrayList<>();
 
-        for (int i = 0; i < n; i++) {
+        /*for (int i = 0; i < n; i++) {
             MobileAgent ag = (MobileAgent) _agents.get(i);
          //   locationAgents.add(new GraphElements.MyVertex("null"));
             //System.out.println("creating buffer id" + ag.getAttribute("ID"));
             //mbuffer.put(i, new ConcurrentLinkedQueue());
+        }*/
+        for(Agent a: this.getAgents()){
+            if(a instanceof MobileAgent){
+                totalAgents++;
+            }
         }
+        
         language = _language;
         date = new Date();
         topology = gr;
@@ -244,7 +270,7 @@ public class NetworkEnvironmentReplication extends Environment {
 
     public int getAgentsLive() {
         synchronized (NetworkEnvironmentReplication.class) {
-            return this.agents.size() - agentsDie;
+            return getTotalAgents() - agentsDie;
         }
     }
 
@@ -408,11 +434,13 @@ public class NetworkEnvironmentReplication extends Environment {
                         System.out.println("error 2!");
                     }
                     for (Agent m : this.getAgents()) {
-                        MobileAgent n = (MobileAgent) m;
-                        if (n.status != Action.DIE) {
-                            if (n.getData().contains(x)) {
-                                amountGlobalInfo++;
-                                break;
+                        if (m instanceof MobileAgent) {
+                            MobileAgent n = (MobileAgent) m;
+                            if (n.status != Action.DIE) {
+                                if (n.getData().contains(x)) {
+                                    amountGlobalInfo++;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -429,8 +457,10 @@ public class NetworkEnvironmentReplication extends Environment {
         int agentslive = 0;
         for (int k = 0; k < this.getAgents().size(); k++) {
             if ((this.getAgent(k)).status != Action.DIE) {
-                average += ((MobileAgent) this.getAgent(k)).getRound();
-                agentslive++;
+                if (this.getAgent(k) instanceof MobileAgent) {
+                    average += ((MobileAgent) this.getAgent(k)).getRound();
+                    agentslive++;
+                }
             }
         }
         if (agentslive != 0) {
@@ -459,35 +489,34 @@ public class NetworkEnvironmentReplication extends Environment {
     public void evaluateAgentCreation() {
         synchronized (NetworkEnvironmentReplication.class) {
             for (GraphElements.MyVertex v : topology.getVertices()) {
-                if (Math.random()*5 < SimulationParameters.pf) {
+                if (Math.random() * 80 < SimulationParameters.pf) {
                     System.out.println("create new agent instance...");
                     AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
 
                     int newAgentID = agents.size();
-                    System.out.println("");
                     MobileAgent a = new MobileAgent(program, newAgentID);
 
-                    
                     //System.out.println("creating buffer id" + newAgentID);
                     NetworkMessageBuffer.getInstance().createBuffer(newAgentID);
 
                     //getLocationAgents().add(new GraphElements.MyVertex("null"));
                     a.setId(newAgentID);
                     a.setData(new ArrayList(v.getData()));
-                    
+
                     a.setIdFather(v.getLastVisitedAgent());
                     a.setRound(age);
                     this.agents.add(a);
-                    
+
                     a.live();
                     Thread t = new Thread(a);
                     a.setThread(t);
                     a.setLocation(v);
                     a.setArchitecture(this);
                     //System.out.println("this" + this);
+                    setTotalAgents(getTotalAgents() + 1);
                     t.start();
-                    
-                    //System.out.println("end creation of agent" + newAgentID);
+
+                    System.out.println("end creation of agent" + newAgentID);
                 }
             }
         }

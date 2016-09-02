@@ -39,20 +39,22 @@ class StatisticsProviderReplication {
         ArrayList<Double> msgin = new ArrayList<>();
         ArrayList<Double> msgout = new ArrayList<>();
         //ArrayList<Double> explTerrain = new ArrayList<>();
-        
+
         for (int i = 0; i < n; i++) {
             int count = 0;
-            MobileAgent a = (MobileAgent) w.getAgent(i);
-            count = a.getData().size();
-            if (count == w.getTopology().getVertices().size()) {
-                right++;
-            } else {
-                wrong++;
+            if (w.getAgent(i) instanceof MobileAgent) {
+                MobileAgent a = (MobileAgent) w.getAgent(i);
+                count = a.getData().size();
+                if (count == w.getTopology().getVertices().size()) {
+                    right++;
+                } else {
+                    wrong++;
+                }
+                data.add((double) count);
+                //System.out.println("a" + i + " msg sent:" + a.getnMsgRecv() + "msg recv" + a.getnMsgRecv());
+                msgin.add((double) a.getnMsgRecv());
+                msgout.add((double) a.getnMsgSend());
             }
-            data.add((double) count);
-            //System.out.println("a" + i + " msg sent:" + a.getnMsgRecv() + "msg recv" + a.getnMsgRecv());
-            msgin.add((double) a.getnMsgRecv());
-            msgout.add((double) a.getnMsgSend());
             //explTerrain.add((double) a.getExploredTerrain());
         }
 
@@ -75,7 +77,6 @@ class StatisticsProviderReplication {
         return Statistics;
     }
 
-    
     void printStatistics(NetworkEnvironmentReplication w) {
         Hashtable st = getStatisticsInteger(w);
         try {
@@ -83,8 +84,8 @@ class StatisticsProviderReplication {
             //filename = getFileName() + "ds.trace";
             PrintWriter escribir;
             escribir = new PrintWriter(new BufferedWriter(new FileWriter(reportFile, true)));
-            escribir.println(st.get("right") + "," + st.get("wrong") + ","  + st.get("nvertex") + "," + st.get("nedges")+ "," + st.get("mean") + "," + st.get("stddev") + "," + st.get("avgSend")
-                    + "," + st.get("stdDevSend") + "," + st.get("avgRecv")  + "," + st.get("stdDevRecv") + "," + st.get("round"));
+            escribir.println(st.get("right") + "," + st.get("wrong") + "," + st.get("nvertex") + "," + st.get("nedges") + "," + st.get("mean") + "," + st.get("stddev") + "," + st.get("avgSend")
+                    + "," + st.get("stdDevSend") + "," + st.get("avgRecv") + "," + st.get("stdDevRecv") + "," + st.get("round"));
             escribir.close();
         } catch (IOException ex) {
             Logger.getLogger(StatisticsProviderReplication.class.getName()).log(Level.SEVERE, null, ex);

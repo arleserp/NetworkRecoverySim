@@ -5,6 +5,7 @@
  */
 package unalcol.agents.NetworkSim;
 
+import static cern.clhep.Units.g;
 import edu.uci.ics.jung.graph.Graph;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,10 +17,11 @@ import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 import unalcol.agents.simulate.util.SimpleLanguage;
 import java.util.Vector;
-import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneCollection;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplication;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication;
 import unalcol.agents.NetworkSim.environment.NetworkMessageBuffer;
+import unalcol.agents.NetworkSim.environment.NetworkNodeMessageBuffer;
+import unalcol.agents.NetworkSim.programs.NodeProgram;
 import unalcol.agents.NetworkSim.util.GraphStats;
 //import unalcol.agents.NetworkSim.util.GraphStatistics;
 import unalcol.agents.NetworkSim.util.DataReplicationObserver;
@@ -81,10 +83,17 @@ public class DataReplicationEscenario implements Runnable {
         Vector<Agent> agents = new Vector();
         System.out.println("fp" + probFailure);
 
+        //Language for Agents
         String[] _percepts = {"data", "neighbors"};
         String[] _actions = {"move", "die"};
-        SimpleLanguage languaje = new SimpleLanguage(_percepts, _actions);
+        SimpleLanguage agentsLanguage = new SimpleLanguage(_percepts, _actions);
 
+        //Language for nodes
+        String[] nodePercepts = {"data", "neighbors"};
+        String[] nodeActions = {"communicate", "die"};
+        SimpleLanguage nodeLanguaje = new SimpleLanguage(nodePercepts, nodeActions);
+        NodeProgram np = new NodeProgram(SimulationParameters.pf);
+        
         //report = new reportHealingProgram(population, probFailure, this);
         //greport = new GraphicReportHealingObserver(probFailure);
         //Create graph
@@ -101,8 +110,12 @@ public class DataReplicationEscenario implements Runnable {
         System.out.println("Average Clustering Coefficient: " + GraphStats.averageCC(g));
         System.out.println("Average degree: " + GraphStats.averageDegree(g));
 
+        
+        
         for(GraphElements.MyVertex v: g.getVertices()){
-            //Node n = new node();
+            Node n = new Node(np, v);
+            NetworkNodeMessageBuffer.getInstance().createBuffer(v.getName());
+            agents.add(n);
         }
         
         if (SimulationParameters.filenameLoc.length() > 1) {
@@ -123,7 +136,7 @@ public class DataReplicationEscenario implements Runnable {
         }
 
         graphVisualization = new DataReplicationObserver();
-        world = new NetworkEnvironmentPheromoneReplication(agents, languaje, g);
+        world = new NetworkEnvironmentPheromoneReplication(agents, agentsLanguage, g);
         world.addObserver(graphVisualization);
         //greport.addObserver(world);
         world.not();

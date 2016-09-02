@@ -71,6 +71,7 @@ public class DataReplicationObserver implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
+        //System.out.println("observer update");
         if (o instanceof NetworkEnvironmentReplication) {
             final NetworkEnvironmentReplication n = (NetworkEnvironmentReplication) o;
             // The BasicVisualizationServer<V,E> is parameterized by the vertex and edge types
@@ -135,17 +136,18 @@ public class DataReplicationObserver implements Observer {
             } else {
                 frame.repaint();
             }
+            
 
             //System.out.println("World age" + n.getAge() + ", info:" + n.getAmountGlobalInfo());
             if (!globalInfo.containsKey(n.getAge())) {
-                System.out.println("n" + n.getAge() + ", al:" + n.getAgentsLive());
+                //System.out.println("n" + n.getAge() + ", al:" + n.getAgentsLive());
                 synchronized (DataReplicationObserver.class) {
                     agentsLive.add(n.getAge(), n.getAgentsLive());
                 }
                 
                 globalInfo.put(n.getAge(), n.getAmountGlobalInfo());
             }
-            if ((SimulationParameters.maxIter == -1 && n.nodesComplete()) || (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) || n.getAgentsDie() == (n.getAgents().size())) {
+            if ((SimulationParameters.maxIter == -1 && n.nodesComplete()) || (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) || n.getAgentsDie() == (n.getTotalAgents())) {
                 //StatsTemperaturesMapImpl sti = new StatsTemperaturesMapImpl("experiment-p-" + ((World) obs).getAgents().size() + "- pf-" + pf + ".csv");
                 
                 if (!isUpdating) {
