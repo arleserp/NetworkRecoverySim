@@ -200,7 +200,7 @@ public class DataReplicationEscenario implements Runnable {
                     return v;
                 }
             }
-            System.out.println("null???");
+            //System.out.println("null???");
             return null;
         } else {
             int pos = (int) (Math.random() * g.getVertexCount());

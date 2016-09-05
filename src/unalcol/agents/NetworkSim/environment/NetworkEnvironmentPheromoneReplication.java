@@ -27,6 +27,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             ActionParameters ac = (ActionParameters) action;
             //System.out.println("cn" + currentNode);
             currentNode = a.getLocation();
+            
 
             visitedNodes.add(currentNode);
 
