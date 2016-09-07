@@ -7,6 +7,7 @@ package unalcol.agents.NetworkSim;
 
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseMultigraph;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.apache.commons.collections15.Factory;

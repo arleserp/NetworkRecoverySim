@@ -28,9 +28,8 @@ public class MobileAgent extends Agent implements Serializable {
     private int id;
     private int nMsgSend;
     private int nMsgRecv;
-    private Graph<GraphElements.MyVertex, String> topology;
-    private final GraphCreator.EdgeFactory edge_factory;
     private int idFather;
+    private GraphElements.MyVertex prevLocation;
 
     public MobileAgent(AgentProgram _program, int ida) {
         super(_program);
@@ -38,11 +37,10 @@ public class MobileAgent extends Agent implements Serializable {
         round = -1;
         id = ida;
         pheromone = 1.0f;
-        topology = new UndirectedSparseGraph(); 
-        edge_factory = new GraphCreator.EdgeFactory();
         idFather = -1;
     }
 
+    
     public void setAttribute(String key, Object value) {
         properties.put(key, value);
     }
@@ -192,27 +190,6 @@ public class MobileAgent extends Agent implements Serializable {
     }
 
     /**
-     * @return the topology
-     */
-    public Graph<GraphElements.MyVertex, String> getTopology() {
-        return topology;
-    }
-
-    /**
-     * @param topology the topology to set
-     */
-    public void setTopology(Graph<GraphElements.MyVertex, String> topology) {
-        this.topology = topology;
-    }
-
-    /**
-     * @return the edge_factory
-     */
-    public GraphCreator.EdgeFactory getEdge_factory() {
-        return edge_factory;
-    }
-
-    /**
      * @return the idFather
      */
     public int getIdFather() {
@@ -224,6 +201,20 @@ public class MobileAgent extends Agent implements Serializable {
      */
     public void setIdFather(int idFather) {
         this.idFather = idFather;
+    }
+
+    /**
+     * @return the prevLocation
+     */
+    public GraphElements.MyVertex getPrevLocation() {
+        return prevLocation;
+    }
+
+    /**
+     * @param prevLocation the prevLocation to set
+     */
+    public void setPrevLocation(GraphElements.MyVertex prevLocation) {
+        this.prevLocation = prevLocation;
     }
 
 }

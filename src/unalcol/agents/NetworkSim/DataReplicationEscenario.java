@@ -5,7 +5,6 @@
  */
 package unalcol.agents.NetworkSim;
 
-import static cern.clhep.Units.g;
 import edu.uci.ics.jung.graph.Graph;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -110,10 +109,9 @@ public class DataReplicationEscenario implements Runnable {
         System.out.println("Average Clustering Coefficient: " + GraphStats.averageCC(g));
         System.out.println("Average degree: " + GraphStats.averageDegree(g));
 
-        
-        
         for(GraphElements.MyVertex v: g.getVertices()){
             Node n = new Node(np, v);
+            n.setPfCreate(0);
             NetworkNodeMessageBuffer.getInstance().createBuffer(v.getName());
             agents.add(n);
         }
@@ -129,6 +127,7 @@ public class DataReplicationEscenario implements Runnable {
             GraphElements.MyVertex tmp = getLocation(g);
             System.out.println("tmp" + tmp);
             a.setLocation(tmp);
+            a.setPrevLocation(tmp);
             a.setProgram(program);
             a.setAttribute("infi", new ArrayList<String>());
             NetworkMessageBuffer.getInstance().createBuffer(a.getId());

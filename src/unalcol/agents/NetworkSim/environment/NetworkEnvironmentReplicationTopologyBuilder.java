@@ -184,13 +184,13 @@ public class NetworkEnvironmentReplicationTopologyBuilder extends Environment {
         //Build network structure
         //by now in an additive way
         
-        a.getTopology().addVertex(a.getLocation());
+        //a.getTopology().addVertex(a.getLocation());
         
         for(GraphElements.MyVertex v: getTopology().getNeighbors(a.getLocation())){
-            a.getTopology().addVertex(v);
-            a.getTopology().addEdge(a.getEdge_factory().create(), a.getLocation(), v);
+            //a.getTopology().addVertex(v);
+            //a.getTopology().addEdge(a.getEdge_factory().create(), a.getLocation(), v);
         }
-        System.out.println("vertices" + a.getTopology().getVertexCount());
+        //System.out.println("vertices" + a.getTopology().getVertexCount());
         
         //getData from the node and put in the agent
         a.getData().removeAll(a.getLocation().getData());
