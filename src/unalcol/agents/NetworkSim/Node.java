@@ -6,6 +6,7 @@
 package unalcol.agents.NetworkSim;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 
@@ -17,18 +18,19 @@ public class Node extends Agent {
 
     private GraphElements.MyVertex v;
     private ArrayList<Agent> currentAgents;
-    private ArrayList<Integer> responsibleAgents;
+    private HashMap<Integer, Integer> responsibleAgents;
     private double pfCreate;
     private int roundsWithOutVisit;
     private int roundsWithoutAck;
     private int nMsgSend;
     private int nMsgRecv;
-
+    private int rounds;
+    
     public Node(AgentProgram _program, GraphElements.MyVertex ve) {
         super(_program);
         this.v = ve;
         currentAgents = new ArrayList<>();
-        responsibleAgents = new ArrayList<>();
+        responsibleAgents = new HashMap<>();
     }
 
     public GraphElements.MyVertex getVertex() {
@@ -101,14 +103,14 @@ public class Node extends Agent {
     /**
      * @return the responsibleAgents
      */
-    public ArrayList<Integer> getResponsibleAgents() {
+    public HashMap<Integer, Integer> getResponsibleAgents() {
         return responsibleAgents;
     }
 
     /**
      * @param responsibleAgents the responsibleAgents to set
      */
-    public void setResponsibleAgents(ArrayList<Integer> responsibleAgents) {
+    public void setResponsibleAgents(HashMap<Integer, Integer> responsibleAgents) {
         this.responsibleAgents = responsibleAgents;
     }
 
@@ -171,6 +173,26 @@ public class Node extends Agent {
      */
     public void incRoundsWithoutAck() {
         roundsWithoutAck++;
+    }
+
+    /**
+     * @return the rounds
+     */
+    public int getRounds() {
+        return rounds;
+    }
+
+    /**
+     * @param rounds the rounds to set
+     */
+    public void setRounds(int rounds) {
+        this.rounds = rounds;
+    }
+    
+    public void incRounds(){
+        synchronized(Node.class){
+            this.rounds++;
+        }
     }
 
 }

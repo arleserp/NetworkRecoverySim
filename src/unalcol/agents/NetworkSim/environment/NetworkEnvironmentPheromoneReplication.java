@@ -159,15 +159,16 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             return flag;
         }
         if (agent instanceof Node) {
-            Node n = (Node) agent;
 
-            evaluateAgentCreation(n);
-            n.incRoundsWithoutAck();
+            Node n = (Node) agent;
+            n.incRounds();
+
+//            n.incRoundsWithoutAck();
             for (Agent ag : n.getCurrentAgents()) {
                 MobileAgent a = (MobileAgent) ag;
                 if (a.getLocation() != null && a.getPrevLocation() != null) {
                     if (a.getPrevLocation().equals(a.getLocation())) {
-                        n.getResponsibleAgents().add(a.getId());
+                        n.getResponsibleAgents().put(a.getId(), n.getRounds());
                     } else {
                         String[] message = new String[2]; //msg: [from|msg]
                         message[0] = n.getVertex().getName();
@@ -184,12 +185,13 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             //inbox: node | agent
             if (inbox != null) {
                 n.incMsgRecv();
-                n.setRoundsWithoutAck(0);
+                //n.setRoundsWithoutAck(0);
                 //System.out.println("Node " + n.getVertex().getName() + " recv message from: " + inbox[0]);
                 //System.out.println("my "+ a.getData().size());
                 int agentId = Integer.valueOf(inbox[1]);
-                n.getResponsibleAgents().remove(Integer.valueOf(agentId));
+                n.getResponsibleAgents().remove(agentId);
             }
+            evaluateAgentCreation(n);
 
         }
         return false;
@@ -205,55 +207,55 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
 
     //Example: It is better handshake protocol. J. Gomez
     public void evaluateAgentCreation(Node n) {
-
+        //System.out.println("n get respo" + n.getVertex().getName() + ", " + n.getResponsibleAgents());
         if (n.getResponsibleAgents().isEmpty()) {
             n.setRoundsWithOutVisit(0);
             n.setPfCreate(0);
         } else {
-            if (n.getRoundsWithoutAck() > 2) {
-                n.setPfCreate(1);
-                System.out.println("round without visit node:" + n.getVertex().getName() + " rounds: " + n.getRoundsWithoutAck());
+            synchronized (NetworkEnvironmentPheromoneReplication.class) {
+
+                for (Integer k : n.getResponsibleAgents().keySet()) {
+                    System.out.println("entra n rounds:" + n.getRounds() + ", n" + n.getResponsibleAgents().get(k));
+                    if (n.getRounds() - n.getResponsibleAgents().get(k) > 1) { //this is not the expresion
+                        //if (Math.random() < n.getPfCreate()) {
+                        System.out.println("create new agent instance..." + n.getVertex().getName() + " n pf create: " + n.getPfCreate());
+                        AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
+
+                        int newAgentID = agents.size();
+                        MobileAgent a = new MobileAgent(program, newAgentID);
+
+                        //System.out.println("creating buffer id" + newAgentID);
+                        NetworkMessageBuffer.getInstance().createBuffer(newAgentID);
+
+                        //getLocationAgents().add(new GraphElements.MyVertex("null"));
+                        a.setId(newAgentID);
+                        a.setData(new ArrayList(n.getVertex().getData()));
+
+                        a.setIdFather(n.getResponsibleAgents().get(k));
+                        a.setRound(super.getAge());
+                        this.agents.add(a);
+
+                        a.live();
+                        Thread t = new Thread(a);
+                        a.setThread(t);
+                        a.setLocation(n.getVertex());
+                        a.setPrevLocation(n.getVertex());
+                        a.setArchitecture(this);
+                        //System.out.println("this" + this);
+                        setTotalAgents(getTotalAgents() + 1);
+                        t.start();
+                        n.getResponsibleAgents().remove(k);
+                        System.out.println("end creation of agent" + newAgentID);
+
+                    }
+
+                }
             }
         }
 
-        synchronized (NetworkEnvironmentReplication.class) {
-            if (Math.random() < n.getPfCreate()) {
-                n.setRoundsWithoutAck(0);
-                n.setPfCreate(0);
-                System.out.println("create new agent instance..." + n.getVertex().getName() + " n pf create: " + n.getPfCreate());
-                AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
+    }
 
-                int newAgentID = agents.size();
-                MobileAgent a = new MobileAgent(program, newAgentID);
-
-                //System.out.println("creating buffer id" + newAgentID);
-                NetworkMessageBuffer.getInstance().createBuffer(newAgentID);
-
-                //getLocationAgents().add(new GraphElements.MyVertex("null"));
-                a.setId(newAgentID);
-                a.setData(new ArrayList(n.getVertex().getData()));
-
-                a.setIdFather(n.getVertex().getLastVisitedAgent());
-                a.setRound(super.getAge());
-                this.agents.add(a);
-
-                a.live();
-                Thread t = new Thread(a);
-                a.setThread(t);
-                a.setLocation(n.getVertex());
-                a.setPrevLocation(n.getVertex());
-                a.setArchitecture(this);
-                //System.out.println("this" + this);
-                setTotalAgents(getTotalAgents() + 1);
-                t.start();
-
-                System.out.println("end creation of agent" + newAgentID);
-               
-            }
-
-        }
-
-        /* if (!n.getCurrentAgents().isEmpty()) {
+    /* if (!n.getCurrentAgents().isEmpty()) {
             n.setRoundsWithOutVisit(0);
             n.setPfCreate(0);
         } else {
@@ -297,5 +299,5 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             }
 
         }*/
-    }
+    //}
 }
