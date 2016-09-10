@@ -206,7 +206,8 @@ public class NetworkEnvironmentReplication extends Environment {
             ArrayList<Agent> agentNode = new ArrayList<>();
             Node n = (Node) agent;
             synchronized (NetworkEnvironmentReplication.class) {
-                for (Agent a : getAgents()) {
+                ArrayList<Agent> agentsCopy = new ArrayList(getAgents());
+                for (Agent a : agentsCopy) {
                     if (a instanceof MobileAgent) {
                         MobileAgent ma = (MobileAgent) a;
                         if (ma.getLocation() != null && ma.getLocation().getName().equals(n.getVertex().getName())) {
@@ -446,7 +447,8 @@ public class NetworkEnvironmentReplication extends Environment {
                     if (x == null) {
                         System.out.println("error 2!");
                     }
-                    for (Agent m : this.getAgents()) {
+                    ArrayList<Agent> agentsTemp = new ArrayList(this.getAgents());
+                    for (Agent m : agentsTemp) {
                         if (m instanceof MobileAgent) {
                             MobileAgent n = (MobileAgent) m;
                             if (n.status != Action.DIE) {

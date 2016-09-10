@@ -66,7 +66,7 @@ class StatisticsProviderReplication {
         Statistics.put("nedges", w.topology.getEdgeCount());
         Statistics.put("mean", stnd.getMean());
         Statistics.put("stddev", stnd.getStdDev());
-        Statistics.put("right", right);
+        Statistics.put("right", w.nodesComplete()); //Changed to obtain if information is replicated in nodes
         Statistics.put("wrong", wrong);
         Statistics.put("round", w.getAge());
         Statistics.put("avgSend", stsend.getMean());
@@ -80,7 +80,7 @@ class StatisticsProviderReplication {
     void printStatistics(NetworkEnvironmentReplication w) {
         Hashtable st = getStatisticsInteger(w);
         try {
-            int nr = w.getAgents().size() - ((Integer) st.get("right") + (Integer) st.get("wrong"));
+            //int nr = w.getAgents().size() - ((Integer) st.get("right") + (Integer) st.get("wrong"));
             //filename = getFileName() + "ds.trace";
             PrintWriter escribir;
             escribir = new PrintWriter(new BufferedWriter(new FileWriter(reportFile, true)));

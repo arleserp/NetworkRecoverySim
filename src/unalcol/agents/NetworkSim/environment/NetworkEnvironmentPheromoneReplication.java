@@ -7,6 +7,8 @@ import java.util.Vector;
 
 import edu.uci.ics.jung.graph.*;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
 import unalcol.agents.NetworkSim.ActionParameters;
 import unalcol.agents.NetworkSim.GraphElements;
 import unalcol.agents.NetworkSim.MobileAgent;
@@ -74,7 +76,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             if (inbox != null) {
                 a.incMsgRecv();
                 //System.out.println("recibe");
-                if (a.getIdFather() == Integer.valueOf(inbox[0])) {
+                /*if (a.getIdFather() == Integer.valueOf(inbox[0])) {
                     System.out.println("My father is alive. Freeing memory");
                     a.die();
                     increaseAgentsDie();
@@ -84,7 +86,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     notifyObservers();
                     return flag;
 
-                }
+                }*/
                 //System.out.println("a" + a.getId() + "recv message from: " + inbox[0]);
                 //System.out.println("my "+ a.getData().size());
                 ArrayList senderInf = (ArrayList) ObjectSerializer.deserialize(inbox[1]);
@@ -159,39 +161,45 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             return flag;
         }
         if (agent instanceof Node) {
-
             Node n = (Node) agent;
             n.incRounds();
+            evaluateAgentCreation(n);
 
 //            n.incRoundsWithoutAck();
             for (Agent ag : n.getCurrentAgents()) {
                 MobileAgent a = (MobileAgent) ag;
                 if (a.getLocation() != null && a.getPrevLocation() != null) {
                     if (a.getPrevLocation().equals(a.getLocation())) {
-                        n.getResponsibleAgents().put(a.getId(), n.getRounds());
+                        //n.getResponsibleAgents().put(a.getId(), n.getRounds());
                     } else {
                         String[] message = new String[2]; //msg: [from|msg]
+                        //if(a.status != Action.DIE){
+                        //System.out.println("send!");
                         message[0] = n.getVertex().getName();
                         message[1] = String.valueOf(a.getId());
                         NetworkNodeMessageBuffer.getInstance().putMessage(a.getPrevLocation().getName(), message);
+                        n.getResponsibleAgents().put(a.getId(), n.getRounds());
+                        //}
                     }
                 } else {
 
                 }
             }
 
-            String[] inbox = NetworkNodeMessageBuffer.getInstance().getMessage(n.getVertex().getName());
+            String[] inbox;
 
-            //inbox: node | agent
-            if (inbox != null) {
-                n.incMsgRecv();
-                //n.setRoundsWithoutAck(0);
-                //System.out.println("Node " + n.getVertex().getName() + " recv message from: " + inbox[0]);
-                //System.out.println("my "+ a.getData().size());
-                int agentId = Integer.valueOf(inbox[1]);
-                n.getResponsibleAgents().remove(agentId);
+            while ((inbox = NetworkNodeMessageBuffer.getInstance().getMessage(n.getVertex().getName())) != null) {
+
+                //inbox: node | agent
+                if (inbox != null) {
+                    n.incMsgRecv();
+                    //n.setRoundsWithoutAck(0);
+                    //System.out.println("Node " + n.getVertex().getName() + " recv message from: " + inbox[0]);
+                    //System.out.println("my "+ a.getData().size());
+                    int agentId = Integer.valueOf(inbox[1]);
+                    n.getResponsibleAgents().remove(agentId);
+                }
             }
-            evaluateAgentCreation(n);
 
         }
         return false;
@@ -209,14 +217,18 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
     public void evaluateAgentCreation(Node n) {
         //System.out.println("n get respo" + n.getVertex().getName() + ", " + n.getResponsibleAgents());
         if (n.getResponsibleAgents().isEmpty()) {
+            //System.out.println("empty");
             n.setRoundsWithOutVisit(0);
             n.setPfCreate(0);
         } else {
             synchronized (NetworkEnvironmentPheromoneReplication.class) {
+                Iterator<Map.Entry<Integer, Integer>> iter = n.getResponsibleAgents().entrySet().iterator();
+                while (iter.hasNext()) {
+                    Map.Entry<Integer, Integer> Key = iter.next();
+                    int k = Key.getKey();
+                    if (n.getRounds() - n.getResponsibleAgents().get(k) > 2) { //this is not the expresion
+                        System.out.println("entra n rounds:" + n.getRounds() + ", n" + n.getResponsibleAgents().get(k));
 
-                for (Integer k : n.getResponsibleAgents().keySet()) {
-                    System.out.println("entra n rounds:" + n.getRounds() + ", n" + n.getResponsibleAgents().get(k));
-                    if (n.getRounds() - n.getResponsibleAgents().get(k) > 1) { //this is not the expresion
                         //if (Math.random() < n.getPfCreate()) {
                         System.out.println("create new agent instance..." + n.getVertex().getName() + " n pf create: " + n.getPfCreate());
                         AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
@@ -244,9 +256,9 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                         //System.out.println("this" + this);
                         setTotalAgents(getTotalAgents() + 1);
                         t.start();
-                        n.getResponsibleAgents().remove(k);
+                        //n.getResponsibleAgents().remove(k);
+                        iter.remove();
                         System.out.println("end creation of agent" + newAgentID);
-
                     }
 
                 }
