@@ -25,7 +25,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
 
     @Override
     public boolean act(Agent agent, Action action) {
-        agent.sleep(3);
+        agent.sleep(3000);
         if (agent instanceof MobileAgent) {
             boolean flag = (action != null);
             MobileAgent a = (MobileAgent) agent;
@@ -33,7 +33,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             //System.out.println("cn" + currentNode);
 
             currentNode = a.getLocation();
-
+            a.setPrevLocation(a.getLocation());
             visitedNodes.add(currentNode);
 
             if (a.getLocation() != null) {
@@ -116,10 +116,11 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 /* @TODO: Detect Stop Conditions for the algorithm */
                 switch (language.getActionIndex(act)) {
                     case 0: // move
-                        a.setPrevLocation(a.getLocation()); //Set previous location
-
+                        //a.setPrevLocation(a.getLocation()); //Set previous location
+                        System.out.println("a antes" + a.getLocation());
                         GraphElements.MyVertex v = (GraphElements.MyVertex) ac.getAttribute("location");
                         a.setLocation(v);
+                        System.out.println("a despues" + a.getLocation());
                         a.setPheromone((float) (a.getPheromone() + 0.01f * (0.5f - a.getPheromone())));
                         a.getLocation().setPh(a.getLocation().getPh() + 0.01f * (a.getPheromone() - a.getLocation().getPh()));
                         a.setRound(a.getRound() + 1);
@@ -174,11 +175,13 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     } else {
                         String[] message = new String[2]; //msg: [from|msg]
                         //if(a.status != Action.DIE){
-                        //System.out.println("send!");
+
                         message[0] = n.getVertex().getName();
                         message[1] = String.valueOf(a.getId());
                         NetworkNodeMessageBuffer.getInstance().putMessage(a.getPrevLocation().getName(), message);
+                        System.out.println("I am node" + n.getVertex().getName() +" and send a message to node" + a.getPrevLocation().getName());
                         n.getResponsibleAgents().put(a.getId(), n.getRounds());
+                        System.out.println("I am responsible for agent" + a.getId());
                         //}
                     }
                 } else {
@@ -194,10 +197,11 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 if (inbox != null) {
                     n.incMsgRecv();
                     //n.setRoundsWithoutAck(0);
-                    //System.out.println("Node " + n.getVertex().getName() + " recv message from: " + inbox[0]);
+                    System.out.println("Node " + n.getVertex().getName() + " recv message from: " + inbox[0]);
                     //System.out.println("my "+ a.getData().size());
                     int agentId = Integer.valueOf(inbox[1]);
                     n.getResponsibleAgents().remove(agentId);
+                    System.out.println("node " + n.getVertex().getName() + " is responsible for " + n.getResponsibleAgents());
                 }
             }
 
@@ -223,6 +227,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
         } else {
             synchronized (NetworkEnvironmentPheromoneReplication.class) {
                 Iterator<Map.Entry<Integer, Integer>> iter = n.getResponsibleAgents().entrySet().iterator();
+                System.out.println("hashmap" + n.getResponsibleAgents());
                 while (iter.hasNext()) {
                     Map.Entry<Integer, Integer> Key = iter.next();
                     int k = Key.getKey();
