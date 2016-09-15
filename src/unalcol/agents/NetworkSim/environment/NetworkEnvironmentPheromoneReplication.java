@@ -25,16 +25,16 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
 
     @Override
     public boolean act(Agent agent, Action action) {
-        agent.sleep(3000);
+        agent.sleep(30);
         if (agent instanceof MobileAgent) {
             boolean flag = (action != null);
             MobileAgent a = (MobileAgent) agent;
             ActionParameters ac = (ActionParameters) action;
             //System.out.println("cn" + currentNode);
 
-            currentNode = a.getLocation();
+            //currentNode = a.getLocation();
             a.setPrevLocation(a.getLocation());
-            visitedNodes.add(currentNode);
+            //visitedNodes.add(currentNode);
 
             if (a.getLocation() != null) {
                 getLocationAgents().put(a.getId(), a.getLocation());
@@ -119,7 +119,24 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                         //a.setPrevLocation(a.getLocation()); //Set previous location
                         System.out.println("a antes" + a.getLocation());
                         GraphElements.MyVertex v = (GraphElements.MyVertex) ac.getAttribute("location");
+
+                        a.setPrevLocation(a.getLocation());
+                        visitedNodes.add(currentNode);
+
                         a.setLocation(v);
+
+                        String[] msgnode = new String[2];
+                        msgnode[0] = "arrived";
+                        msgnode[1] = String.valueOf(a.getId());
+                        NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
+
+                        String[] msgnoder = new String[2];
+                        msgnoder[0] = "freeresp";
+                        msgnoder[1] = String.valueOf(a.getId());
+                        NetworkNodeMessageBuffer.getInstance().putMessage(a.getPrevLocation().getName(), msgnoder);
+
+                        currentNode = v;
+
                         System.out.println("a despues" + a.getLocation());
                         a.setPheromone((float) (a.getPheromone() + 0.01f * (0.5f - a.getPheromone())));
                         a.getLocation().setPh(a.getLocation().getPh() + 0.01f * (a.getPheromone() - a.getLocation().getPh()));
@@ -167,7 +184,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             evaluateAgentCreation(n);
 
 //            n.incRoundsWithoutAck();
-            for (Agent ag : n.getCurrentAgents()) {
+            /*for (Agent ag : n.getCurrentAgents()) {
                 MobileAgent a = (MobileAgent) ag;
                 if (a.getLocation() != null && a.getPrevLocation() != null) {
                     if (a.getPrevLocation().equals(a.getLocation())) {
@@ -179,7 +196,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                         message[0] = n.getVertex().getName();
                         message[1] = String.valueOf(a.getId());
                         NetworkNodeMessageBuffer.getInstance().putMessage(a.getPrevLocation().getName(), message);
-                        System.out.println("I am node" + n.getVertex().getName() +" and send a message to node" + a.getPrevLocation().getName());
+                        System.out.println("I am node" + n.getVertex().getName() + " and send a message to node" + a.getPrevLocation().getName());
                         n.getResponsibleAgents().put(a.getId(), n.getRounds());
                         System.out.println("I am responsible for agent" + a.getId());
                         //}
@@ -187,22 +204,33 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 } else {
 
                 }
-            }
-
+            }*/
             String[] inbox;
 
             while ((inbox = NetworkNodeMessageBuffer.getInstance().getMessage(n.getVertex().getName())) != null) {
 
                 //inbox: node | agent
-                if (inbox != null) {
+                if (inbox[0].equals("arrived")) {
+                    System.out.println("arriveeeeeeeeeed!");
+                    n.incMsgRecv();
+                    //n.setRoundsWithoutAck(0);
+                    System.out.println("Node " + n.getVertex().getName() + " recv message from: " + inbox[0]);
+                    //System.out.println("my "+ a.getData().size());
+                    int agentId = Integer.valueOf(inbox[1]);
+                    n.getResponsibleAgents().put(agentId, n.getRounds());
+                    System.out.println("node " + n.getVertex().getName() + " is responsible for " + n.getResponsibleAgents());
+
+                }
+                if (inbox[0].equals("freeresp")) {
                     n.incMsgRecv();
                     //n.setRoundsWithoutAck(0);
                     System.out.println("Node " + n.getVertex().getName() + " recv message from: " + inbox[0]);
                     //System.out.println("my "+ a.getData().size());
                     int agentId = Integer.valueOf(inbox[1]);
                     n.getResponsibleAgents().remove(agentId);
-                    System.out.println("node " + n.getVertex().getName() + " is responsible for " + n.getResponsibleAgents());
+                    System.out.println("node " + n.getVertex().getName() + " is no more responsible for " + n.getResponsibleAgents());
                 }
+
             }
 
         }
@@ -227,11 +255,11 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
         } else {
             synchronized (NetworkEnvironmentPheromoneReplication.class) {
                 Iterator<Map.Entry<Integer, Integer>> iter = n.getResponsibleAgents().entrySet().iterator();
-                System.out.println("hashmap" + n.getResponsibleAgents());
+                System.out.println(n.getVertex().getName() + " hashmap " + n.getResponsibleAgents());
                 while (iter.hasNext()) {
                     Map.Entry<Integer, Integer> Key = iter.next();
                     int k = Key.getKey();
-                    if (n.getRounds() - n.getResponsibleAgents().get(k) > 2) { //this is not the expresion
+                    if (n.getRounds() - n.getResponsibleAgents().get(k) > 20) { //this is not the expresion
                         System.out.println("entra n rounds:" + n.getRounds() + ", n" + n.getResponsibleAgents().get(k));
 
                         //if (Math.random() < n.getPfCreate()) {
