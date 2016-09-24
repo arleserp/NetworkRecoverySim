@@ -125,12 +125,13 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
 
                         a.setLocation(v);
 
-                        String[] msgnode = new String[2];
+                        String[] msgnode = new String[3];
                         msgnode[0] = "arrived";
                         msgnode[1] = String.valueOf(a.getId());
+
                         NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
 
-                        String[] msgnoder = new String[2];
+                        String[] msgnoder = new String[3];
                         msgnoder[0] = "freeresp";
                         msgnoder[1] = String.valueOf(a.getId());
                         NetworkNodeMessageBuffer.getInstance().putMessage(a.getPrevLocation().getName(), msgnoder);
@@ -145,7 +146,6 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                         boolean complete = false;
                         if (a.getData().size() == topology.getVertexCount()) {
                             complete = true;
-
                         }
 
                         if (getRoundComplete() == -1 && complete) {
@@ -219,7 +219,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     int agentId = Integer.valueOf(inbox[1]);
                     n.getResponsibleAgents().put(agentId, n.getRounds());
                     System.out.println("node " + n.getVertex().getName() + " is responsible for " + n.getResponsibleAgents());
-
+                    n.setLastAgentArrival(n.getRounds());
                 }
                 if (inbox[0].equals("freeresp")) {
                     n.incMsgRecv();
@@ -229,6 +229,9 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     int agentId = Integer.valueOf(inbox[1]);
                     n.getResponsibleAgents().remove(agentId);
                     System.out.println("node " + n.getVertex().getName() + " is no more responsible for " + n.getResponsibleAgents());
+                    n.setLastMessageArrival(n.getRounds());
+                    n.estimateTimeout();
+                    //n.setLastAgentArrival(-1);
                 }
 
             }
@@ -259,7 +262,17 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 while (iter.hasNext()) {
                     Map.Entry<Integer, Integer> Key = iter.next();
                     int k = Key.getKey();
-                    if (n.getRounds() - n.getResponsibleAgents().get(k) > 20) { //this is not the expresion
+                    System.out.println("node: " + n.getVertex().getName() + ", timeout " + n.estimateTimeout());
+                        
+                    /*int stop_cond;
+                    if(n.getLastAgentArrival() == -1 || n.getLastMessageArrival() == -1){
+                        stop_cond = 20;
+                    }else{
+                        stop_cond = Math.abs(n.getLastAgentArrival() - n.getLastMessageArrival());
+                    }*/
+                    
+                    //System.out.println("stop:" + stop_cond);
+                    if (n.getRounds() - n.getResponsibleAgents().get(k) > n.estimateTimeout()) { //this is not the expresion
                         System.out.println("entra n rounds:" + n.getRounds() + ", n" + n.getResponsibleAgents().get(k));
 
                         //if (Math.random() < n.getPfCreate()) {

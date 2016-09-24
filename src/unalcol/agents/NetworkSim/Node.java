@@ -25,12 +25,20 @@ public class Node extends Agent {
     private int nMsgSend;
     private int nMsgRecv;
     private int rounds;
-    
+    private int lastAgentArrival;
+    private int lastMessageArrival;
+    private ArrayList<Integer> timeout;
+    private int amountRounds;
+
     public Node(AgentProgram _program, GraphElements.MyVertex ve) {
         super(_program);
         this.v = ve;
         currentAgents = new ArrayList<>();
         responsibleAgents = new HashMap<>();
+        lastAgentArrival = 0;
+        lastMessageArrival = 0;
+        timeout = new ArrayList();
+        amountRounds = 5;
     }
 
     public GraphElements.MyVertex getVertex() {
@@ -188,11 +196,66 @@ public class Node extends Agent {
     public void setRounds(int rounds) {
         this.rounds = rounds;
     }
-    
-    public void incRounds(){
-        synchronized(Node.class){
+
+    public void incRounds() {
+        synchronized (Node.class) {
             this.rounds++;
         }
+    }
+
+    /**
+     * @return the lastAgentArrival
+     */
+    public int getLastAgentArrival() {
+        return lastAgentArrival;
+    }
+
+    /**
+     * @param lastAgentArrival the lastAgentArrival to set
+     */
+    public void setLastAgentArrival(int lastAgentArrival) {
+        this.lastAgentArrival = lastAgentArrival;
+    }
+
+    /**
+     * @return the lastMessageArrival
+     */
+    public int getLastMessageArrival() {
+        return lastMessageArrival;
+    }
+
+    /**
+     * @param lastMessageArrival the lastMessageArrival to set
+     */
+    public void setLastMessageArrival(int lastMessageArrival) {
+        this.lastMessageArrival = lastMessageArrival;
+    }
+
+    public int estimateTimeout() {
+        amountRounds++;
+        System.out.println("node" + this.getVertex().getName() + ", lastAgentArrival:"
+                + lastAgentArrival + ", lastMessageArrival:" + lastMessageArrival);
+
+        if (lastAgentArrival != lastMessageArrival && lastMessageArrival != 0) {
+            System.out.println("add");
+            timeout.add(lastMessageArrival - lastAgentArrival);
+        }
+
+        if (timeout.isEmpty()) {
+            return 20;
+        }
+
+        int sum = 0;
+        for (int time : timeout) {
+            sum += time;
+        }
+
+        if (lastMessageArrival != 0) {
+            lastAgentArrival = 0;
+            lastMessageArrival = 0;
+        }
+        System.out.println("timeout" + timeout + " avg: " + sum/timeout.size());
+        return sum / timeout.size();
     }
 
 }
