@@ -38,6 +38,7 @@ public class Node extends Agent {
         lastAgentArrival = 0;
         lastMessageArrival = 0;
         timeout = new ArrayList();
+        timeout.add(20);
         amountRounds = 5;
     }
 
