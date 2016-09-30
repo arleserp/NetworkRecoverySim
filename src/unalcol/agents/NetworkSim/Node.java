@@ -7,6 +7,7 @@ package unalcol.agents.NetworkSim;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 
@@ -25,8 +26,8 @@ public class Node extends Agent {
     private int nMsgSend;
     private int nMsgRecv;
     private int rounds;
-    private int lastAgentArrival;
-    private int lastMessageArrival;
+    private HashMap<Integer, Integer> lastAgentArrival;
+    private HashMap<Integer, Integer> lastMessageArrival;
     private ArrayList<Integer> timeout;
     private int amountRounds;
 
@@ -35,8 +36,8 @@ public class Node extends Agent {
         this.v = ve;
         currentAgents = new ArrayList<>();
         responsibleAgents = new HashMap<>();
-        lastAgentArrival = 0;
-        lastMessageArrival = 0;
+        lastAgentArrival = new HashMap<>();
+        lastMessageArrival = new HashMap<>();
         timeout = new ArrayList();
         timeout.add(20);
         amountRounds = 5;
@@ -207,39 +208,53 @@ public class Node extends Agent {
     /**
      * @return the lastAgentArrival
      */
-    public int getLastAgentArrival() {
-        return lastAgentArrival;
+    public int getLastAgentArrival(int agentId) {
+        return lastAgentArrival.get(agentId);
     }
 
     /**
      * @param lastAgentArrival the lastAgentArrival to set
      */
-    public void setLastAgentArrival(int lastAgentArrival) {
-        this.lastAgentArrival = lastAgentArrival;
+    public void setLastAgentArrival(int lastAgentArrival, int agentId) {
+        this.lastAgentArrival.put(agentId, lastAgentArrival);
     }
 
     /**
      * @return the lastMessageArrival
      */
-    public int getLastMessageArrival() {
-        return lastMessageArrival;
+    public int getLastMessageArrival(int agentId) {
+        return lastMessageArrival.get(agentId);
     }
 
     /**
      * @param lastMessageArrival the lastMessageArrival to set
      */
-    public void setLastMessageArrival(int lastMessageArrival) {
-        this.lastMessageArrival = lastMessageArrival;
+    public void setLastMessageArrival(int agentId, int lastMessageArrival) {
+        this.lastMessageArrival.put(agentId, lastMessageArrival);
     }
 
     public int estimateTimeout() {
         amountRounds++;
-        System.out.println("node" + this.getVertex().getName() + ", lastAgentArrival:"
-                + lastAgentArrival + ", lastMessageArrival:" + lastMessageArrival);
 
-        if (lastAgentArrival != lastMessageArrival && lastMessageArrival != 0) {
-            System.out.println("add");
-            timeout.add(lastMessageArrival - lastAgentArrival);
+        for (Integer agentId : lastAgentArrival.keySet()) {
+
+            if (!lastMessageArrival.containsKey(agentId)) {
+                lastMessageArrival.put(agentId, 0);
+            }
+
+            System.out.println("node" + this.getVertex().getName() + "agent id:" + agentId + "  lastAgentArrival:"
+                    + lastAgentArrival.get(agentId) + ", lastMessageArrival:" + lastMessageArrival.get(agentId)
+            );
+
+            if (!Objects.equals(lastAgentArrival.get(agentId), lastMessageArrival.get(agentId)) && lastMessageArrival.get(agentId) != 0) {
+                System.out.println("add");
+                timeout.add(lastMessageArrival.get(agentId) - lastAgentArrival.get(agentId));
+            }
+
+            if (lastMessageArrival.get(agentId) != 0) {
+                lastAgentArrival.put(agentId, 0);
+                lastMessageArrival.put(agentId, 0);
+            }
         }
 
         if (timeout.isEmpty()) {
@@ -251,11 +266,8 @@ public class Node extends Agent {
             sum += time;
         }
 
-        if (lastMessageArrival != 0) {
-            lastAgentArrival = 0;
-            lastMessageArrival = 0;
-        }
-        System.out.println("timeout" + timeout + " avg: " + sum/timeout.size());
+        System.out.println("timeout" + timeout + " avg: " + sum / timeout.size());
+
         return sum / timeout.size();
     }
 

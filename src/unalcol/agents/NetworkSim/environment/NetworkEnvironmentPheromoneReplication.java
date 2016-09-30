@@ -219,7 +219,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     int agentId = Integer.valueOf(inbox[1]);
                     n.getResponsibleAgents().put(agentId, n.getRounds());
                     System.out.println("node " + n.getVertex().getName() + " is responsible for " + n.getResponsibleAgents());
-                    n.setLastAgentArrival(n.getRounds());
+                    n.setLastAgentArrival(agentId, n.getRounds());
                 }
                 if (inbox[0].equals("freeresp")) {
                     n.incMsgRecv();
@@ -229,7 +229,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     int agentId = Integer.valueOf(inbox[1]);
                     n.getResponsibleAgents().remove(agentId);
                     System.out.println("node " + n.getVertex().getName() + " is no more responsible for " + n.getResponsibleAgents());
-                    n.setLastMessageArrival(n.getRounds());
+                    n.setLastMessageArrival(agentId, n.getRounds());
                     n.estimateTimeout();
                     //n.setLastAgentArrival(-1);
                 }

@@ -147,7 +147,7 @@ public class DataReplicationObserver implements Observer {
                 
                 globalInfo.put(n.getAge(), n.getAmountGlobalInfo());
             }
-            if ((SimulationParameters.maxIter == -1 && n.nodesComplete()) || (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) || n.getAgentsDie() == (n.getTotalAgents())) {
+            if ((SimulationParameters.maxIter == -1 && n.nodesComplete()) || (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) /*|| n.getAgentsDie() == (n.getTotalAgents())*/) {
                 //StatsTemperaturesMapImpl sti = new StatsTemperaturesMapImpl("experiment-p-" + ((World) obs).getAgents().size() + "- pf-" + pf + ".csv");
                 
                 if (!isUpdating) {
