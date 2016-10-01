@@ -11,9 +11,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import unalcol.agents.NetworkSim.MobileAgent;
+import unalcol.agents.NetworkSim.Node;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication;
 
 /**
@@ -54,6 +56,17 @@ class StatisticsProviderReplication {
                 //System.out.println("a" + i + " msg sent:" + a.getnMsgRecv() + "msg recv" + a.getnMsgRecv());
                 msgin.add((double) a.getnMsgRecv());
                 msgout.add((double) a.getnMsgSend());
+            }else if(w.getAgent(i) instanceof Node){
+                Node node = (Node) w.getAgent(i);
+                
+                Iterator it = node.getTimeout().iterator();
+                
+                System.out.print("Node: ");
+                while(it.hasNext())
+                {
+                    System.out.print(it.next()+" ");
+                }
+                System.out.println("");
             }
             //explTerrain.add((double) a.getExploredTerrain());
         }

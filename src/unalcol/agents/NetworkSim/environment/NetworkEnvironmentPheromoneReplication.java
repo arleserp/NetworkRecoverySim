@@ -117,7 +117,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 switch (language.getActionIndex(act)) {
                     case 0: // move
                         //a.setPrevLocation(a.getLocation()); //Set previous location
-                        System.out.println("a antes" + a.getLocation());
+                        //System.out.println("a antes" + a.getLocation());
                         GraphElements.MyVertex v = (GraphElements.MyVertex) ac.getAttribute("location");
 
                         a.setPrevLocation(a.getLocation());
@@ -138,7 +138,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
 
                         currentNode = v;
 
-                        System.out.println("a despues" + a.getLocation());
+                        //System.out.println("a despues" + a.getLocation());
                         a.setPheromone((float) (a.getPheromone() + 0.01f * (0.5f - a.getPheromone())));
                         a.getLocation().setPh(a.getLocation().getPh() + 0.01f * (a.getPheromone() - a.getLocation().getPh()));
                         a.setRound(a.getRound() + 1);
@@ -181,7 +181,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
         if (agent instanceof Node) {
             Node n = (Node) agent;
             n.incRounds();
-            evaluateAgentCreation(n);
+            
 
 //            n.incRoundsWithoutAck();
             /*for (Agent ag : n.getCurrentAgents()) {
@@ -217,6 +217,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     System.out.println("Node " + n.getVertex().getName() + " recv message from: " + inbox[0]);
                     //System.out.println("my "+ a.getData().size());
                     int agentId = Integer.valueOf(inbox[1]);
+
                     n.getResponsibleAgents().put(agentId, n.getRounds());
                     System.out.println("node " + n.getVertex().getName() + " is responsible for " + n.getResponsibleAgents());
                     n.setLastAgentArrival(agentId, n.getRounds());
@@ -235,6 +236,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 }
 
             }
+            evaluateAgentCreation(n);
 
         }
         return false;
@@ -263,17 +265,17 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     Map.Entry<Integer, Integer> Key = iter.next();
                     int k = Key.getKey();
                     System.out.println("node: " + n.getVertex().getName() + ", timeout " + n.estimateTimeout());
-                        
+
                     /*int stop_cond;
                     if(n.getLastAgentArrival() == -1 || n.getLastMessageArrival() == -1){
                         stop_cond = 20;
                     }else{
                         stop_cond = Math.abs(n.getLastAgentArrival() - n.getLastMessageArrival());
                     }*/
-                    
                     //System.out.println("stop:" + stop_cond);
-                    if (n.getRounds() - n.getResponsibleAgents().get(k) > n.estimateTimeout()) { //this is not the expresion
-                        System.out.println("entra n rounds:" + n.getRounds() + ", n" + n.getResponsibleAgents().get(k));
+                    System.out.println("timeout" + n.estimateTimeout());
+                    if (n.getRounds() - n.getLastAgentArrival(k) > n.estimateTimeout()) { //this is not the expresion
+                        //System.out.println("entra n rounds:" + (n.getRounds() - n.getResponsibleAgents().get(k)) + " > " + n.estimateTimeout());
 
                         //if (Math.random() < n.getPfCreate()) {
                         System.out.println("create new agent instance..." + n.getVertex().getName() + " n pf create: " + n.getPfCreate());
@@ -305,6 +307,12 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                         //n.getResponsibleAgents().remove(k);
                         iter.remove();
                         System.out.println("end creation of agent" + newAgentID);
+
+                        if (n.getLastMessageArrival().get(k) != 0) {
+                            n.getLastAgentArrival().put(k, 0);
+                            n.getLastMessageArrival().put(k, 0);
+                        }
+                        
                     }
 
                 }
