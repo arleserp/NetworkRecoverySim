@@ -6,11 +6,16 @@
 package unalcol.agents.NetworkSim;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
+import static unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication.setTotalAgents;
+import unalcol.agents.NetworkSim.environment.NetworkMessageBuffer;
+import unalcol.agents.NetworkSim.environment.NetworkNodeMessageBuffer;
 
 /**
  *
@@ -40,8 +45,8 @@ public class Node extends Agent {
         lastAgentArrival = new HashMap<>();
         lastMessageArrival = new HashMap<>();
         timeout = new ArrayList();
-        //timeout.add(20);
-        amountRounds = 5;
+        rounds = 0;
+        timeout.add(50);
     }
 
     public GraphElements.MyVertex getVertex() {
@@ -234,49 +239,46 @@ public class Node extends Agent {
      * @param lastMessageArrival the lastMessageArrival to set
      */
     public void setLastMessageArrival(int agentId, int nodeAge) {
-        if(this.getLastAgentArrival().containsKey(agentId)){
-            this.getLastMessageArrival().put(agentId, nodeAge);
-        }else{
-            System.out.println("rarooooooooooooooooooo");
-        }
+        getLastMessageArrival().put(agentId, nodeAge);
     }
 
-    public int estimateTimeout() {
-        amountRounds++;
-        System.out.println("last agent arrival:" + getLastAgentArrival() + ", last message arrival:" + getLastMessageArrival());
-
-        Iterator it = getLastAgentArrival().keySet().iterator();
-        while (it.hasNext()) {
-            Integer agentId = (Integer) it.next();
-            System.out.println("node" + this.getVertex().getName() + "agent id:" + agentId + "  lastAgentArrival:"
-                    + getLastAgentArrival().get(agentId) + ", lastMessageArrival:" + getLastMessageArrival().get(agentId));
-
-            if (getLastMessageArrival().containsKey(agentId) && !Objects.equals(lastAgentArrival.get(agentId), lastMessageArrival.get(agentId))
-                    && getLastMessageArrival().get(agentId) != 0) {
-                System.out.println("add");
-                //negative numbers?
-                getTimeout().add(Math.abs(getLastMessageArrival().get(agentId) - getLastAgentArrival().get(agentId)));
-                System.out.println("antes:"+getLastMessageArrival());
-                getLastMessageArrival().remove(agentId);
-                System.out.println("despues:"+getLastMessageArrival());
-                it.remove();
-
+    
+    public void calculateTimeout(){
+        Iterator<Map.Entry<Integer, Integer>> iter = getResponsibleAgents().entrySet().iterator();
+        if (!getResponsibleAgents().isEmpty()) {
+            //to complete
+        }
+        while (iter.hasNext()) {
+            //Key: agentId|roundNumber
+            Map.Entry<Integer, Integer> Key = iter.next();
+            int k = Key.getKey();
+            
+            if(getLastAgentArrival().containsKey(k) && getLastMessageArrival().containsKey(k)) {                 
+                int diff = Math.abs(getLastMessageArrival().get(k) - getLastAgentArrival().get(k));
+                if (diff != 0) {
+                    if(diff > 30){
+                        System.out.println("node:" + getVertex().getName() + ", diff:" + diff + ", agent:" + k);
+                    }
+                    getTimeout().add(diff);
+                }
+                //System.out.println("node:" + getVertex().getName() + ", antes:" + getLastMessageArrival());
+                getLastMessageArrival().remove(k);
+                getLastAgentArrival().remove(k);
             }
-
         }
-        System.out.println("las agent arrival after" + getLastAgentArrival() + ", las message arrival:" + getLastMessageArrival());
-
-        if (getTimeout().isEmpty()) {
-            return Integer.MAX_VALUE;
-        }
+    }
+    
+    public int estimateTimeout() {
 
         int sum = 0;
         for (int time : getTimeout()) {
             sum += time;
         }
-
-        System.out.println("Node:" + getVertex().getName() + "timeout" + getTimeout() + " avg: " + sum / getTimeout().size());
+        
+        //System.out.println("Node:" + getVertex().getName() + "timeout" + getTimeout() + " avg: " + sum / getTimeout().size());
         return sum / getTimeout().size();
+        
+        //return Collections.max(getTimeout());
     }
 
     /**

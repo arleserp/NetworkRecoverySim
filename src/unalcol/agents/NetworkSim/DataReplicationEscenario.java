@@ -92,13 +92,12 @@ public class DataReplicationEscenario implements Runnable {
         String[] nodeActions = {"communicate", "die"};
         SimpleLanguage nodeLanguaje = new SimpleLanguage(nodePercepts, nodeActions);
         NodeProgram np = new NodeProgram(SimulationParameters.pf);
-        
+
         //report = new reportHealingProgram(population, probFailure, this);
         //greport = new GraphicReportHealingObserver(probFailure);
         //Create graph
-
         Graph<GraphElements.MyVertex, String> g = graphSimpleFactory.createGraph(SimulationParameters.graphMode);
-        
+
         //maybe to fix: alldata must have getter
         System.out.println("All data" + SimulationParameters.globalData);
         System.out.println("All data size" + SimulationParameters.globalData.size());
@@ -109,13 +108,13 @@ public class DataReplicationEscenario implements Runnable {
         System.out.println("Average Clustering Coefficient: " + GraphStats.averageCC(g));
         System.out.println("Average degree: " + GraphStats.averageDegree(g));
 
-        for(GraphElements.MyVertex v: g.getVertices()){
+        for (GraphElements.MyVertex v : g.getVertices()) {
             Node n = new Node(np, v);
             n.setPfCreate(0);
             NetworkNodeMessageBuffer.getInstance().createBuffer(v.getName());
             agents.add(n);
         }
-        
+
         if (SimulationParameters.filenameLoc.length() > 1) {
             loadLocations();
         }
@@ -125,13 +124,18 @@ public class DataReplicationEscenario implements Runnable {
             AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(probFailure, SimulationParameters.motionAlg);
             MobileAgent a = new MobileAgent(program, i);
             GraphElements.MyVertex tmp = getLocation(g);
-            System.out.println("tmp" + tmp);
+            //System.out.println("tmp" + tmp);
             a.setLocation(tmp);
             a.setPrevLocation(tmp);
             a.setProgram(program);
             a.setAttribute("infi", new ArrayList<String>());
             NetworkMessageBuffer.getInstance().createBuffer(a.getId());
             agents.add(a);
+            //Initialize implies arrival message from nodes!
+            String[] msgnode = new String[3];
+            msgnode[0] = "arrived";
+            msgnode[1] = String.valueOf(a.getId());
+            NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
         }
 
         graphVisualization = new DataReplicationObserver();

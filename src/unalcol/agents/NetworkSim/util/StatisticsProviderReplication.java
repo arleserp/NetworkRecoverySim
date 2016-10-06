@@ -61,7 +61,7 @@ class StatisticsProviderReplication {
                 
                 Iterator it = node.getTimeout().iterator();
                 
-                System.out.print("Node: ");
+                System.out.print("Node " + node.getVertex().getName() + ": ");
                 while(it.hasNext())
                 {
                     System.out.print(it.next()+" ");
