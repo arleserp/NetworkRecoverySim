@@ -16,6 +16,8 @@ import unalcol.agents.AgentProgram;
 import static unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication.setTotalAgents;
 import unalcol.agents.NetworkSim.environment.NetworkMessageBuffer;
 import unalcol.agents.NetworkSim.environment.NetworkNodeMessageBuffer;
+import unalcol.agents.NetworkSim.programs.NodeProgram;
+import unalcol.agents.NetworkSim.util.StatisticsNormalDist;
 
 /**
  *
@@ -36,6 +38,7 @@ public class Node extends Agent {
     private HashMap<Integer, Integer> lastMessageArrival;
     private ArrayList<Integer> timeout;
     private int amountRounds;
+    private int lastTimeout;
 
     public Node(AgentProgram _program, GraphElements.MyVertex ve) {
         super(_program);
@@ -46,7 +49,21 @@ public class Node extends Agent {
         lastMessageArrival = new HashMap<>();
         timeout = new ArrayList();
         rounds = 0;
+        lastTimeout = 50;
         timeout.add(50);
+    }
+
+    public Node(AgentProgram _program, GraphElements.MyVertex ve, int tout) {
+        super(_program);
+        this.v = ve;
+        currentAgents = new ArrayList<>();
+        responsibleAgents = new HashMap<>();
+        lastAgentArrival = new HashMap<>();
+        lastMessageArrival = new HashMap<>();
+        timeout = new ArrayList();
+        rounds = 0;
+        timeout.add(tout);
+        lastTimeout = tout;
     }
 
     public GraphElements.MyVertex getVertex() {
@@ -110,7 +127,6 @@ public class Node extends Agent {
     }
 
     /**
-     * @param roundsWithOutVisit the roundsWithOutVisit to set
      */
     public void addRoundsWithOutVisit() {
         roundsWithOutVisit++;
@@ -242,8 +258,7 @@ public class Node extends Agent {
         getLastMessageArrival().put(agentId, nodeAge);
     }
 
-    
-    public void calculateTimeout(){
+    public void calculateTimeout() {
         Iterator<Map.Entry<Integer, Integer>> iter = getResponsibleAgents().entrySet().iterator();
         if (!getResponsibleAgents().isEmpty()) {
             //to complete
@@ -252,13 +267,10 @@ public class Node extends Agent {
             //Key: agentId|roundNumber
             Map.Entry<Integer, Integer> Key = iter.next();
             int k = Key.getKey();
-            
-            if(getLastAgentArrival().containsKey(k) && getLastMessageArrival().containsKey(k)) {                 
+
+            if (getLastAgentArrival().containsKey(k) && getLastMessageArrival().containsKey(k)) {
                 int diff = Math.abs(getLastMessageArrival().get(k) - getLastAgentArrival().get(k));
                 if (diff != 0) {
-                    if(diff > 30){
-                        System.out.println("node:" + getVertex().getName() + ", diff:" + diff + ", agent:" + k);
-                    }
                     getTimeout().add(diff);
                 }
                 //System.out.println("node:" + getVertex().getName() + ", antes:" + getLastMessageArrival());
@@ -267,17 +279,17 @@ public class Node extends Agent {
             }
         }
     }
-    
+
     public int estimateTimeout() {
 
         int sum = 0;
         for (int time : getTimeout()) {
             sum += time;
         }
-        
+
         //System.out.println("Node:" + getVertex().getName() + "timeout" + getTimeout() + " avg: " + sum / getTimeout().size());
         return sum / getTimeout().size();
-        
+
         //return Collections.max(getTimeout());
     }
 
@@ -307,6 +319,42 @@ public class Node extends Agent {
      */
     public void setLastMessageArrival(HashMap<Integer, Integer> lastMessageArrival) {
         this.lastMessageArrival = lastMessageArrival;
+    }
+
+    /**
+     * @param timeout the timeout to set
+     */
+    public void setTimeout(ArrayList<Integer> timeout) {
+        this.timeout = timeout;
+    }
+
+    /**
+     * @return the lastTimeout
+     */
+    public int getLastTimeout() {
+        return lastTimeout;
+    }
+
+    /**
+     * @param lastTimeout the lastTimeout to set
+     */
+    public void setLastTimeout(int lastTimeout) {
+        this.lastTimeout = lastTimeout;
+    }
+
+    public double getStdDevTimeout() {
+        ArrayList<Double> dtimeout = new ArrayList();
+        for(Integer d : timeout){
+            dtimeout.add(d.doubleValue());
+        }
+        
+        if(dtimeout.size() > 1){
+            StatisticsNormalDist st = new StatisticsNormalDist(dtimeout, dtimeout.size());
+            return st.getStdDev();
+        }else{
+            return 0;
+        }
+        
     }
 
 }

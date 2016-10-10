@@ -8,6 +8,7 @@ package unalcol.agents.NetworkSim;
 import edu.uci.ics.jung.graph.Graph;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Observer;
@@ -20,6 +21,7 @@ import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicat
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication;
 import unalcol.agents.NetworkSim.environment.NetworkMessageBuffer;
 import unalcol.agents.NetworkSim.environment.NetworkNodeMessageBuffer;
+import unalcol.agents.NetworkSim.environment.ObjectSerializer;
 import unalcol.agents.NetworkSim.programs.NodeProgram;
 import unalcol.agents.NetworkSim.util.GraphStats;
 //import unalcol.agents.NetworkSim.util.GraphStatistics;
@@ -108,8 +110,18 @@ public class DataReplicationEscenario implements Runnable {
         System.out.println("Average Clustering Coefficient: " + GraphStats.averageCC(g));
         System.out.println("Average degree: " + GraphStats.averageDegree(g));
 
+        String graphType = SimulationParameters.graphMode;
+        graphType = graphType.replaceAll(".graph", "");
+        String fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.pf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + ".timeout";
+        HashMap<String, Integer> nodeTimeout = (HashMap)ObjectSerializer.loadDeserializedObject(fileTimeout);
+        
         for (GraphElements.MyVertex v : g.getVertices()) {
-            Node n = new Node(np, v);
+            Node n = null;
+            if(nodeTimeout != null && nodeTimeout.containsKey(v.getName())){
+                n = new Node(np, v, nodeTimeout.get(v.getName()));
+            }else{
+                n = new Node(np, v);
+            }
             n.setPfCreate(0);
             NetworkNodeMessageBuffer.getInstance().createBuffer(v.getName());
             agents.add(n);

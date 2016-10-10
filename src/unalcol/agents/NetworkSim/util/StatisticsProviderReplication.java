@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -17,6 +18,7 @@ import java.util.logging.Logger;
 import unalcol.agents.NetworkSim.MobileAgent;
 import unalcol.agents.NetworkSim.Node;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication;
+import unalcol.agents.NetworkSim.environment.ObjectSerializer;
 
 /**
  *
@@ -34,6 +36,7 @@ class StatisticsProviderReplication {
         Hashtable Statistics = new Hashtable();
         int right = 0;
         int wrong = 0;
+        HashMap<String, Integer> nodeTimeout = new HashMap<>();
 
         int n = w.getAgents().size();
 
@@ -56,9 +59,9 @@ class StatisticsProviderReplication {
                 //System.out.println("a" + i + " msg sent:" + a.getnMsgRecv() + "msg recv" + a.getnMsgRecv());
                 msgin.add((double) a.getnMsgRecv());
                 msgout.add((double) a.getnMsgSend());
-            }else if(w.getAgent(i) instanceof Node){
+            } else if (w.getAgent(i) instanceof Node) {
                 Node node = (Node) w.getAgent(i);
-                
+                nodeTimeout.put(node.getVertex().getName(), node.estimateTimeout());
                 Iterator it = node.getTimeout().iterator();
                 
                 System.out.print("Node " + node.getVertex().getName() + ": ");
@@ -70,6 +73,12 @@ class StatisticsProviderReplication {
             }
             //explTerrain.add((double) a.getExploredTerrain());
         }
+
+        String timeoutFile = "timeout+" + reportFile;
+        timeoutFile = timeoutFile.replaceAll(".graph", "");
+        timeoutFile = timeoutFile.replaceAll(".csv", "");
+        timeoutFile += ".timeout";
+        ObjectSerializer.saveSerializedObject(timeoutFile, nodeTimeout);
 
         StatisticsNormalDist stnd = new StatisticsNormalDist(data, data.size());
         StatisticsNormalDist stsend = new StatisticsNormalDist(msgout, msgout.size());
