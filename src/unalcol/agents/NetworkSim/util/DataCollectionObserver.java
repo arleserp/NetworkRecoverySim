@@ -8,6 +8,8 @@ package unalcol.agents.NetworkSim.util;
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.algorithms.layout.TreeLayout;
+import edu.uci.ics.jung.graph.Forest;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
@@ -71,7 +73,7 @@ public class DataCollectionObserver implements Observer {
                     layout = new CircleLayout<>(g);
                     break;
                 case "community":
-                    layout = new CircleLayout<>(g);
+                    layout = new ISOMLayout(g);
                     break;
                 case "kleinberg":
                     layout = new CircleLayout<>(g);

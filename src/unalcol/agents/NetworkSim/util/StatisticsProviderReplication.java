@@ -36,7 +36,7 @@ class StatisticsProviderReplication {
         Hashtable Statistics = new Hashtable();
         int right = 0;
         int wrong = 0;
-        HashMap<String, Integer> nodeTimeout = new HashMap<>();
+        HashMap<String, HashMap> nodeTimeout = new HashMap<>();
 
         int n = w.getAgents().size();
 
@@ -61,8 +61,8 @@ class StatisticsProviderReplication {
                 msgout.add((double) a.getnMsgSend());
             } else if (w.getAgent(i) instanceof Node) {
                 Node node = (Node) w.getAgent(i);
-                nodeTimeout.put(node.getVertex().getName(), node.estimateTimeout());
-                Iterator it = node.getTimeout().iterator();
+                nodeTimeout.put(node.getVertex().getName(), node.getNodeTimeouts());
+                Iterator it = node.getNodeTimeouts().keySet().iterator();
                 
                 System.out.print("Node " + node.getVertex().getName() + ": ");
                 while(it.hasNext())

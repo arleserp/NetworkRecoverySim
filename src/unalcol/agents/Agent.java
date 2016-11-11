@@ -1,5 +1,6 @@
 package unalcol.agents;
 
+import java.io.Serializable;
 import unalcol.agents.concurrent.Broker;
 
 /**

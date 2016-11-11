@@ -55,14 +55,14 @@ public class DataCollectionMain {
                 SimulationParameters.beta = Float.valueOf(args[2]);
                 SimulationParameters.degree = Integer.valueOf(args[3]);
                 SimulationParameters.clusters = Integer.valueOf(args[4]);
-                SimulationParameters.popSize = Integer.valueOf(args[5]);
+                SimulationParameters.popSize = Integer.valueOf(args[5]);    
                 SimulationParameters.pf = Float.valueOf(String.valueOf(args[6]));
-                SimulationParameters.motionAlg = args[5];
+                SimulationParameters.motionAlg = args[7];
                 if (args.length > 5) {
-                    SimulationParameters.filenameLoc = args[6];
+                    SimulationParameters.filenameLoc = args[8];
                 }
                 if (args.length > 6) {
-                    SimulationParameters.maxIter = Integer.valueOf(args[7]);
+                    SimulationParameters.maxIter = Integer.valueOf(args[9]);
                 }
             }
 

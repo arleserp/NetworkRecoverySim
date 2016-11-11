@@ -53,6 +53,7 @@ public class DataReplicationObserver implements Observer {
     boolean added = false;
     boolean isUpdating;
     HashMap<Integer, Double> globalInfo = new HashMap();
+    HashMap<Integer, Integer> agentsNumber = new HashMap<>();
     XYSeries agentsLive;
     XYSeriesCollection juegoDatos = new XYSeriesCollection();
 
@@ -136,7 +137,6 @@ public class DataReplicationObserver implements Observer {
             } else {
                 frame.repaint();
             }
-            
 
             //System.out.println("World age" + n.getAge() + ", info:" + n.getAmountGlobalInfo());
             if (!globalInfo.containsKey(n.getAge())) {
@@ -144,18 +144,23 @@ public class DataReplicationObserver implements Observer {
                 synchronized (DataReplicationObserver.class) {
                     agentsLive.add(n.getAge(), n.getAgentsLive());
                 }
-                
+
                 globalInfo.put(n.getAge(), n.getAmountGlobalInfo());
             }
+
+            if (!agentsNumber.containsKey(n.getAge())) {
+                agentsNumber.put(n.getAge(), n.getAgentsLive());
+            }
+
             if ((SimulationParameters.maxIter == -1 && n.nodesComplete()) || (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) /*|| n.getAgentsDie() == (n.getTotalAgents())*/) {
                 //StatsTemperaturesMapImpl sti = new StatsTemperaturesMapImpl("experiment-p-" + ((World) obs).getAgents().size() + "- pf-" + pf + ".csv");
-                
+
                 if (!isUpdating) {
                     System.out.println("stopping simulation");
                     isUpdating = true;
                     n.stop();
                     StatisticsProviderReplication sti;
-                    String filename = "exp+ps+" + n.getAgents().size() + "+pf+" + SimulationParameters.pf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + n.topology.getEdges().size() + "+v+" + n.topology.getVertices().size() + "+" + SimulationParameters.graphMode;
+                    String filename = "exp+ps+" + SimulationParameters.popSize + "+pf+" + SimulationParameters.pf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + n.topology.getEdges().size() + "+v+" + n.topology.getVertices().size() + "+" + SimulationParameters.graphMode;
 
                     if (SimulationParameters.graphMode.equals("smallworld")) {
                         filename += "+beta+" + SimulationParameters.beta;
@@ -185,6 +190,7 @@ public class DataReplicationObserver implements Observer {
                     pref = pref.replaceAll(".graph", "");
                     filename += ".csv";
 
+                    //Write global information info
                     String dirName = pref + "+info";
                     createDir(dirName);
                     String infoStats = "./" + dirName + "/" + pref + "+" + getFileName() + "+infostats.csv";
@@ -192,14 +198,30 @@ public class DataReplicationObserver implements Observer {
                     PrintWriter escribir = null;
                     try {
                         escribir = new PrintWriter(new BufferedWriter(new FileWriter(infoStats, true)));
+                        for (int x : globalInfo.keySet()) {
+                            escribir.println(x + "," + globalInfo.get(x));
+                        }
+                        escribir.close();
                     } catch (IOException ex) {
                         Logger.getLogger(DataReplicationObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
-                    for (int x : globalInfo.keySet()) {
-                        escribir.println(x + "," + globalInfo.get(x));
+                    //Write agents live number
+                    String agNumberdirName = pref + "+agentNumber";
+                    createDir(agNumberdirName);
+                    String agentNumberStats = "./" + agNumberdirName + "/" + pref + "+" + getFileName() + "+agentnumber.csv";
+
+                    PrintWriter escribirAgentNumber = null;
+                    try {
+                        escribirAgentNumber = new PrintWriter(new BufferedWriter(new FileWriter(agentNumberStats, true)));
+                        for (int x : agentsNumber.keySet()) {
+                            escribirAgentNumber.println(x + "," + agentsNumber.get(x));
+                        }
+                        escribirAgentNumber.close();
+
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataReplicationObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    escribir.close();
 
                     sti = new StatisticsProviderReplication(filename);
 

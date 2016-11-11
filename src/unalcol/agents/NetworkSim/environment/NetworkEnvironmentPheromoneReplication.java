@@ -9,6 +9,7 @@ import edu.uci.ics.jung.graph.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
+import org.encog.util.obj.SerializeObject;
 import unalcol.agents.NetworkSim.ActionParameters;
 import unalcol.agents.NetworkSim.GraphElements;
 import unalcol.agents.NetworkSim.MobileAgent;
@@ -16,6 +17,7 @@ import unalcol.agents.NetworkSim.MotionProgramSimpleFactory;
 import unalcol.agents.NetworkSim.Node;
 import unalcol.agents.NetworkSim.SimulationParameters;
 import static unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication.setTotalAgents;
+import unalcol.agents.NetworkSim.util.StringSerializer;
 
 public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentReplication {
 
@@ -64,7 +66,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             if (inbox != null) {
                 a.incMsgRecv();
                 //Si yo soy responsable y me llega una copia de el.
-                /*if (a.getIdFather() == Integer.valueOf(inbox[0])) {
+                if (a.getIdFather() == Integer.valueOf(inbox[0])) {
                     System.out.println("My father is alive. Freeing memory");
                     a.die();
                     increaseAgentsDie();
@@ -78,12 +80,12 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     //Guardar ancestro principal
                     // 3 mensajes cuando fallen los nodos
                     // No es padre si no ancestro
-                   // Promedio por nodo 
-                   //Tomar ultimos -mediana-
+                    // Promedio por nodo 
+                    //Tomar ultimos -mediana-
                     //desv std sobre la mediana
                     //Guardar la lista ultimso 4 o 5
                     // mecanismo eliminar diferencial
-                }*/
+                }
                 ArrayList senderInf = (ArrayList) ObjectSerializer.deserialize(inbox[1]);
 
                 // Join ArrayLists
@@ -117,11 +119,13 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                         String[] msgnoder = new String[3];
                         msgnoder[0] = "freeresp";
                         msgnoder[1] = String.valueOf(a.getId());
+                        msgnoder[2] = a.getLocation().getName();
                         NetworkNodeMessageBuffer.getInstance().putMessage(a.getPrevLocation().getName(), msgnoder);
 
                         String[] msgnode = new String[3];
                         msgnode[0] = "arrived";
                         msgnode[1] = String.valueOf(a.getId());
+                        msgnode[2] = String.valueOf(a.getIdFather());
                         NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
 
                         currentNode = v;
@@ -179,7 +183,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     n.setLastAgentArrival(agentId, n.getRounds());
                     n.incMsgRecv();
                     //System.out.println("Node " + n.getVertex().getName() + " recv message: " + inbox[0]);
-                    n.getResponsibleAgents().put(agentId, n.getRounds());
+                    n.getResponsibleAgents().put(agentId, Integer.valueOf(inbox[2]));
                     n.calculateTimeout();
                     //System.out.println("node " + n.getVertex().getName() + " is responsible for agents:" + n.getResponsibleAgents());
                 }
@@ -187,9 +191,11 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     n.incMsgRecv();
                     //System.out.println("Node " + n.getVertex().getName() + " recv message: " + inbox[0] + "," + n.getRounds());
                     int agentId = Integer.valueOf(inbox[1]);
-                    n.setLastMessageArrival(agentId, n.getRounds());
+                    String newLocation = inbox[2];
+                    n.setLastMessageArrival(agentId, n.getRounds(), newLocation);
                     n.calculateTimeout();
                     n.getResponsibleAgents().remove(agentId);
+
                     //System.out.println("node " + n.getVertex().getName() + " is no more responsible for " + n.getResponsibleAgents() + "," + n.getRounds());
                 }
             }
@@ -224,13 +230,10 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 System.out.println("node: " + n.getVertex().getName() + ", timeout " + estimatedTimeout);
 
 //                if (estimatedTimeout > 1 && n.getLastAgentArrival().containsKey(k) && ((n.getRounds() - n.getLastAgentArrival(k)) > estimatedTimeout)) { //this is not the expresion
-                if (estimatedTimeout > 1 && n.getLastAgentArrival().containsKey(k) && Math.abs((n.getRounds() - n.getLastAgentArrival(k))) > (estimatedTimeout+3*n.getStdDevTimeout())) { //this is not the expresion
-                
+                if (n.getLastAgentArrival().containsKey(k) && Math.abs((n.getRounds() - n.getLastAgentArrival(k))) > (estimatedTimeout + 3 * n.getStdDevTimeout())) { //this is not the expresion
+
 //if (estimatedTimeout > 1 && n.getLastAgentArrival().containsKey(k) && Math.abs(n.getLastTimeout() - estimatedTimeout) > 50) { //this is not the expresion
-
-                   // System.out.println("entra n rounds:" + (n.getRounds() - n.getLastAgentArrival().get(k)) + " > " + estimatedTimeout);
-                    System.out.println("entra n rounds:" + n.getLastTimeout() + " > " + estimatedTimeout);
-
+                    // System.out.println("entra n rounds:" + (n.getRounds() - n.getLastAgentArrival().get(k)) + " > " + estimatedTimeout);
                     //if (Math.random() < n.getPfCreate()) {
                     System.out.println("create new agent instance..." + n.getVertex().getName());
                     AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
@@ -245,7 +248,11 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     a.setId(newAgentID);
                     a.setData(new ArrayList(n.getVertex().getData()));
 
-                    a.setIdFather(n.getResponsibleAgents().get(k));
+                    if (n.getResponsibleAgents().get(k) == -1) {
+                        a.setIdFather(k);
+                    } else {
+                        a.setIdFather(n.getResponsibleAgents().get(k));
+                    }
                     a.setRound(super.getAge());
                     this.agents.add(a);
 
@@ -260,22 +267,18 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     String[] msgnode = new String[3];
                     msgnode[0] = "arrived";
                     msgnode[1] = String.valueOf(a.getId());
+                    msgnode[2] = String.valueOf(a.getIdFather());
                     NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
                     t.start();
-
+                    //System.out.println("add creation time" + (n.getRounds() - n.getLastAgentArrival(k)));
+                    //n.addCreationTime(n.getRounds() - n.getLastAgentArrival(k));
                     System.out.println("node before: " + n.getVertex().getName() + " - " + n.getResponsibleAgents());
                     iter.remove();
                     System.out.println("node after: " + n.getVertex().getName() + " - " + n.getResponsibleAgents());
                     System.out.println("end creation of agent" + newAgentID);
+
                 }
-                
-
             }
-            if(estimatedTimeout != 0){
-                System.out.println("est" + estimatedTimeout);
-                n.setLastTimeout(estimatedTimeout);
-            }
-
         }
     }
 }

@@ -57,6 +57,16 @@ public class StatisticsNormalDist {
         
         return Math.sqrt(temp/(getSize()-1));
     }
+    
+    public double getStdDevMedian()
+    {
+        double median = getMedian();
+        double temp = 0;
+        for(double a :getData())
+            temp += (median-a)*(median-a);
+        
+        return Math.sqrt(temp/(getSize()-1));
+    }
 
     public double getMedian() 
     {

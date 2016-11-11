@@ -113,13 +113,13 @@ public class DataReplicationEscenario implements Runnable {
         String graphType = SimulationParameters.graphMode;
         graphType = graphType.replaceAll(".graph", "");
         String fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.pf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + ".timeout";
-        HashMap<String, Integer> nodeTimeout = (HashMap)ObjectSerializer.loadDeserializedObject(fileTimeout);
-        
+        HashMap<String, HashMap> nodeTimeout = (HashMap) ObjectSerializer.loadDeserializedObject(fileTimeout);
+
         for (GraphElements.MyVertex v : g.getVertices()) {
             Node n = null;
-            if(nodeTimeout != null && nodeTimeout.containsKey(v.getName())){
+            if (nodeTimeout != null && nodeTimeout.containsKey(v.getName())) {
                 n = new Node(np, v, nodeTimeout.get(v.getName()));
-            }else{
+            } else {
                 n = new Node(np, v);
             }
             n.setPfCreate(0);
@@ -147,6 +147,7 @@ public class DataReplicationEscenario implements Runnable {
             String[] msgnode = new String[3];
             msgnode[0] = "arrived";
             msgnode[1] = String.valueOf(a.getId());
+            msgnode[2] = String.valueOf(a.getIdFather());
             NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
         }
 

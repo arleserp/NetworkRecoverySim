@@ -11,7 +11,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import unalcol.agents.Agent;
+import unalcol.agents.AgentArchitecture;
 import unalcol.agents.AgentProgram;
+import unalcol.agents.NetworkSim.programs.PheromoneSynchronizationProgram;
 
 /**
  *
@@ -40,6 +42,10 @@ public class MobileAgent extends Agent implements Serializable {
         idFather = -1;
     }
 
+    public MobileAgent(){
+        //Default algorithm
+        super(null, null);
+    }
     
     public void setAttribute(String key, Object value) {
         properties.put(key, value);
