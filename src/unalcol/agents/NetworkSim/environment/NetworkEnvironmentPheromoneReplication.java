@@ -215,11 +215,13 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
 
     //Example: It is better handshake protocol. J. Gomez
     public void evaluateAgentCreation(Node n) {
+        
         synchronized (NetworkEnvironmentPheromoneReplication.class) {
             Iterator<Map.Entry<Integer, Integer>> iter = n.getResponsibleAgents().entrySet().iterator();
             /*if (!n.getResponsibleAgents().isEmpty()) {
                 System.out.println(n.getVertex().getName() + " hashmap " + n.getResponsibleAgents());
             }*/
+            
             int estimatedTimeout = 0;
             while (iter.hasNext()) {
                 //Key: agentId|roundNumber
@@ -230,11 +232,15 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 System.out.println("node: " + n.getVertex().getName() + ", timeout " + estimatedTimeout);
 
 //                if (estimatedTimeout > 1 && n.getLastAgentArrival().containsKey(k) && ((n.getRounds() - n.getLastAgentArrival(k)) > estimatedTimeout)) { //this is not the expresion
-                if (n.getLastAgentArrival().containsKey(k) && Math.abs((n.getRounds() - n.getLastAgentArrival(k))) > (estimatedTimeout + 3 * n.getStdDevTimeout())) { //this is not the expresion
-
-//if (estimatedTimeout > 1 && n.getLastAgentArrival().containsKey(k) && Math.abs(n.getLastTimeout() - estimatedTimeout) > 50) { //this is not the expresion
+                if (n.getLastAgentArrival().containsKey(k) && Math.abs((n.getRounds() - n.getLastAgentArrival(k))) > (estimatedTimeout + n.getStdDevTimeout())) { //this is not the expresion
+                    //if (estimatedTimeout > 1 && n.getLastAgentArrival().containsKey(k) && Math.abs(n.getLastTimeout() - estimatedTimeout) > 50) { //this is not the expresion
                     // System.out.println("entra n rounds:" + (n.getRounds() - n.getLastAgentArrival().get(k)) + " > " + estimatedTimeout);
                     //if (Math.random() < n.getPfCreate()) {
+                    //test
+                    // test maybe work!
+                    //n.addTimeout((Math.abs((n.getRounds() - n.getLastAgentArrival(k)))) - estimatedTimeout);
+                    n.addTimeout(estimatedTimeout);
+                   
                     System.out.println("create new agent instance..." + n.getVertex().getName());
                     AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
 
@@ -276,6 +282,9 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     iter.remove();
                     System.out.println("node after: " + n.getVertex().getName() + " - " + n.getResponsibleAgents());
                     System.out.println("end creation of agent" + newAgentID);
+                    
+                    
+                    
 
                 }
             }

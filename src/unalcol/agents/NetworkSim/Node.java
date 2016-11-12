@@ -34,7 +34,7 @@ public class Node extends Agent {
     private int amountRounds;
     private HashMap<String, ArrayList<Integer>> nodeTimeouts;
     private int INITIAL_TIMEOUT = 50;
-    private int WINDOW_SIZE = 50;
+    private int WINDOW_SIZE = 10;
     //try to stimate pf locally 1/numberofagentcreated
     
     
@@ -291,6 +291,13 @@ public class Node extends Agent {
             //Add median to the history to have more stable 
         }
     }
+    
+    public void addTimeout(int timeout){
+            System.out.println("add" + timeout);
+        for (String key : getNodeTimeouts().keySet()) {
+            getNodeTimeouts().get(key).add(timeout);
+         }
+    }
 
     public int estimateTimeout() {
         int maxMedianTimeout = Integer.MIN_VALUE;
@@ -363,7 +370,7 @@ public class Node extends Agent {
             for (Integer d : getNodeTimeouts().get(key)) {
                 dtimeout.add(d.doubleValue());
             }
-
+            
             if (dtimeout.size() >= WINDOW_SIZE) {
                 dtimeout = new ArrayList<>(dtimeout.subList(dtimeout.size() - WINDOW_SIZE, dtimeout.size() - 1));
             }

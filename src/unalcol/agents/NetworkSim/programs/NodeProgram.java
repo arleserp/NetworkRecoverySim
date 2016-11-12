@@ -29,7 +29,7 @@ public class NodeProgram implements AgentProgram {
 
     @Override
     public Action compute(Percept p) {
-        ActionParameters act = new ActionParameters("move");
+        ActionParameters act = new ActionParameters("communicate");
         //int pos;
 
         //if (Math.random() < pf) {
