@@ -9,7 +9,6 @@ import edu.uci.ics.jung.graph.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
-import org.encog.util.obj.SerializeObject;
 import unalcol.agents.NetworkSim.ActionParameters;
 import unalcol.agents.NetworkSim.GraphElements;
 import unalcol.agents.NetworkSim.MobileAgent;
@@ -17,7 +16,7 @@ import unalcol.agents.NetworkSim.MotionProgramSimpleFactory;
 import unalcol.agents.NetworkSim.Node;
 import unalcol.agents.NetworkSim.SimulationParameters;
 import static unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication.setTotalAgents;
-import unalcol.agents.NetworkSim.util.StringSerializer;
+
 
 public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentReplication {
 
@@ -232,13 +231,15 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 System.out.println("node: " + n.getVertex().getName() + ", timeout " + estimatedTimeout);
 
 //                if (estimatedTimeout > 1 && n.getLastAgentArrival().containsKey(k) && ((n.getRounds() - n.getLastAgentArrival(k)) > estimatedTimeout)) { //this is not the expresion
-                if (n.getLastAgentArrival().containsKey(k) && Math.abs((n.getRounds() - n.getLastAgentArrival(k))) > (estimatedTimeout + n.getStdDevTimeout())) { //this is not the expresion
+                if (n.getLastAgentArrival().containsKey(k) && Math.abs((n.getRounds() - n.getLastAgentArrival(k))) > (estimatedTimeout + 3*n.getStdDevTimeout())) { //this is not the expresion
                     //if (estimatedTimeout > 1 && n.getLastAgentArrival().containsKey(k) && Math.abs(n.getLastTimeout() - estimatedTimeout) > 50) { //this is not the expresion
-                    // System.out.println("entra n rounds:" + (n.getRounds() - n.getLastAgentArrival().get(k)) + " > " + estimatedTimeout);
+                     System.out.println("entra n rounds:" + (n.getRounds() - n.getLastAgentArrival().get(k)) + " > " + estimatedTimeout);
                     //if (Math.random() < n.getPfCreate()) {
                     //test
                     // test maybe work!
                     //n.addTimeout((Math.abs((n.getRounds() - n.getLastAgentArrival(k)))) - estimatedTimeout);
+                    
+                    //test 2
                     n.addTimeout(estimatedTimeout);
                    
                     System.out.println("create new agent instance..." + n.getVertex().getName());
