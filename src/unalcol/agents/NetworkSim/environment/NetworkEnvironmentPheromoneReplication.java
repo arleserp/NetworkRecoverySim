@@ -163,6 +163,8 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                             return false;
                         }
 
+                        //agent.sleep(10*Math.random());
+                        
                         String[] msgnoder = new String[3];
                         msgnoder[0] = "freeresp";
                         msgnoder[1] = String.valueOf(a.getId());
