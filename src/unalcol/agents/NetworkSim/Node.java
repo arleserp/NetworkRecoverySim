@@ -22,6 +22,7 @@ public class Node extends Agent {
     private GraphElements.MyVertex v;
     private ArrayList<Agent> currentAgents;
     private HashMap<Integer, Integer> responsibleAgents;
+    private HashMap<Integer, String> responsibleAgentsLocation;
     private double pfCreate;
     private int roundsWithOutVisit;
     private int roundsWithoutAck;
@@ -33,16 +34,16 @@ public class Node extends Agent {
     // private ArrayList<Integer> timeout;
     private int amountRounds;
     private HashMap<String, ArrayList<Integer>> nodeTimeouts;
-    private int INITIAL_TIMEOUT = 50;
+    private int INITIAL_TIMEOUT = 10;
     private int WINDOW_SIZE = 10;
     //try to stimate pf locally 1/numberofagentcreated
-    
-    
+
     public Node(AgentProgram _program, GraphElements.MyVertex ve) {
         super(_program);
         this.v = ve;
         currentAgents = new ArrayList<>();
         responsibleAgents = new HashMap<>();
+        responsibleAgentsLocation = new HashMap<>();
         lastAgentArrival = new HashMap<>();
         lastMessageArrival = new HashMap<>();
         rounds = 0;
@@ -54,6 +55,7 @@ public class Node extends Agent {
         this.v = ve;
         currentAgents = new ArrayList<>();
         responsibleAgents = new HashMap<>();
+        responsibleAgentsLocation = new HashMap<>();
         lastAgentArrival = new HashMap<>();
         lastMessageArrival = new HashMap<>();
         rounds = 0;
@@ -253,13 +255,11 @@ public class Node extends Agent {
         getLastMessageArrival().put(key, nodeAge);
     }
 
+    /*
     public void calculateTimeout() {
         Iterator<Map.Entry<Integer, Integer>> iter = getResponsibleAgents().entrySet().iterator();
         Iterator<Map.Entry<String, Integer>> iterM = getLastMessageArrival().entrySet().iterator();
-
-        if (!getResponsibleAgents().isEmpty()) {
-            //to complete
-        }
+        
         while (iter.hasNext()) {
             //Key: agentId|roundNumber
             ArrayList<Integer> times = new ArrayList<>();
@@ -291,12 +291,46 @@ public class Node extends Agent {
             //Add median to the history to have more stable 
         }
     }
-    
-    public void addTimeout(int timeout){
-            System.out.println("add" + timeout);
+     */
+    public void calculateTimeout() {
+        Iterator<Map.Entry<Integer, Integer>> iter = getResponsibleAgents().entrySet().iterator();
+        Iterator<Map.Entry<String, Integer>> iterM = getLastMessageArrival().entrySet().iterator();
+
+        while (iter.hasNext()) {
+            //Key: agentId|roundNumber
+            ArrayList<Integer> times = new ArrayList<>();
+            Map.Entry<Integer, Integer> Key = iter.next();
+            int k = Key.getKey();
+
+            while (iterM.hasNext()) {
+                Map.Entry<String, Integer> KeyM = iterM.next();
+                String[] dataKey = KeyM.getKey().split("-");
+                int agentId = Integer.valueOf(dataKey[0]);
+                String nodeId = dataKey[1];
+
+                if (agentId == k && getLastAgentArrival().containsKey(k) && getLastMessageArrival().containsKey(KeyM.getKey())) {
+                    int diff = Math.abs(getLastMessageArrival().get(KeyM.getKey()) - getLastAgentArrival().get(k));
+                    System.out.println("diff" +  diff);
+                    //if (diff != 0) {
+                        if (!nodeTimeouts.containsKey(nodeId)) {
+                            getNodeTimeouts().put(nodeId, new ArrayList());
+                            getNodeTimeouts().get(nodeId).add(INITIAL_TIMEOUT);
+                        }
+                        getNodeTimeouts().get(nodeId).add(diff);
+                    //}
+                    //System.out.println("node:" + getVertex().getName() + ", antes:" + getLastMessageArrival());
+                    iterM.remove();
+                    getLastAgentArrival().remove(k);
+                }
+            }
+        }
+    }
+
+    public void addTimeout(int timeout) {
+        System.out.println("add" + timeout);
         for (String key : getNodeTimeouts().keySet()) {
             getNodeTimeouts().get(key).add(timeout);
-         }
+        }
     }
 
     public int estimateTimeout() {
@@ -370,7 +404,7 @@ public class Node extends Agent {
             for (Integer d : getNodeTimeouts().get(key)) {
                 dtimeout.add(d.doubleValue());
             }
-            
+
             if (dtimeout.size() >= WINDOW_SIZE) {
                 dtimeout = new ArrayList<>(dtimeout.subList(dtimeout.size() - WINDOW_SIZE, dtimeout.size() - 1));
             }
@@ -403,6 +437,55 @@ public class Node extends Agent {
         for (String key : getNodeTimeouts().keySet()) {
             getNodeTimeouts().get(key).add(time);
         }
+    }
+
+    /**
+     * @return the responsibleAgentsLocation
+     */
+    public HashMap<Integer, String> getResponsibleAgentsLocation() {
+        return responsibleAgentsLocation;
+    }
+
+    /**
+     * @param responsibleAgentsLocation the responsibleAgentsLocation to set
+     */
+    public void setResponsibleAgentsLocation(HashMap<Integer, String> responsibleAgentsLocation) {
+        this.responsibleAgentsLocation = responsibleAgentsLocation;
+    }
+
+    public int estimateTimeout(String nodeId) {
+        System.out.println("nodeTimeouts" + getNodeTimeouts());
+
+        if (!getNodeTimeouts().containsKey(nodeId)) {
+            return INITIAL_TIMEOUT;
+        }
+        //for (String key : getNodeTimeouts().keySet()) {
+        ArrayList<Double> dtimeout = new ArrayList();
+        for (Integer d : getNodeTimeouts().get(nodeId)) {
+            dtimeout.add(d.doubleValue());
+        }
+        if (dtimeout.size() >= WINDOW_SIZE) {
+            dtimeout = new ArrayList<>(dtimeout.subList(dtimeout.size() - WINDOW_SIZE, dtimeout.size() - 1));
+        }
+        //if (dtimeout.size() > 1) {
+        StatisticsNormalDist st = new StatisticsNormalDist(dtimeout, dtimeout.size());
+        return (int) st.getMedian();
+    }
+
+    public double getStdDevTimeout(String nodeName) {
+        if(!getNodeTimeouts().containsKey(nodeName)){
+            return 0;
+        }
+        ArrayList<Double> dtimeout = new ArrayList();
+        for (Integer d : getNodeTimeouts().get(nodeName)) {
+            dtimeout.add(d.doubleValue());
+        }
+        if (dtimeout.size() >= WINDOW_SIZE) {
+            dtimeout = new ArrayList<>(dtimeout.subList(dtimeout.size() - WINDOW_SIZE, dtimeout.size() - 1));
+        }
+        //if (dtimeout.size() > 1) {
+        StatisticsNormalDist st = new StatisticsNormalDist(dtimeout, dtimeout.size());
+        return (int) st.getStdDevMedian();
     }
 
 }

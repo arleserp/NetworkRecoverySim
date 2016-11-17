@@ -144,10 +144,12 @@ public class DataReplicationEscenario implements Runnable {
             NetworkMessageBuffer.getInstance().createBuffer(a.getId());
             agents.add(a);
             //Initialize implies arrival message from nodes!
-            String[] msgnode = new String[3];
+            String[] msgnode = new String[4];
             msgnode[0] = "arrived";
             msgnode[1] = String.valueOf(a.getId());
             msgnode[2] = String.valueOf(a.getIdFather());
+            msgnode[3] = String.valueOf(-1);
+            
             NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
         }
 

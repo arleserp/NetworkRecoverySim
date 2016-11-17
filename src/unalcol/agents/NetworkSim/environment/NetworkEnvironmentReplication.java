@@ -131,7 +131,7 @@ public class NetworkEnvironmentReplication extends Environment {
         if (flag) {
             //Agents can be put to Sleep for some ms
             //sleep is good is graph interface is on
-            agent.sleep(3);
+            agent.sleep(30);
             String act = action.getCode();
             String msg = null;
 
@@ -513,5 +513,4 @@ public class NetworkEnvironmentReplication extends Environment {
     public void setNodesAgents(HashMap<GraphElements.MyVertex, ArrayList<Agent>> nodesAgents) {
         this.nodesAgents = nodesAgents;
     }
-
 }

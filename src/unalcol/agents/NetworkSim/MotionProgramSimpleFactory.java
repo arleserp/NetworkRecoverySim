@@ -12,6 +12,7 @@ import unalcol.agents.AgentProgram;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentCollection;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneCollection;
 import unalcol.agents.NetworkSim.programs.LevyWalkSynchronizationProgram;
+import unalcol.agents.NetworkSim.programs.PheromoneReplicationProgram;
 import unalcol.agents.NetworkSim.programs.PheromoneSynchronizationProgram;
 import unalcol.agents.NetworkSim.programs.RandomSynchronizationProgram;
 import unalcol.agents.simulate.Environment;
@@ -38,6 +39,9 @@ public class MotionProgramSimpleFactory {
         switch (mode) {
             case "random":
                 program = new RandomSynchronizationProgram(pf);
+                break;
+            case "carriersrep":
+                program = new PheromoneReplicationProgram(pf);
                 break;
             case "carriers":
                 program = new PheromoneSynchronizationProgram(pf);

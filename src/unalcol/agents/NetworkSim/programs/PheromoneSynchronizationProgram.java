@@ -30,6 +30,7 @@ public class PheromoneSynchronizationProgram implements AgentProgram {
     @Override
     public Action compute(Percept p) {
         ActionParameters act = new ActionParameters("move");
+        
         int pos;
 
         if (Math.random() < pf) {
