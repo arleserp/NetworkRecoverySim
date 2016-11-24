@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import unalcol.agents.NetworkSim.MobileAgent;
 import unalcol.agents.NetworkSim.Node;
+import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplication;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication;
 import unalcol.agents.NetworkSim.environment.ObjectSerializer;
 
@@ -63,11 +64,10 @@ class StatisticsProviderReplication {
                 Node node = (Node) w.getAgent(i);
                 nodeTimeout.put(node.getVertex().getName(), node.getNodeTimeouts());
                 Iterator it = node.getNodeTimeouts().keySet().iterator();
-                
+
                 System.out.print("Node " + node.getVertex().getName() + ": ");
-                while(it.hasNext())
-                {
-                    System.out.print(it.next()+" ");
+                while (it.hasNext()) {
+                    System.out.print(it.next() + " ");
                 }
                 System.out.println("");
             }
@@ -106,8 +106,14 @@ class StatisticsProviderReplication {
             //filename = getFileName() + "ds.trace";
             PrintWriter escribir;
             escribir = new PrintWriter(new BufferedWriter(new FileWriter(reportFile, true)));
-            escribir.println(st.get("right") + "," + st.get("wrong") + "," + st.get("nvertex") + "," + st.get("nedges") + "," + st.get("mean") + "," + st.get("stddev") + "," + st.get("avgSend")
-                    + "," + st.get("stdDevSend") + "," + st.get("avgRecv") + "," + st.get("stdDevRecv") + "," + st.get("round"));
+
+            if (w instanceof NetworkEnvironmentPheromoneReplication) {
+                escribir.println(st.get("right") + "," + st.get("wrong") + "," + st.get("nvertex") + "," + st.get("nedges") + "," + st.get("mean") + "," + st.get("stddev") + "," + st.get("avgSend")
+                        + "," + st.get("stdDevSend") + "," + st.get("avgRecv") + "," + st.get("stdDevRecv") + "," + st.get("round") + "," + String.valueOf(((NetworkEnvironmentPheromoneReplication)w).getFalsePossitives()));
+            } else {
+                escribir.println(st.get("right") + "," + st.get("wrong") + "," + st.get("nvertex") + "," + st.get("nedges") + "," + st.get("mean") + "," + st.get("stddev") + "," + st.get("avgSend")
+                        + "," + st.get("stdDevSend") + "," + st.get("avgRecv") + "," + st.get("stdDevRecv") + "," + st.get("round"));
+            }
             escribir.close();
         } catch (IOException ex) {
             Logger.getLogger(StatisticsProviderReplication.class.getName()).log(Level.SEVERE, null, ex);

@@ -18,7 +18,20 @@ import unalcol.agents.NetworkSim.SimulationParameters;
 import static unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication.setTotalAgents;
 
 public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentReplication {
+    private static int falsePossitives = 0;
+    
+    public static synchronized void incrementFalsePossitives(){
+        falsePossitives++;
+    }
 
+    /**
+     * @return the falsePossitives
+     */
+    public static int getFalsePossitives() {
+        return falsePossitives;
+    }
+    
+    
     public NetworkEnvironmentPheromoneReplication(Vector<Agent> _agents, SimpleLanguage _language, Graph<GraphElements.MyVertex, String> gr) {
         super(_agents, _language, gr);
     }
@@ -65,7 +78,8 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 a.incMsgRecv();
                 //Si yo soy responsable y me llega una copia de el.
                 if (a.getIdFather() == Integer.valueOf(inbox[0])) {
-                    // 1 father 10 son 
+                    // 1 father 10 son
+                    incrementFalsePossitives();
                     System.out.println("My father is alive. Freeing memory");
                     a.die();
                     increaseAgentsDie();
@@ -151,17 +165,6 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                         visitedNodes.add(currentNode);
                         a.setLocation(v);
                         getLocationAgents().put(a.getId(), a.getLocation());
-
-                        if (Math.random() < pf) {
-                            System.out.println("Agent " + a.getId() + "has failed");
-                            a.die();
-                            increaseAgentsDie();
-                            getLocationAgents().put(a.getId(), null);
-                            a.setLocation(null);
-                            setChanged();
-                            notifyObservers();
-                            return false;
-                        }
 
                         //agent.sleep(10*Math.random());
                         
@@ -270,6 +273,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
 
         synchronized (NetworkEnvironmentPheromoneReplication.class) {
             Iterator<Map.Entry<Integer, Integer>> iter = n.getResponsibleAgents().entrySet().iterator();
+            Iterator<Map.Entry<Integer, String>> iterLoc = n.getResponsibleAgentsLocation().entrySet().iterator();
             ///if (!n.getResponsibleAgents().isEmpty()) {
             // System.out.println(n.getVertex().getName() + " hashmap " + n.getResponsibleAgents());
             /*}*/
@@ -281,7 +285,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 //Key: agentId|roundNumber
                 Map.Entry<Integer, Integer> Key = iter.next();
                 int k = Key.getKey();
-                estimatedTimeout = n.estimateTimeout(n.getResponsibleAgentsLocation().get(k));
+                estimatedTimeout = n.estimateExpectedTime(n.getResponsibleAgentsLocation().get(k));
                 stdDevTimeout = (int) n.getStdDevTimeout(n.getResponsibleAgentsLocation().get(k));
 
                 if (n.getLastAgentArrival().containsKey(k) && Math.abs((n.getRounds() - n.getLastAgentArrival(k))) > (estimatedTimeout + 3 * stdDevTimeout)) { //this is not the expresion

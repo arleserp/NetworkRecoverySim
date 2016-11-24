@@ -453,7 +453,7 @@ public class Node extends Agent {
         this.responsibleAgentsLocation = responsibleAgentsLocation;
     }
 
-    public int estimateTimeout(String nodeId) {
+    public int estimateExpectedTime(String nodeId) {
         System.out.println("nodeTimeouts" + getNodeTimeouts());
 
         if (!getNodeTimeouts().containsKey(nodeId)) {
