@@ -80,7 +80,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 if (a.getIdFather() == Integer.valueOf(inbox[0])) {
                     // 1 father 10 son
                     incrementFalsePossitives();
-                    System.out.println("My father is alive. Freeing memory");
+                    //System.out.println("My father is alive. Freeing memory");
                     a.die();
                     increaseAgentsDie();
                     getLocationAgents().put(a.getId(), null);

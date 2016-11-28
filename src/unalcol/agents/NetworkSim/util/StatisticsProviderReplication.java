@@ -109,7 +109,7 @@ class StatisticsProviderReplication {
 
             if (w instanceof NetworkEnvironmentPheromoneReplication) {
                 escribir.println(st.get("right") + "," + st.get("wrong") + "," + st.get("nvertex") + "," + st.get("nedges") + "," + st.get("mean") + "," + st.get("stddev") + "," + st.get("avgSend")
-                        + "," + st.get("stdDevSend") + "," + st.get("avgRecv") + "," + st.get("stdDevRecv") + "," + st.get("round") + "," + String.valueOf(((NetworkEnvironmentPheromoneReplication)w).getFalsePossitives()));
+                        + "," + st.get("stdDevSend") + "," + st.get("avgRecv") + "," + st.get("stdDevRecv") + "," + st.get("round") + "," + String.valueOf(NetworkEnvironmentPheromoneReplication.getFalsePossitives()));
             } else {
                 escribir.println(st.get("right") + "," + st.get("wrong") + "," + st.get("nvertex") + "," + st.get("nedges") + "," + st.get("mean") + "," + st.get("stddev") + "," + st.get("avgSend")
                         + "," + st.get("stdDevSend") + "," + st.get("avgRecv") + "," + st.get("stdDevRecv") + "," + st.get("round"));

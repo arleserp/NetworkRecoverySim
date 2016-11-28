@@ -51,7 +51,7 @@ public class DataReplicationObserver implements Observer {
     JFrame frame;
     BasicVisualizationServer<GraphElements.MyVertex, String> vv = null;
     boolean added = false;
-    boolean isUpdating;
+    public static boolean isUpdating;
     HashMap<Integer, Double> globalInfo = new HashMap();
     HashMap<Integer, Integer> agentsNumber = new HashMap<>();
     XYSeries agentsLive;
@@ -68,10 +68,10 @@ public class DataReplicationObserver implements Observer {
         isUpdating = false;
         agentsLive = new XYSeries("agentsLive");
         juegoDatos.addSeries(agentsLive);
-    }
+    }   
 
     @Override
-    public void update(Observable o, Object arg) {
+    public synchronized void  update(Observable o, Object arg) {
         //System.out.println("observer update");
         if (o instanceof NetworkEnvironmentReplication) {
             final NetworkEnvironmentReplication n = (NetworkEnvironmentReplication) o;
