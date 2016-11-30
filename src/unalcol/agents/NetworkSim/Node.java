@@ -310,7 +310,7 @@ public class Node extends Agent {
 
                 if (agentId == k && getLastAgentArrival().containsKey(k) && getLastMessageArrival().containsKey(KeyM.getKey())) {
                     int diff = Math.abs(getLastMessageArrival().get(KeyM.getKey()) - getLastAgentArrival().get(k));
-                    System.out.println("diff" +  diff);
+                    //System.out.println("diff" +  diff);
                     //if (diff != 0) {
                         if (!nodeTimeouts.containsKey(nodeId)) {
                             getNodeTimeouts().put(nodeId, new ArrayList());

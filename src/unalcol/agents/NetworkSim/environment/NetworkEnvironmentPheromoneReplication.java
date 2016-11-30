@@ -18,9 +18,10 @@ import unalcol.agents.NetworkSim.SimulationParameters;
 import static unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication.setTotalAgents;
 
 public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentReplication {
+
     private static int falsePossitives = 0;
-    
-    public static synchronized void incrementFalsePossitives(){
+
+    public static synchronized void incrementFalsePossitives() {
         falsePossitives++;
     }
 
@@ -30,8 +31,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
     public static int getFalsePossitives() {
         return falsePossitives;
     }
-    
-    
+
     public NetworkEnvironmentPheromoneReplication(Vector<Agent> _agents, SimpleLanguage _language, Graph<GraphElements.MyVertex, String> gr) {
         super(_agents, _language, gr);
     }
@@ -122,9 +122,6 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 switch (language.getActionIndex(act)) {
                     case 0: // move
 //System.out.println("a despues" + a.getLocation());
-                        a.setPheromone((float) (a.getPheromone() + 0.01f * (0.5f - a.getPheromone())));
-                        a.getLocation().setPh(a.getLocation().getPh() + 0.01f * (a.getPheromone() - a.getLocation().getPh()));
-                        a.setRound(a.getRound() + 1);
 
                         boolean complete = false;
                         if (a.getData().size() == topology.getVertexCount()) {
@@ -165,9 +162,11 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                         visitedNodes.add(currentNode);
                         a.setLocation(v);
                         getLocationAgents().put(a.getId(), a.getLocation());
+                        a.setPheromone((float) (a.getPheromone() + 0.01f * (0.5f - a.getPheromone())));
+                        a.getLocation().setPh(a.getLocation().getPh() + 0.01f * (a.getPheromone() - a.getLocation().getPh()));
+                        a.setRound(a.getRound() + 1);
 
                         //agent.sleep(10*Math.random());
-                        
                         String[] msgnoder = new String[3];
                         msgnoder[0] = "freeresp";
                         msgnoder[1] = String.valueOf(a.getId());
@@ -238,7 +237,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     //System.out.println("n" + n.getResponsibleAgents());
                     n.getResponsibleAgentsLocation().put(agentId, inbox[3]);
                     n.calculateTimeout();
-                    System.out.println("departing node age" + n.getRounds());
+                    //System.out.println("departing node age" + n.getRounds());
                     //System.out.println("node " + n.getVertex().getName() + " is responsible for agents:" + n.getResponsibleAgents());
                 }
 
@@ -250,7 +249,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     n.setLastMessageArrival(agentId, n.getRounds(), newLocation);
                     n.calculateTimeout();
                     n.getResponsibleAgents().remove(agentId);
-                    System.out.println("freeresp node age" + n.getRounds());
+                    //System.out.println("freeresp node age" + n.getRounds());
 //System.out.println("node " + n.getVertex().getName() + " is no more responsible for " + n.getResponsibleAgents() + "," + n.getRounds());
                 }
             }

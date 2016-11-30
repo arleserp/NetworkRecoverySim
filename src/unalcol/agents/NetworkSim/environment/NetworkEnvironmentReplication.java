@@ -85,7 +85,8 @@ public class NetworkEnvironmentReplication extends Environment {
                 completed++;
             }
         }
-        //System.out.println("complete eval");
+        
+        System.out.println(((float)completed/(float)topology.getVertices().size())*100+"%");
         return completed == topology.getVertices().size();
     }
 

@@ -28,11 +28,15 @@ import unalcol.agents.NetworkSim.util.GraphStats;
 import unalcol.agents.NetworkSim.util.DataReplicationObserver;
 import unalcol.agents.NetworkSim.util.StringSerializer;
 
+
+
 /**
  * Creates a simulation without graphic interface
  *
  * @author arles.rodriguez
  */
+
+
 public class DataReplicationEscenario implements Runnable {
 
     private NetworkEnvironmentReplication world;
@@ -149,7 +153,7 @@ public class DataReplicationEscenario implements Runnable {
             msgnode[1] = String.valueOf(a.getId());
             msgnode[2] = String.valueOf(a.getIdFather());
             msgnode[3] = String.valueOf(-1);
-            
+
             NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
         }
 
@@ -185,6 +189,9 @@ public class DataReplicationEscenario implements Runnable {
             }
                  */
                 if (world instanceof NetworkEnvironmentPheromoneReplication && SimulationParameters.motionAlg.equals("carriers")) {
+                    ((NetworkEnvironmentPheromoneReplication) world).evaporatePheromone();
+                }
+                if (world instanceof NetworkEnvironmentPheromoneReplication && SimulationParameters.motionAlg.equals("carriersrep")) {
                     ((NetworkEnvironmentPheromoneReplication) world).evaporatePheromone();
                 }
                 /*

@@ -54,11 +54,12 @@ public class LocationService {
     public static void main(String[] args) {
         int numAgentes = 10;
         String dir = args[0];
-       
+        numAgentes = Integer.valueOf(args[1]);
+            
 
         if (args.length >= 1) {
             //Pop Size
-
+            
             File f = new File(dir);
             String extension;
             File[] files = f.listFiles();
@@ -81,7 +82,7 @@ public class LocationService {
                     String output = file.getName().replace(extension, "");
                     output += "loc";
 
-                    for (int k = 0; k < 10; k++) {
+                    for (int k = 0; k < numAgentes; k++) {
                         locations.add(getLocation(g));
                     }
                     StringSerializer.saveSerializedObject(output, locations);
