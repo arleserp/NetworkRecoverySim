@@ -157,7 +157,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                             notifyObservers();
                             return false;
                         }
-
+                        a.sleep(1000);
                         a.setPrevLocation(a.getLocation());
                         visitedNodes.add(currentNode);
                         a.setLocation(v);
@@ -166,12 +166,13 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                         a.getLocation().setPh(a.getLocation().getPh() + 0.01f * (a.getPheromone() - a.getLocation().getPh()));
                         a.setRound(a.getRound() + 1);
 
-                        //agent.sleep(10*Math.random());
-                        String[] msgnoder = new String[3];
-                        msgnoder[0] = "freeresp";
-                        msgnoder[1] = String.valueOf(a.getId());
-                        msgnoder[2] = a.getLocation().getName();
-                        NetworkNodeMessageBuffer.getInstance().putMessage(a.getPrevLocation().getName(), msgnoder);
+                        if (a.getPrevLocation() != null) {
+                            String[] msgnoder = new String[3];
+                            msgnoder[0] = "freeresp";
+                            msgnoder[1] = String.valueOf(a.getId());
+                            msgnoder[2] = a.getLocation().getName();
+                            NetworkNodeMessageBuffer.getInstance().putMessage(a.getPrevLocation().getName(), msgnoder);
+                        }
                         /*/*
                         String[] msgnode = new String[4];
                         msgnode[0] = "arrived";
@@ -248,9 +249,14 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     String newLocation = inbox[2];
                     n.setLastMessageArrival(agentId, n.getRounds(), newLocation);
                     n.calculateTimeout();
-                    n.getResponsibleAgents().remove(agentId);
+                    if (n.getResponsibleAgents().containsKey(agentId)) {
+                        n.getResponsibleAgents().remove(agentId);
+                    } else {
+                        System.out.println("Delete replica!!!!!!");
+                        deleteNextReplica(n);
+                    }
                     //System.out.println("freeresp node age" + n.getRounds());
-//System.out.println("node " + n.getVertex().getName() + " is no more responsible for " + n.getResponsibleAgents() + "," + n.getRounds());
+                    //System.out.println("node " + n.getVertex().getName() + " is no more responsible for " + n.getResponsibleAgents() + "," + n.getRounds());
                 }
             }
             n.calculateTimeout();
@@ -338,5 +344,33 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 }
             }
         }
+    }
+
+    private void deleteNextReplica(Node n) {
+        for (Agent a : agents) {
+            if (a instanceof MobileAgent) {
+                MobileAgent t = (MobileAgent) a;
+                if (t.getLocation() != null && t.getLocation().getName().equals(n.getVertex().getName())) {
+
+                    if (t.getPrevLocation() != null) {
+                        String[] msgnoder = new String[3];
+                        msgnoder[0] = "freeresp";
+                        msgnoder[1] = String.valueOf(t.getId());
+                        msgnoder[2] = t.getLocation().getName();
+                        NetworkNodeMessageBuffer.getInstance().putMessage(t.getPrevLocation().getName(), msgnoder);
+                    }
+                    a.die();
+                    increaseAgentsDie();
+                    getLocationAgents().put(t.getId(), null);
+                    t.setLocation(null);
+                    setChanged();
+                    notifyObservers();
+                    System.out.println("delete replica!");
+
+                    return;
+                }
+            }
+        }
+
     }
 }
