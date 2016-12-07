@@ -371,6 +371,5 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 }
             }
         }
-
     }
 }
