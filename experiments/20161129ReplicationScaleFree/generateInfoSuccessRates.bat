@@ -1,1 +1,1 @@
-java  -Xmx4200m -classpath NetworkSimulator.jar unalcol.agents.NetworkSim.util.SuccessRatesReport . 
+java  -Xmx4200m -classpath dist/NetworkSimulator.jar unalcol.agents.NetworkSim.util.SuccessRatesReport . 500 500

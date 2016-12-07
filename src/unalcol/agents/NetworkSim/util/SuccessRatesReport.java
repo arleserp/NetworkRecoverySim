@@ -262,7 +262,12 @@ public class SuccessRatesReport extends ApplicationFrame {
                     String line = sc.nextLine();
                     //System.out.println("line:" + line);
                     data = line.split(",");
-                    agentsCorrect = Integer.valueOf(data[0]);
+
+                    if (String.valueOf(data[0]).equals("true")) {
+                        agentsCorrect = 1;
+                    } else {
+                        agentsCorrect = Integer.valueOf(data[0]);
+                    }
                     //agentsIncorrect = Integer.valueOf(data[1]); // not used
                     //worldSize = Integer.valueOf(data[3]);
                     //averageExplored = Double.valueOf(data[4]);
@@ -403,17 +408,15 @@ public class SuccessRatesReport extends ApplicationFrame {
         if (args.length > 0) {
             experimentsDir = args[0];
         }
-        
+
         if (args.length > 1) {
             dimensionX = Integer.valueOf(args[1]);
         }
-        
-        
+
         if (args.length > 1) {
             dimensionY = Integer.valueOf(args[2]);
         }
-        
-        
+
         SuccessRatesReport reportSuccessRates = new SuccessRatesReport("Sucess Rates");
     }
 
