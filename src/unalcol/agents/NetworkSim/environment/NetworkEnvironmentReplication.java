@@ -28,6 +28,12 @@ public class NetworkEnvironmentReplication extends Environment {
      * @return the totalAgents
      */
     public int getTotalAgents() {
+        totalAgents = 0;
+        for (Agent a : this.getAgents()) {
+            if (a instanceof MobileAgent) {
+                totalAgents++;
+            }
+        }
         return totalAgents;
     }
 
@@ -85,8 +91,8 @@ public class NetworkEnvironmentReplication extends Environment {
                 completed++;
             }
         }
-        
-        System.out.println(((float)completed/(float)topology.getVertices().size())*100+"%");
+
+        System.out.println(((float) completed / (float) topology.getVertices().size()) * 100 + "%");
         return completed == topology.getVertices().size();
     }
 
@@ -284,9 +290,17 @@ public class NetworkEnvironmentReplication extends Environment {
     }
 
     public int getAgentsLive() {
+        int agentsLive = 0;
         synchronized (NetworkEnvironmentReplication.class) {
-            return getTotalAgents() - agentsDie;
+            for (Agent a : this.getAgents()) {
+                if (a instanceof MobileAgent) {
+                    if (((MobileAgent) a).status != Action.DIE) {
+                        agentsLive++;
+                    }
+                }
+            }
         }
+        return agentsLive;
     }
 
     @Override

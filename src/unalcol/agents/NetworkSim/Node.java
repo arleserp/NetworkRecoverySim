@@ -327,7 +327,7 @@ public class Node extends Agent {
     }
 
     public void addTimeout(int timeout) {
-        System.out.println("add" + timeout);
+        //System.out.println("add" + timeout);
         for (String key : getNodeTimeouts().keySet()) {
             getNodeTimeouts().get(key).add(timeout);
         }
@@ -335,7 +335,7 @@ public class Node extends Agent {
 
     public int estimateTimeout() {
         int maxMedianTimeout = Integer.MIN_VALUE;
-        System.out.println("nodeTimeouts" + getNodeTimeouts());
+        //System.out.println("nodeTimeouts" + getNodeTimeouts());
 
         if (getNodeTimeouts().isEmpty()) {
             return INITIAL_TIMEOUT;
@@ -355,7 +355,7 @@ public class Node extends Agent {
                 maxMedianTimeout = (int) st.getMedian();
             }
         }
-        System.out.println("Max median timeout" + maxMedianTimeout);
+        //System.out.println("Max median timeout" + maxMedianTimeout);
         return maxMedianTimeout;
         /*ArrayList<Double> dtimeout = new ArrayList();
         for (Integer d : timeout) {
@@ -393,7 +393,7 @@ public class Node extends Agent {
 
     public double getStdDevTimeout() {
         int maxMedianStdTimeout = Integer.MIN_VALUE;
-        System.out.println("nodeTimeouts" + getNodeTimeouts());
+        //System.out.println("nodeTimeouts" + getNodeTimeouts());
 
         if (getNodeTimeouts().isEmpty()) {
             return 0;
@@ -415,7 +415,7 @@ public class Node extends Agent {
                 maxMedianStdTimeout = (int) st.getStdDevMedian();
             }
         }
-        System.out.println("Max std timeout" + maxMedianStdTimeout);
+        //System.out.println("Max std timeout" + maxMedianStdTimeout);
         return maxMedianStdTimeout;
     }
 
@@ -454,7 +454,7 @@ public class Node extends Agent {
     }
 
     public int estimateExpectedTime(String nodeId) {
-        System.out.println("nodeTimeouts" + getNodeTimeouts());
+        //System.out.println("nodeTimeouts" + getNodeTimeouts());
 
         if (!getNodeTimeouts().containsKey(nodeId)) {
             return INITIAL_TIMEOUT;

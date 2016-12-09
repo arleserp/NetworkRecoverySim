@@ -161,7 +161,6 @@ public class AgentsVsTime extends ApplicationFrame {
                 }
                 for (int k : sorted) {
                     StatisticsNormalDist st = new StatisticsNormalDist(InfoByRound.get(k), InfoByRound.get(k).size());
-
                     /*if(InfoByRound.get(k).size() > 150){
                         mod = 10;
                     }*/

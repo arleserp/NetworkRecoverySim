@@ -24,7 +24,7 @@ public class PheromoneReplicationProgram implements AgentProgram {
 
     public PheromoneReplicationProgram(float pf) {
         this.pf = pf;
-        System.out.println("pf: " + pf);
+        //System.out.println("pf: " + pf);
     }
 
     @Override

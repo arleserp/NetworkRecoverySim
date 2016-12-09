@@ -42,6 +42,11 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
         if (agent instanceof MobileAgent) {
             boolean flag = (action != null);
             MobileAgent a = (MobileAgent) agent;
+
+            if(a.status == Action.DIE){
+                return false;
+            }
+            
             ActionParameters ac = (ActionParameters) action;
 
             synchronized (a.getLocation().getData()) {
@@ -148,7 +153,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                         NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
 
                         if (Math.random() < pf) {
-                            System.out.println("Agent " + a.getId() + "has failed");
+                            //System.out.println("Agent " + a.getId() + "has failed");
                             a.die();
                             increaseAgentsDie();
                             getLocationAgents().put(a.getId(), null);
@@ -186,7 +191,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
 
                         break;
                     case 1: //die
-                        System.out.println("Agent " + a.getId() + "has failed");
+                        //System.out.println("Agent " + a.getId() + "has failed");
                         a.die();
                         increaseAgentsDie();
                         getLocationAgents().put(a.getId(), null);
@@ -252,7 +257,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     if (n.getResponsibleAgents().containsKey(agentId)) {
                         n.getResponsibleAgents().remove(agentId);
                     } else {
-                        System.out.println("Delete replica!!!!!!");
+                        //System.out.println("Delete replica!!!!!!");
                         deleteNextReplica(n);
                     }
                     //System.out.println("freeresp node age" + n.getRounds());
@@ -298,14 +303,14 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                         n.getNodeTimeouts().get(n.getResponsibleAgentsLocation().get(k)).add(estimatedTimeout);
                         //n.addTimeout(estimatedTimeout);
                     }*/
-                    System.out.println("node" + n.getVertex().getName() + "," + estimatedTimeout);
-                    System.out.println("create new agent instance..." + n.getVertex().getName());
+                    //System.out.println("node" + n.getVertex().getName() + "," + estimatedTimeout);
+                    //System.out.println("create new agent instance..." + n.getVertex().getName());
                     AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
 
                     int newAgentID = agents.size();
                     MobileAgent a = new MobileAgent(program, newAgentID);
 
-                    System.out.println("creating agent id" + newAgentID);
+                    //System.out.println("creating agent id" + newAgentID);
                     NetworkMessageBuffer.getInstance().createBuffer(newAgentID);
 
                     //getLocationAgents().add(new GraphElements.MyVertex("null"));
@@ -337,10 +342,10 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     t.start();
                     //System.out.println("add creation time" + (n.getRounds() - n.getLastAgentArrival(k)));
                     //n.addCreationTime(n.getRounds() - n.getLastAgentArrival(k));
-                    System.out.println("node before: " + n.getVertex().getName() + " - " + n.getResponsibleAgents());
+                    //System.out.println("node before: " + n.getVertex().getName() + " - " + n.getResponsibleAgents());
                     iter.remove();
-                    System.out.println("node after: " + n.getVertex().getName() + " - " + n.getResponsibleAgents());
-                    System.out.println("end creation of agent" + newAgentID);
+                    //System.out.println("node after: " + n.getVertex().getName() + " - " + n.getResponsibleAgents());
+                    //System.out.println("end creation of agent" + newAgentID);
                 }
             }
         }
@@ -351,7 +356,6 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             if (a instanceof MobileAgent) {
                 MobileAgent t = (MobileAgent) a;
                 if (t.getLocation() != null && t.getLocation().getName().equals(n.getVertex().getName())) {
-
                     if (t.getPrevLocation() != null) {
                         String[] msgnoder = new String[3];
                         msgnoder[0] = "freeresp";
@@ -365,8 +369,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     t.setLocation(null);
                     setChanged();
                     notifyObservers();
-                    System.out.println("delete replica!");
-
+                    //System.out.println("delete replica!");
                     return;
                 }
             }
