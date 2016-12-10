@@ -43,10 +43,10 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             boolean flag = (action != null);
             MobileAgent a = (MobileAgent) agent;
 
-            if(a.status == Action.DIE){
+            if (a.status == Action.DIE) {
                 return false;
             }
-            
+
             ActionParameters ac = (ActionParameters) action;
 
             synchronized (a.getLocation().getData()) {
@@ -145,13 +145,17 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                         float pf = (float) ac.getAttribute("pf");
                         //Send a message to current node before moving to new destination v
                         //msgnode: "departing"|agentId|FatherId|newDest
-                        String[] msgnode = new String[4];
-                        msgnode[0] = "departing";
-                        msgnode[1] = String.valueOf(a.getId());
-                        msgnode[2] = String.valueOf(a.getIdFather());
-                        msgnode[3] = v.getName();
-                        NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
 
+                        if (SimulationParameters.activateReplication.equals("replalgon")) {
+                            String[] msgnode = new String[4];
+                            msgnode[0] = "departing";
+                            msgnode[1] = String.valueOf(a.getId());
+                            msgnode[2] = String.valueOf(a.getIdFather());
+                            msgnode[3] = v.getName();
+                            NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
+                        }
+
+                        //Agent Fail when moving
                         if (Math.random() < pf) {
                             //System.out.println("Agent " + a.getId() + "has failed");
                             a.die();
@@ -162,7 +166,12 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                             notifyObservers();
                             return false;
                         }
-                        a.sleep(1000);
+
+                        if (!SimulationParameters.nodeDelay.equals("NODELAY")) {
+                            int nodeDelay = Integer.valueOf(SimulationParameters.nodeDelay);
+                            a.sleep(nodeDelay);
+                        }
+
                         a.setPrevLocation(a.getLocation());
                         visitedNodes.add(currentNode);
                         a.setLocation(v);
@@ -171,12 +180,14 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                         a.getLocation().setPh(a.getLocation().getPh() + 0.01f * (a.getPheromone() - a.getLocation().getPh()));
                         a.setRound(a.getRound() + 1);
 
-                        if (a.getPrevLocation() != null) {
-                            String[] msgnoder = new String[3];
-                            msgnoder[0] = "freeresp";
-                            msgnoder[1] = String.valueOf(a.getId());
-                            msgnoder[2] = a.getLocation().getName();
-                            NetworkNodeMessageBuffer.getInstance().putMessage(a.getPrevLocation().getName(), msgnoder);
+                        if (SimulationParameters.activateReplication.equals("replalgon")) {
+                            if (a.getPrevLocation() != null) {
+                                String[] msgnoder = new String[3];
+                                msgnoder[0] = "freeresp";
+                                msgnoder[1] = String.valueOf(a.getId());
+                                msgnoder[2] = a.getLocation().getName();
+                                NetworkNodeMessageBuffer.getInstance().putMessage(a.getPrevLocation().getName(), msgnoder);
+                            }
                         }
                         /*/*
                         String[] msgnode = new String[4];
@@ -216,12 +227,12 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
         if (agent instanceof Node) {
             Node n = (Node) agent;
             n.incRounds();
-
-            /* A node process messages */
-            String[] inbox;
-            while ((inbox = NetworkNodeMessageBuffer.getInstance().getMessage(n.getVertex().getName())) != null) {
-                //inbox: node | agent
-                /*if (inbox[0].equals("arrived")) {
+            if (SimulationParameters.activateReplication.equals("replalgon")) {
+                /* A node process messages */
+                String[] inbox;
+                while ((inbox = NetworkNodeMessageBuffer.getInstance().getMessage(n.getVertex().getName())) != null) {
+                    //inbox: node | agent
+                    /*if (inbox[0].equals("arrived")) {
                     int agentId = Integer.valueOf(inbox[1]);
                     n.setLastAgentArrival(agentId, n.getRounds());
                     n.incMsgRecv();
@@ -232,40 +243,41 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     //System.out.println("node " + n.getVertex().getName() + " is responsible for agents:" + n.getResponsibleAgents());
                 }*/
 
-                //Send a message to current node before moving to new destination v
-                //msgnode: "departing"|agentId|FatherId|newDest
-                if (inbox[0].equals("departing")) {
-                    int agentId = Integer.valueOf(inbox[1]);
-                    n.setLastAgentArrival(agentId, n.getRounds());
-                    n.incMsgRecv();
-                    //System.out.println("Node " + n.getVertex().getName() + " recv message: " + inbox[0]);
-                    n.getResponsibleAgents().put(agentId, Integer.valueOf(inbox[2]));
-                    //System.out.println("n" + n.getResponsibleAgents());
-                    n.getResponsibleAgentsLocation().put(agentId, inbox[3]);
-                    n.calculateTimeout();
-                    //System.out.println("departing node age" + n.getRounds());
-                    //System.out.println("node " + n.getVertex().getName() + " is responsible for agents:" + n.getResponsibleAgents());
-                }
-
-                if (inbox[0].equals("freeresp")) {
-                    n.incMsgRecv();
-                    //System.out.println("Node " + n.getVertex().getName() + " recv message: " + inbox[0] + "," + n.getRounds());
-                    int agentId = Integer.valueOf(inbox[1]);
-                    String newLocation = inbox[2];
-                    n.setLastMessageArrival(agentId, n.getRounds(), newLocation);
-                    n.calculateTimeout();
-                    if (n.getResponsibleAgents().containsKey(agentId)) {
-                        n.getResponsibleAgents().remove(agentId);
-                    } else {
-                        //System.out.println("Delete replica!!!!!!");
-                        deleteNextReplica(n);
+                    //Send a message to current node before moving to new destination v
+                    //msgnode: "departing"|agentId|FatherId|newDest
+                    if (inbox[0].equals("departing")) {
+                        int agentId = Integer.valueOf(inbox[1]);
+                        n.setLastAgentArrival(agentId, n.getRounds());
+                        n.incMsgRecv();
+                        //System.out.println("Node " + n.getVertex().getName() + " recv message: " + inbox[0]);
+                        n.getResponsibleAgents().put(agentId, Integer.valueOf(inbox[2]));
+                        //System.out.println("n" + n.getResponsibleAgents());
+                        n.getResponsibleAgentsLocation().put(agentId, inbox[3]);
+                        n.calculateTimeout();
+                        //System.out.println("departing node age" + n.getRounds());
+                        //System.out.println("node " + n.getVertex().getName() + " is responsible for agents:" + n.getResponsibleAgents());
                     }
-                    //System.out.println("freeresp node age" + n.getRounds());
-                    //System.out.println("node " + n.getVertex().getName() + " is no more responsible for " + n.getResponsibleAgents() + "," + n.getRounds());
+
+                    if (inbox[0].equals("freeresp")) {
+                        n.incMsgRecv();
+                        //System.out.println("Node " + n.getVertex().getName() + " recv message: " + inbox[0] + "," + n.getRounds());
+                        int agentId = Integer.valueOf(inbox[1]);
+                        String newLocation = inbox[2];
+                        n.setLastMessageArrival(agentId, n.getRounds(), newLocation);
+                        n.calculateTimeout();
+                        if (n.getResponsibleAgents().containsKey(agentId)) {
+                            n.getResponsibleAgents().remove(agentId);
+                        } else {
+                            //System.out.println("Delete replica!!!!!!");
+                            deleteNextReplica(n);
+                        }
+                        //System.out.println("freeresp node age" + n.getRounds());
+                        //System.out.println("node " + n.getVertex().getName() + " is no more responsible for " + n.getResponsibleAgents() + "," + n.getRounds());
+                    }
                 }
+                n.calculateTimeout();
+                evaluateAgentCreation(n);
             }
-            n.calculateTimeout();
-            evaluateAgentCreation(n);
         }
         return false;
     }

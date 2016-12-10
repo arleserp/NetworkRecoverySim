@@ -30,4 +30,6 @@ public class SimulationParameters {
     public static int degree = 2;
     public static String filenameLoc = "";
     public static ArrayList globalData = null;
+    public static String activateReplication = "replalgon";
+    public static String nodeDelay = "NODELAY";
 }

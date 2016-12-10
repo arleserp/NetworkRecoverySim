@@ -14,7 +14,6 @@ import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
-import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -39,7 +38,6 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import unalcol.agents.NetworkSim.GraphElements;
 import unalcol.agents.NetworkSim.SimulationParameters;
-import static unalcol.agents.NetworkSim.SimulationParameters.pf;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication;
 
 /**
@@ -68,10 +66,10 @@ public class DataReplicationObserver implements Observer {
         isUpdating = false;
         agentsLive = new XYSeries("agentsLive");
         juegoDatos.addSeries(agentsLive);
-    }   
+    }
 
     @Override
-    public synchronized void  update(Observable o, Object arg) {
+    public synchronized void update(Observable o, Object arg) {
         //System.out.println("observer update");
         if (o instanceof NetworkEnvironmentReplication) {
             final NetworkEnvironmentReplication n = (NetworkEnvironmentReplication) o;
@@ -152,8 +150,15 @@ public class DataReplicationObserver implements Observer {
                 agentsNumber.put(n.getAge(), n.getAgentsLive());
             }
 
-            if ((SimulationParameters.maxIter == -1 && n.nodesComplete()) || (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) /*|| n.getAgentsDie() == (n.getTotalAgents())*/) {
+            boolean areAllAgentsDead = n.areAllAgentsDead();
+            if ((SimulationParameters.maxIter == -1 && n.nodesComplete()) || (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) /*|| n.getAgentsDie() == (n.getTotalAgents())*/ || (!SimulationParameters.activateReplication.equals("replalgon") && areAllAgentsDead)) {
                 //StatsTemperaturesMapImpl sti = new StatsTemperaturesMapImpl("experiment-p-" + ((World) obs).getAgents().size() + "- pf-" + pf + ".csv");
+
+                if (areAllAgentsDead) {
+                    if (agentsNumber.containsKey(n.getAge())) {
+                        agentsNumber.put(n.getAge()+1, 0);
+                    }
+                }
 
                 if (!isUpdating) {
                     System.out.println("stopping simulation");
@@ -183,6 +188,7 @@ public class DataReplicationObserver implements Observer {
                         filename += "+rows+" + SimulationParameters.rows;
                         filename += "+col+" + SimulationParameters.columns;
                     }
+                    filename += "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay;
                     String fileImage = filename + ".jpg";
                     String fileImageAgentsLive = filename + "+agentsLive.jpg";
                     saveImage(fileImageAgentsLive);

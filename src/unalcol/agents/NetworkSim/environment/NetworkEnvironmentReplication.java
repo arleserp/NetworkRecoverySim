@@ -528,4 +528,17 @@ public class NetworkEnvironmentReplication extends Environment {
     public void setNodesAgents(HashMap<GraphElements.MyVertex, ArrayList<Agent>> nodesAgents) {
         this.nodesAgents = nodesAgents;
     }
+
+    public boolean areAllAgentsDead() {
+        synchronized (NetworkEnvironmentReplication.class) {
+            for (Agent a : this.getAgents()) {
+                if (a instanceof MobileAgent) {
+                    if (((MobileAgent) a).status != Action.DIE) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
 }

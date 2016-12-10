@@ -28,7 +28,6 @@ public class DataReplicationMain {
     public static int numSteps = 5;
     public static int degree = 2;
     public static String filenameLoc = "";*/
-
     // Perform simulation
     public static void main(String[] args) {
         if (args.length >= 1) {
@@ -49,6 +48,12 @@ public class DataReplicationMain {
                 if (args.length > 7) {
                     SimulationParameters.maxIter = Integer.valueOf(args[8]);
                 }
+                if (args.length > 8) {
+                    SimulationParameters.activateReplication = args[9];
+                }
+                if (args.length > 9) {
+                    SimulationParameters.nodeDelay = args[10];
+                }
             }
 
             if (SimulationParameters.graphMode.equals("community")) {
@@ -59,11 +64,17 @@ public class DataReplicationMain {
                 SimulationParameters.popSize = Integer.valueOf(args[5]);
                 SimulationParameters.pf = Float.valueOf(String.valueOf(args[6]));
                 SimulationParameters.motionAlg = args[5];
-                if (args.length > 5) {
+                if (args.length > 6) {
                     SimulationParameters.filenameLoc = args[6];
                 }
-                if (args.length > 6) {
+                if (args.length > 7) {
                     SimulationParameters.maxIter = Integer.valueOf(args[7]);
+                }
+                if (args.length > 8) {
+                    SimulationParameters.activateReplication = args[8];
+                }
+                if (args.length > 9) {
+                    SimulationParameters.nodeDelay = args[9];
                 }
             }
 
@@ -74,12 +85,12 @@ public class DataReplicationMain {
                 SimulationParameters.clusters = Integer.valueOf(args[4]);
                 SimulationParameters.popSize = Integer.valueOf(args[5]);
                 SimulationParameters.pf = Float.valueOf(String.valueOf(args[6]));
-                SimulationParameters.motionAlg = args[5];
-                if (args.length > 5) {
-                    SimulationParameters.filenameLoc = args[6];
+                SimulationParameters.motionAlg = args[7];
+                if (args.length > 8) {
+                    SimulationParameters.filenameLoc = args[8];
                 }
-                if (args.length > 6) {
-                    SimulationParameters.maxIter = Integer.valueOf(args[7]);
+                if (args.length > 9) {
+                    SimulationParameters.maxIter = Integer.valueOf(args[9]);
                 }
             }
 
@@ -90,11 +101,17 @@ public class DataReplicationMain {
                 SimulationParameters.popSize = Integer.valueOf(args[4]);
                 SimulationParameters.pf = Float.valueOf(String.valueOf(args[5]));
                 SimulationParameters.motionAlg = args[6];
-                if (args.length > 6) {
+                if (args.length > 7) {
                     SimulationParameters.filenameLoc = args[7];
                 }
-                if (args.length > 7) {
+                if (args.length > 8) {
                     SimulationParameters.maxIter = Integer.valueOf(args[8]);
+                }
+                if (args.length > 9) {
+                    SimulationParameters.activateReplication = args[9];
+                }
+                if (args.length > 10) {
+                    SimulationParameters.nodeDelay = args[10];
                 }
             }
 
@@ -104,11 +121,17 @@ public class DataReplicationMain {
                 SimulationParameters.popSize = Integer.valueOf(args[3]);
                 SimulationParameters.pf = Float.valueOf(String.valueOf(args[4]));
                 SimulationParameters.motionAlg = args[5];
-                if (args.length > 5) {
+                if (args.length > 6) {
                     SimulationParameters.filenameLoc = args[6];
                 }
-                if (args.length > 6) {
+                if (args.length > 7) {
                     SimulationParameters.maxIter = Integer.valueOf(args[7]);
+                }
+                if (args.length > 8) {
+                    SimulationParameters.activateReplication = args[8];
+                }
+                if (args.length > 9) {
+                    SimulationParameters.nodeDelay = args[9];
                 }
             }
 
@@ -123,6 +146,12 @@ public class DataReplicationMain {
                 if (args.length > 6) {
                     SimulationParameters.maxIter = Integer.valueOf(args[6]);
                 }
+                if (args.length > 7) {
+                    SimulationParameters.activateReplication = args[7];
+                }
+                if (args.length > 8) {
+                    SimulationParameters.nodeDelay = args[8];
+                }
             }
 
             if (SimulationParameters.graphMode.equals("hubandspoke")) {
@@ -136,6 +165,12 @@ public class DataReplicationMain {
                 if (args.length > 6) {
                     SimulationParameters.maxIter = Integer.valueOf(args[6]);
                 }
+                if (args.length > 7) {
+                    SimulationParameters.activateReplication = args[7];
+                }
+                if (args.length > 8) {
+                    SimulationParameters.nodeDelay = args[8];
+                }
             }
 
             if (SimulationParameters.graphMode.equals("foresthubandspoke")) {
@@ -144,11 +179,17 @@ public class DataReplicationMain {
                 SimulationParameters.popSize = Integer.valueOf(args[3]);
                 SimulationParameters.pf = Float.valueOf(String.valueOf(args[4]));
                 SimulationParameters.motionAlg = args[5];
-                if (args.length > 5) {
+                if (args.length > 6) {
                     SimulationParameters.filenameLoc = args[6];
                 }
-                if (args.length > 6) {
+                if (args.length > 7) {
                     SimulationParameters.maxIter = Integer.valueOf(args[7]);
+                }
+                if (args.length > 8) {
+                    SimulationParameters.activateReplication = args[8];
+                }
+                if (args.length > 9) {
+                    SimulationParameters.nodeDelay = args[9];
                 }
             }
 
@@ -163,6 +204,12 @@ public class DataReplicationMain {
                 if (args.length > 6) {
                     SimulationParameters.maxIter = Integer.valueOf(args[6]);
                 }
+                if (args.length > 7) {
+                    SimulationParameters.activateReplication = args[7];
+                }
+                if (args.length > 8) {
+                    SimulationParameters.nodeDelay = args[8];
+                }
             }
 
             if (SimulationParameters.graphMode.equals("load")) {
@@ -170,16 +217,21 @@ public class DataReplicationMain {
                 SimulationParameters.popSize = Integer.valueOf(args[2]);
                 SimulationParameters.pf = Float.valueOf(String.valueOf(args[3]));
                 SimulationParameters.motionAlg = args[4];
-                if (args.length > 4) {
+                if (args.length > 5) {
                     SimulationParameters.filenameLoc = args[5];
                 }
-                if (args.length > 5) {
+                if (args.length > 6) {
                     SimulationParameters.maxIter = Integer.valueOf(args[6]);
+                }
+                if (args.length > 7) {
+                    SimulationParameters.activateReplication = args[7];
+                }
+                if (args.length > 8) {
+                    SimulationParameters.nodeDelay = args[8];
                 }
             }
             System.out.println("MaxIter" + SimulationParameters.maxIter);
-            
-            
+
             DataReplicationEscenario w = new DataReplicationEscenario(SimulationParameters.popSize, SimulationParameters.pf);
             w.init();
             w.run();
