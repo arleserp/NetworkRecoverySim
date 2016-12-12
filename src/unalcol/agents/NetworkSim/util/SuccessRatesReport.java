@@ -265,7 +265,9 @@ public class SuccessRatesReport extends ApplicationFrame {
 
                     if (String.valueOf(data[0]).equals("true")) {
                         agentsCorrect = 1;
-                    } else {
+                    } else if (String.valueOf(data[0]).equals("false")) {
+                        agentsCorrect = 0;
+                    }else{
                         agentsCorrect = Integer.valueOf(data[0]);
                     }
                     //agentsIncorrect = Integer.valueOf(data[1]); // not used
