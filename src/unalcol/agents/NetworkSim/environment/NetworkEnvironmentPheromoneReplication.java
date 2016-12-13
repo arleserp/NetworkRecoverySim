@@ -20,7 +20,9 @@ import static unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplicatio
 public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentReplication {
 
     private static int falsePossitives = 0;
-
+    private static int agentMovements = 0;
+    private static int ACKAmount = 0;
+    
     public static synchronized void incrementFalsePossitives() {
         falsePossitives++;
     }
@@ -32,6 +34,30 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
         return falsePossitives;
     }
 
+    
+    public static synchronized void incrementAgentMovements() {
+        agentMovements++;
+    }
+
+    /**
+     * @return the falsePossitives
+     */
+    public static int getAgentMovements() {
+        return agentMovements;
+    }
+    
+    
+    public static synchronized void incrementACKAmount() {
+        ACKAmount++;
+    }
+
+    /**
+     * @return the falsePossitives
+     */
+    public static int getACKAmount() {
+        return ACKAmount;
+    }
+    
     public NetworkEnvironmentPheromoneReplication(Vector<Agent> _agents, SimpleLanguage _language, Graph<GraphElements.MyVertex, String> gr) {
         super(_agents, _language, gr);
     }
@@ -72,7 +98,6 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 NetworkMessageBuffer.getInstance().putMessage(idAgent, message);
                 a.incMsgSend();
             }
-
             String[] inbox = NetworkMessageBuffer.getInstance().getMessage(a.getId());
 
             int old_size = a.getData().size();
@@ -81,29 +106,6 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             //inbox: id | infi 
             if (inbox != null) {
                 a.incMsgRecv();
-                //Si yo soy responsable y me llega una copia de el.
-                if (a.getIdFather() == Integer.valueOf(inbox[0])) {
-                    // 1 father 10 son
-                    incrementFalsePossitives();
-                    //System.out.println("My father is alive. Freeing memory");
-                    a.die();
-                    increaseAgentsDie();
-                    getLocationAgents().put(a.getId(), null);
-                    a.setLocation(null);
-                    setChanged();
-                    notifyObservers();
-                    return flag;
-                    //Guardar el id de los posibles padres
-                    //Con la historia se de quien es copia
-                    //Guardar ancestro principal
-                    // 3 mensajes cuando fallen los nodos
-                    // No es padre si no ancestro
-                    // Promedio por nodo 
-                    //Tomar ultimos -mediana-
-                    //desv std sobre la mediana
-                    //Guardar la lista ultimso 4 o 5
-                    // mecanismo eliminar diferencial
-                }
                 ArrayList senderInf = (ArrayList) ObjectSerializer.deserialize(inbox[1]);
 
                 // Join ArrayLists
@@ -126,8 +128,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 /* @TODO: Detect Stop Conditions for the algorithm */
                 switch (language.getActionIndex(act)) {
                     case 0: // move
-//System.out.println("a despues" + a.getLocation());
-
+                        //System.out.println("a despues" + a.getLocation());
                         boolean complete = false;
                         if (a.getData().size() == topology.getVertexCount()) {
                             complete = true;
@@ -179,6 +180,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                         a.setPheromone((float) (a.getPheromone() + 0.01f * (0.5f - a.getPheromone())));
                         a.getLocation().setPh(a.getLocation().getPh() + 0.01f * (a.getPheromone() - a.getLocation().getPh()));
                         a.setRound(a.getRound() + 1);
+                        incrementAgentMovements();
 
                         if (SimulationParameters.activateReplication.equals("replalgon")) {
                             if (a.getPrevLocation() != null) {
@@ -189,15 +191,6 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                                 NetworkNodeMessageBuffer.getInstance().putMessage(a.getPrevLocation().getName(), msgnoder);
                             }
                         }
-                        /*/*
-                        String[] msgnode = new String[4];
-                        msgnode[0] = "arrived";
-                        msgnode[1] = String.valueOf(a.getId());
-                        msgnode[2] = String.valueOf(a.getIdFather());
-                        msgnode[3] = a.getPrevLocation().getName();
-                        NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
-                         */
-
                         currentNode = v;
 
                         break;
@@ -259,6 +252,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     }
 
                     if (inbox[0].equals("freeresp")) {
+                        incrementACKAmount();
                         n.incMsgRecv();
                         //System.out.println("Node " + n.getVertex().getName() + " recv message: " + inbox[0] + "," + n.getRounds());
                         int agentId = Integer.valueOf(inbox[1]);
@@ -269,6 +263,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                             n.getResponsibleAgents().remove(agentId);
                         } else {
                             //System.out.println("Delete replica!!!!!!");
+                            incrementFalsePossitives();
                             deleteNextReplica(n);
                         }
                         //System.out.println("freeresp node age" + n.getRounds());

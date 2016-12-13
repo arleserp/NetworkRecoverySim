@@ -28,6 +28,11 @@ import unalcol.agents.NetworkSim.environment.ObjectSerializer;
 class StatisticsProviderReplication {
 
     private String reportFile;
+    private static final long MEGABYTE = 1024L * 1024L;
+
+    public static long bytesToMegabytes(long bytes) {
+        return bytes / MEGABYTE;
+    }
 
     StatisticsProviderReplication(String filename) {
         reportFile = filename;
@@ -107,9 +112,15 @@ class StatisticsProviderReplication {
             PrintWriter escribir;
             escribir = new PrintWriter(new BufferedWriter(new FileWriter(reportFile, true)));
 
+            Runtime runtime = Runtime.getRuntime();
+            // Run the garbage collector
+            runtime.gc();
+            // Calculate the used memory
+            long memory = runtime.totalMemory() - runtime.freeMemory();
+            
             if (w instanceof NetworkEnvironmentPheromoneReplication) {
                 escribir.println(st.get("right") + "," + st.get("wrong") + "," + st.get("nvertex") + "," + st.get("nedges") + "," + st.get("mean") + "," + st.get("stddev") + "," + st.get("avgSend")
-                        + "," + st.get("stdDevSend") + "," + st.get("avgRecv") + "," + st.get("stdDevRecv") + "," + st.get("round") + "," + String.valueOf(NetworkEnvironmentPheromoneReplication.getFalsePossitives()));
+                        + "," + st.get("stdDevSend") + "," + st.get("avgRecv") + "," + st.get("stdDevRecv") + "," + st.get("round") + "," + NetworkEnvironmentPheromoneReplication.getFalsePossitives() + "," + NetworkEnvironmentPheromoneReplication.getAgentMovements() + "," + NetworkEnvironmentPheromoneReplication.getACKAmount()+ "," + memory);
             } else {
                 escribir.println(st.get("right") + "," + st.get("wrong") + "," + st.get("nvertex") + "," + st.get("nedges") + "," + st.get("mean") + "," + st.get("stddev") + "," + st.get("avgSend")
                         + "," + st.get("stdDevSend") + "," + st.get("avgRecv") + "," + st.get("stdDevRecv") + "," + st.get("round"));

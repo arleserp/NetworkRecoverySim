@@ -52,6 +52,8 @@ public class DataReplicationObserver implements Observer {
     public static boolean isUpdating;
     HashMap<Integer, Double> globalInfo = new HashMap();
     HashMap<Integer, Integer> agentsNumber = new HashMap<>();
+    HashMap<Integer, Integer> nodesComplete = new HashMap<>();
+
     XYSeries agentsLive;
     XYSeriesCollection juegoDatos = new XYSeriesCollection();
 
@@ -150,16 +152,23 @@ public class DataReplicationObserver implements Observer {
                 agentsNumber.put(n.getAge(), n.getAgentsLive());
             }
 
+            if (!nodesComplete.containsKey(n.getAge())) {
+                nodesComplete.put(n.getAge(), n.getCompletionPercentage());
+            }
+
             boolean areAllAgentsDead = n.areAllAgentsDead();
             if ((SimulationParameters.maxIter == -1 && n.nodesComplete()) || (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) /*|| n.getAgentsDie() == (n.getTotalAgents())*/ || (!SimulationParameters.activateReplication.equals("replalgon") && areAllAgentsDead)) {
                 //StatsTemperaturesMapImpl sti = new StatsTemperaturesMapImpl("experiment-p-" + ((World) obs).getAgents().size() + "- pf-" + pf + ".csv");
 
                 if (areAllAgentsDead) {
                     if (agentsNumber.containsKey(n.getAge())) {
-                        agentsNumber.put(n.getAge()+1, 0);
+                        agentsNumber.put(n.getAge() + 1, 0);
                     }
                 }
-
+                if (nodesComplete.containsKey(n.getAge())) {
+                    nodesComplete.put(n.getAge(), n.getCompletionPercentage());
+                }
+                
                 if (!isUpdating) {
                     System.out.println("stopping simulation");
                     isUpdating = true;
@@ -225,6 +234,23 @@ public class DataReplicationObserver implements Observer {
                         }
                         escribirAgentNumber.close();
 
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataReplicationObserver.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                    //Write completion percentage
+                    //Write agents live number
+                    String ncNumberdirName = pref + "+nodeComplete";
+                    createDir(ncNumberdirName);
+                    String ncNumberStats = "./" + ncNumberdirName + "/" + pref + "+" + getFileName() + "+nodecomplete.csv";
+
+                    PrintWriter escribirNodeCompleteNumber = null;
+                    try {
+                        escribirNodeCompleteNumber = new PrintWriter(new BufferedWriter(new FileWriter(ncNumberStats, true)));
+                        for (int y : nodesComplete.keySet()) {
+                            escribirNodeCompleteNumber.println(y + "," + nodesComplete.get(y));
+                        }
+                        escribirNodeCompleteNumber.close();
                     } catch (IOException ex) {
                         Logger.getLogger(DataReplicationObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }

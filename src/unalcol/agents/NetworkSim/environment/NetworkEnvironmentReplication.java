@@ -84,6 +84,17 @@ public class NetworkEnvironmentReplication extends Environment {
         return structure[0].length;
     }
 
+    public int getCompletionPercentage() {
+        int completed = 0;
+        for (GraphElements.MyVertex v : topology.getVertices()) {
+            if (v.getData().size() == topology.getVertices().size()) {
+                completed++;
+            }
+        }
+        return completed;
+    }
+
+    
     public boolean nodesComplete() {
         int completed = 0;
         for (GraphElements.MyVertex v : topology.getVertices()) {
