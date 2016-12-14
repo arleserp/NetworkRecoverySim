@@ -21,7 +21,10 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Observable;
@@ -168,7 +171,7 @@ public class DataReplicationObserver implements Observer {
                 if (nodesComplete.containsKey(n.getAge())) {
                     nodesComplete.put(n.getAge(), n.getCompletionPercentage());
                 }
-                
+
                 if (!isUpdating) {
                     System.out.println("stopping simulation");
                     isUpdating = true;
@@ -270,7 +273,7 @@ public class DataReplicationObserver implements Observer {
     }
 
     private String getFileName() {
-        Calendar c = new GregorianCalendar();
+        /*Calendar c = new GregorianCalendar();
         String dia, mes, annio, hora, minutos, segundos;
         dia = Integer.toString(c.get(Calendar.DATE));
         mes = Integer.toString(c.get(Calendar.MONTH) + 1);
@@ -279,6 +282,12 @@ public class DataReplicationObserver implements Observer {
         minutos = Integer.toString(c.get(Calendar.MINUTE));
         segundos = Integer.toString((c.get(Calendar.SECOND)));
         return annio + mes + dia + hora + minutos + segundos;
+         */
+        DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+        Date today = Calendar.getInstance().getTime();
+        String reportDate = df.format(today);
+
+        return reportDate;
     }
 
     private void createDir(String filename) {

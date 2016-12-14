@@ -128,8 +128,8 @@ public class BoxPlotRoundNumberSort extends ApplicationFrame {
             } else if (sortCriteria.equals("skew")) {
                 String graphtype1 = filename1[13];
 
-                double v1 = Double.valueOf(f1.split("+")[1]);
-                double v2 = Double.valueOf(f2.split("+")[1]);
+                double v1 = Double.valueOf(f1.split(Pattern.quote("+"))[1]);
+                double v2 = Double.valueOf(f2.split(Pattern.quote("+"))[1]);
 
                 if (v1 == v2) {
                     return 0;

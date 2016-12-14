@@ -13,10 +13,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
@@ -93,7 +96,26 @@ public class GrowthCurveAgentVsSimulationNumber extends ApplicationFrame {
                 Arrays.sort(filesInfo, new Comparator<File>() {
                     @Override
                     public int compare(File f1, File f2) {
-                        return Long.valueOf(f1.lastModified()).compareTo(f2.lastModified());
+
+                        String f1name = f1.getName();
+                        String f2name = f2.getName();
+
+                        String[] splittt = f1name.split(Pattern.quote("+"));
+                        String[] splittt2 = f2name.split(Pattern.quote("+"));
+                        Date date1 = null, date2 = null;
+                        
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+                        String dateInString = f1name.split(Pattern.quote("+"))[splittt.length - 2];
+                        String dateInString2 = f2name.split(Pattern.quote("+"))[splittt2.length - 2];
+                        try {
+                            date1 = sdf.parse(dateInString);
+                            date2 = sdf.parse(dateInString2);
+                        } catch (ParseException ex) {
+                            Logger.getLogger(GrowthCurveAgentVsSimulationNumber.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        System.out.println("date1:" + date1 + ", date2:" + date2);
+                        return date1.compareTo(date2);
+                        //return Long.valueOf(f1.lastModified()).compareTo(f2.lastModified());
                     }
                 });
 
