@@ -36,6 +36,10 @@ public class NetworkNodeMessageBuffer {
     }
 
     public void putMessage(String pid, String[] msg) {
+        if(pid == null){
+            System.out.println("Destination is null");
+            return;
+        }
         mbuffer.get(pid).add(msg);
     }
 

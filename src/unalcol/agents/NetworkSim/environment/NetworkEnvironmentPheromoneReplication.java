@@ -22,7 +22,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
     private static int falsePossitives = 0;
     private static int agentMovements = 0;
     private static int ACKAmount = 0;
-    
+
     public static synchronized void incrementFalsePossitives() {
         falsePossitives++;
     }
@@ -34,7 +34,6 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
         return falsePossitives;
     }
 
-    
     public static synchronized void incrementAgentMovements() {
         agentMovements++;
     }
@@ -45,8 +44,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
     public static int getAgentMovements() {
         return agentMovements;
     }
-    
-    
+
     public static synchronized void incrementACKAmount() {
         ACKAmount++;
     }
@@ -57,7 +55,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
     public static int getACKAmount() {
         return ACKAmount;
     }
-    
+
     public NetworkEnvironmentPheromoneReplication(Vector<Agent> _agents, SimpleLanguage _language, Graph<GraphElements.MyVertex, String> gr) {
         super(_agents, _language, gr);
     }
@@ -69,7 +67,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             boolean flag = (action != null);
             MobileAgent a = (MobileAgent) agent;
 
-            if (a.status == Action.DIE) {
+            if (a.status == Action.DIE || a.getLocation() == null) {
                 return false;
             }
 
@@ -153,7 +151,9 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                             msgnode[1] = String.valueOf(a.getId());
                             msgnode[2] = String.valueOf(a.getIdFather());
                             msgnode[3] = v.getName();
-                            NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
+                            if (a.getLocation() != null) {
+                                NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
+                            }
                         }
 
                         //Agent Fail when moving
@@ -359,7 +359,8 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
     }
 
     private void deleteNextReplica(Node n) {
-        for (Agent a : agents) {
+        Vector<Agent> copy = (Vector) agents.clone();
+        for (Agent a : copy) {
             if (a instanceof MobileAgent) {
                 MobileAgent t = (MobileAgent) a;
                 if (t.getLocation() != null && t.getLocation().getName().equals(n.getVertex().getName())) {

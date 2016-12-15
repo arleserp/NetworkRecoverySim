@@ -303,7 +303,8 @@ public class NetworkEnvironmentReplication extends Environment {
     public int getAgentsLive() {
         int agentsLive = 0;
         synchronized (NetworkEnvironmentReplication.class) {
-            for (Agent a : this.getAgents()) {
+            Vector<Agent> agentsClone = (Vector) this.getAgents().clone();
+            for (Agent a : agentsClone) {
                 if (a instanceof MobileAgent) {
                     if (((MobileAgent) a).status != Action.DIE) {
                         agentsLive++;
@@ -389,7 +390,7 @@ public class NetworkEnvironmentReplication extends Environment {
     public ArrayList<Integer> getAgentNeighbors(MobileAgent x) {
         ArrayList n = new ArrayList();
         for (int i = 0; i < getLocationAgents().size(); i++) {
-            if (i != x.getId() && x.getLocation().equals(getLocationAgents().get(i))) {
+            if (i != x.getId() && x.getLocation() != null && x.getLocation().equals(getLocationAgents().get(i))) {
                 n.add(i);
             }
         }
@@ -542,7 +543,10 @@ public class NetworkEnvironmentReplication extends Environment {
 
     public boolean areAllAgentsDead() {
         synchronized (NetworkEnvironmentReplication.class) {
-            for (Agent a : this.getAgents()) {
+            Vector cloneAgents = (Vector) this.getAgents().clone();
+            Iterator itr = cloneAgents.iterator();
+            while(itr.hasNext()){
+                Agent a = (Agent)itr.next();
                 if (a instanceof MobileAgent) {
                     if (((MobileAgent) a).status != Action.DIE) {
                         return false;
