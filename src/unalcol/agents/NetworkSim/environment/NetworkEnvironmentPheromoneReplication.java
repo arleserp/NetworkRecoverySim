@@ -62,7 +62,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
 
     @Override
     public boolean act(Agent agent, Action action) {
-        agent.sleep(50);
+        agent.sleep(30);
         if (agent instanceof MobileAgent) {
             boolean flag = (action != null);
             MobileAgent a = (MobileAgent) agent;
@@ -136,7 +136,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                             System.out.println("complete! round" + a.getRound());
                             setRoundComplete(a.getRound());
                             setIdBest(a.getId());
-                            updateWorldAge();
+                            //updateWorldAge();
                         }
 
                         //get new location
@@ -211,7 +211,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 }
             }
 
-            updateWorldAge();
+            //updateWorldAge();
             setChanged();
             notifyObservers();
             //System.out.println("wat" + a.getId());

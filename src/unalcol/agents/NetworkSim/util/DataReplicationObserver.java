@@ -25,10 +25,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
@@ -216,7 +217,8 @@ public class DataReplicationObserver implements Observer {
                     PrintWriter escribir = null;
                     try {
                         escribir = new PrintWriter(new BufferedWriter(new FileWriter(infoStats, true)));
-                        for (int x : globalInfo.keySet()) {
+                        SortedSet<Integer> keys = new TreeSet<>(globalInfo.keySet());
+                        for (int x : keys) {
                             escribir.println(x + "," + globalInfo.get(x));
                         }
                         escribir.close();
@@ -232,7 +234,8 @@ public class DataReplicationObserver implements Observer {
                     PrintWriter escribirAgentNumber = null;
                     try {
                         escribirAgentNumber = new PrintWriter(new BufferedWriter(new FileWriter(agentNumberStats, true)));
-                        for (int x : agentsNumber.keySet()) {
+                        SortedSet<Integer> keysAg = new TreeSet<>(agentsNumber.keySet());
+                        for (int x : keysAg) {
                             escribirAgentNumber.println(x + "," + agentsNumber.get(x));
                         }
                         escribirAgentNumber.close();
@@ -250,7 +253,8 @@ public class DataReplicationObserver implements Observer {
                     PrintWriter escribirNodeCompleteNumber = null;
                     try {
                         escribirNodeCompleteNumber = new PrintWriter(new BufferedWriter(new FileWriter(ncNumberStats, true)));
-                        for (int y : nodesComplete.keySet()) {
+                        SortedSet<Integer> nodesAg = new TreeSet<>(nodesComplete.keySet());
+                        for (int y : nodesAg) {
                             escribirNodeCompleteNumber.println(y + "," + nodesComplete.get(y));
                         }
                         escribirNodeCompleteNumber.close();

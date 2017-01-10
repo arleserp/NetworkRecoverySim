@@ -28,15 +28,11 @@ import unalcol.agents.NetworkSim.util.GraphStats;
 import unalcol.agents.NetworkSim.util.DataReplicationObserver;
 import unalcol.agents.NetworkSim.util.StringSerializer;
 
-
-
 /**
  * Creates a simulation without graphic interface
  *
  * @author arles.rodriguez
  */
-
-
 public class DataReplicationEscenario implements Runnable {
 
     private NetworkEnvironmentReplication world;
@@ -116,7 +112,7 @@ public class DataReplicationEscenario implements Runnable {
 
         String graphType = SimulationParameters.graphMode;
         graphType = graphType.replaceAll(".graph", "");
-        String fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.pf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay +".timeout";
+        String fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.pf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + ".timeout";
         HashMap<String, HashMap> nodeTimeout = (HashMap) ObjectSerializer.loadDeserializedObject(fileTimeout);
 
         for (GraphElements.MyVertex v : g.getVertices()) {
@@ -153,7 +149,6 @@ public class DataReplicationEscenario implements Runnable {
             msgnode[1] = String.valueOf(a.getId());
             msgnode[2] = String.valueOf(a.getIdFather());
             msgnode[3] = String.valueOf(-1);
-
             NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
         }
 
@@ -194,6 +189,7 @@ public class DataReplicationEscenario implements Runnable {
                 if (world instanceof NetworkEnvironmentPheromoneReplication && SimulationParameters.motionAlg.equals("carriersrep")) {
                     ((NetworkEnvironmentPheromoneReplication) world).evaporatePheromone();
                 }
+                ((NetworkEnvironmentPheromoneReplication) world).updateWorldAge();
                 /*
             if (world instanceof WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl) {
                 ((WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl) world).evaporatePheromone();

@@ -58,7 +58,7 @@ public class NetworkEnvironmentReplication extends Environment {
     private int roundComplete = -1;
     private int idBest = -1;
     private boolean finished = false;
-    private int age;
+    private static int age = 0;
     public static int agentsDie = 0;
     private static int totalAgents = 0;
 
@@ -94,7 +94,6 @@ public class NetworkEnvironmentReplication extends Environment {
         return completed;
     }
 
-    
     public boolean nodesComplete() {
         int completed = 0;
         for (GraphElements.MyVertex v : topology.getVertices()) {
@@ -494,8 +493,9 @@ public class NetworkEnvironmentReplication extends Environment {
         return amountGlobalInfo / topology.getVertexCount();
     }
 
-    public void updateWorldAge() {
-        int average = 0;
+    public synchronized void updateWorldAge() {
+        age++;
+        /*int average = 0;
         int agentslive = 0;
         for (int k = 0; k < this.getAgents().size(); k++) {
             if ((this.getAgent(k)).status != Action.DIE) {
@@ -509,7 +509,7 @@ public class NetworkEnvironmentReplication extends Environment {
             average /= agentslive;
             //System.out.println("age:" + average);
             this.setAge(average);
-        }
+        }*/
     }
 
     /**
@@ -545,8 +545,8 @@ public class NetworkEnvironmentReplication extends Environment {
         synchronized (NetworkEnvironmentReplication.class) {
             Vector cloneAgents = (Vector) this.getAgents().clone();
             Iterator itr = cloneAgents.iterator();
-            while(itr.hasNext()){
-                Agent a = (Agent)itr.next();
+            while (itr.hasNext()) {
+                Agent a = (Agent) itr.next();
                 if (a instanceof MobileAgent) {
                     if (((MobileAgent) a).status != Action.DIE) {
                         return false;

@@ -85,7 +85,6 @@ import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.util.Log;
 import org.jfree.util.LogContext;
-import unalcol.agents.NetworkSim.GraphElements;
 
 /**
  * Demonstration of a box-and-whisker chart using a {@link CategoryPlot}.
@@ -215,7 +214,7 @@ public class BoxPlotRoundNumberReplicationSort extends ApplicationFrame {
         FileOutputStream output;
         try {
             output = new FileOutputStream("roundnumber1" + "-" + pf + sortCriteria + ".jpg");
-            ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, sizeX , sizeY, null);
+            ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, sizeX, sizeY, null);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(BoxPlotRoundNumberReplicationSort.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -309,6 +308,7 @@ public class BoxPlotRoundNumberReplicationSort extends ApplicationFrame {
             double avgSend = 0;
             double avgRecv = 0;
             double avgdataExplInd = 0;
+            boolean successulExperiments = false;
             ArrayList<Double> acSt = new ArrayList<>();
             ArrayList<Double> avgExp = new ArrayList<>();
             ArrayList<Double> bestR = new ArrayList<>();
@@ -329,14 +329,16 @@ public class BoxPlotRoundNumberReplicationSort extends ApplicationFrame {
                 bestRoundNumber = Integer.valueOf(data[10]);
                 avgSend = Double.valueOf(data[8]);
                 avgRecv = Double.valueOf(data[6]);
-
+                successulExperiments = Boolean.valueOf(data[0]);
+                
                 //Add Data and generate statistics 
                 acSt.add((double) agentsCorrect);
                 avgExp.add(averageExplored);
                 avSnd.add(avgSend);
                 avRecv.add(avgRecv);
                 avIndExpl.add(avgdataExplInd);
-                if (bestRoundNumber != 0 && bestRoundNumber != -1) {
+                
+                if (successulExperiments && bestRoundNumber != 0 && bestRoundNumber != -1) {
                     list.add(new Double(bestRoundNumber));
                 }
             }
@@ -351,12 +353,11 @@ public class BoxPlotRoundNumberReplicationSort extends ApplicationFrame {
                 //String graphfile = graphtype + fn2 + ".graph";
                 //Graph<GraphElements.MyVertex, String> g = GraphSerialization.loadDeserializeGraph(graphfile);
                 //double skew = getSkewness(g);
-               // double kurtosis = getKurtosis(g);
-
+                // double kurtosis = getKurtosis(g);
                 if (Pf.size() == 1) {
-                    dataset.add(list, popsize, getTechniqueName(mode) + " "+ graphtype + fn2);
+                    dataset.add(list, popsize, getTechniqueName(mode) + " " + graphtype + fn2);
                 } else {
-              //      dataset.add(list, String.valueOf(popsize) + "-" + pf, getTechniqueName(mode) + "+" + graphtype + fn2 + "+sk+" + skew + "+k" + getKurtosis(g));
+                    //      dataset.add(list, String.valueOf(popsize) + "-" + pf, getTechniqueName(mode) + "+" + graphtype + fn2 + "+sk+" + skew + "+k" + getKurtosis(g));
                 }
             }
             //}
