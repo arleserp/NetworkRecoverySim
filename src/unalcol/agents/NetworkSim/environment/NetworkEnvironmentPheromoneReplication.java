@@ -273,6 +273,8 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 n.calculateTimeout();
                 evaluateAgentCreation(n);
             }
+            setChanged();
+            notifyObservers();
         }
         return false;
     }
