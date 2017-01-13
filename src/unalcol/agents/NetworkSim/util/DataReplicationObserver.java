@@ -118,11 +118,17 @@ public class DataReplicationObserver implements Observer {
             Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
                 @Override
                 public Paint transform(GraphElements.MyVertex i) {
-                    if (n.getLocationAgents().containsValue(i)) {
+                    if (n.getLocationAgents().containsValue(i) ) {
                         return Color.YELLOW;
                     }
                     if (n.getVisitedNodes().contains(i)) {
                         return Color.BLUE;
+                    }
+                    //if(i.getData().size() > 0){
+                    //    System.out.println("i"+ i.getData().size());
+                    //}
+                    if(i.getData().size() == n.getTopology().getVertices().size()){
+                        return Color.GREEN;
                     }
                     return Color.RED;
                 }

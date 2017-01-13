@@ -51,7 +51,7 @@ public class NetworkEnvironmentReplication extends Environment {
     String currentEdge = null;
     String lastactionlog;
     public List<GraphElements.MyVertex> visitedNodes = Collections.synchronizedList(new ArrayList());
-    public HashMap<Integer, GraphElements.MyVertex> locationAgents = null;
+    public HashMap<MobileAgent, GraphElements.MyVertex> locationAgents = null;
     private HashMap<GraphElements.MyVertex, ArrayList<Agent>> nodesAgents = null;
 
     //private static final HashMap<Integer, ConcurrentLinkedQueue> mbuffer = new HashMap<>();
@@ -113,7 +113,7 @@ public class NetworkEnvironmentReplication extends Environment {
         currentNode = a.getLocation();
         visitedNodes.add(currentNode);
 
-        getLocationAgents().put(a.getId(), a.getLocation());
+        getLocationAgents().put(a, a.getLocation());
         /**
          * Local communication deleted
          *
@@ -177,7 +177,7 @@ public class NetworkEnvironmentReplication extends Environment {
                 case 1: //die
                     a.die();
                     a.setLocation(null);
-                    getLocationAgents().put(a.getId(), null);
+                    getLocationAgents().put(a, null);
                     increaseAgentsDie();
                     setChanged();
                     notifyObservers();
@@ -373,7 +373,7 @@ public class NetworkEnvironmentReplication extends Environment {
     /**
      * @return the locationAgents
      */
-    public HashMap<Integer, GraphElements.MyVertex> getLocationAgents() {
+    public HashMap<MobileAgent, GraphElements.MyVertex> getLocationAgents() {
         synchronized (NetworkEnvironmentReplication.class) {
             return locationAgents;
         }
@@ -382,7 +382,7 @@ public class NetworkEnvironmentReplication extends Environment {
     /**
      * @param locationAgents the locationAgents to set
      */
-    public void setLocationAgents(HashMap<Integer, GraphElements.MyVertex> locationAgents) {
+    public void setLocationAgents(HashMap<MobileAgent, GraphElements.MyVertex> locationAgents) {
         this.locationAgents = locationAgents;
     }
 
