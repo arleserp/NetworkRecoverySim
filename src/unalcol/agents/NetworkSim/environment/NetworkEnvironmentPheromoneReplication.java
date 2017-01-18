@@ -20,11 +20,12 @@ import static unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplicatio
 public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentReplication {
 
     private static int falsePossitives = 0;
+    
     private static int agentMovements = 0;
     private static int ACKAmount = 0;
 
     public static synchronized void incrementFalsePossitives() {
-        falsePossitives++;
+        falsePossitives ++;
     }
 
     /**
