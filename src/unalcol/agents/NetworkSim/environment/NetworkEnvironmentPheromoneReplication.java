@@ -73,7 +73,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
             }
             currentNode = a.getLocation();
             visitedNodes.add(currentNode);
-
+            getLocationAgents().put(a, a.getLocation());
             ActionParameters ac = (ActionParameters) action;
 
             synchronized (a.getLocation().getData()) {
@@ -275,8 +275,8 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 n.calculateTimeout();
                 evaluateAgentCreation(n);
             }
-            setChanged();
-            notifyObservers();
+            //setChanged();
+            //notifyObservers();
         }
         return false;
     }
@@ -351,7 +351,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     msgnode[3] = String.valueOf(-1);
                     NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
                     t.start();
-                    System.out.println("replica created:" + a.getId());
+                    //System.out.println("replica created:" + a.getId());
                     //System.out.println("add creation time" + (n.getRounds() - n.getLastAgentArrival(k)));
                     //n.addCreationTime(n.getRounds() - n.getLastAgentArrival(k));
                     //System.out.println("node before: " + n.getVertex().getName() + " - " + n.getResponsibleAgents());

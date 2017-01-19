@@ -23,6 +23,7 @@ import unalcol.agents.NetworkSim.Node;
 public class NetworkEnvironmentReplication extends Environment {
 
     public static String msg = null;
+    public static float percentageSuccess = -1.0f;
 
     /**
      * @return the totalAgents
@@ -102,7 +103,11 @@ public class NetworkEnvironmentReplication extends Environment {
             }
         }
 
-        System.out.println(((float) completed / (float) topology.getVertices().size()) * 100 + "%");
+        if (percentageSuccess != (float) completed / (float) topology.getVertices().size() * 100) {
+            percentageSuccess = (float) completed / (float) topology.getVertices().size() * 100;
+            System.out.println(percentageSuccess + "%");
+        }
+
         return completed == topology.getVertices().size();
     }
 
