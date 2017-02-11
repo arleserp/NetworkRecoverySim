@@ -1,1 +1,1 @@
-java  -Xmx4200m -classpath dist/NetworkSimulator.jar unalcol.agents.NetworkSim.util.BoxPlotDepartingMessage .
+java  -Xmx4200m -classpath dist/NetworkSimulator.jar unalcol.agents.NetworkSim.util.BoxPlotDepartingMessage . all 400 400

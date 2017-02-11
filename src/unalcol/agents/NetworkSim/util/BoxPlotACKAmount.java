@@ -330,14 +330,14 @@ public class BoxPlotACKAmount extends ApplicationFrame {
                 avgSend = Double.valueOf(data[8]);
                 avgRecv = Double.valueOf(data[6]);
                 successulExperiments = Boolean.valueOf(data[0]);
-                
+
                 //Add Data and generate statistics 
                 acSt.add((double) agentsCorrect);
                 avgExp.add(averageExplored);
                 avSnd.add(avgSend);
                 avRecv.add(avgRecv);
                 avIndExpl.add(avgdataExplInd);
-                
+
                 if (successulExperiments && ACK != 0 && ACK != -1) {
                     list.add(new Double(ACK));
                 }
@@ -357,7 +357,7 @@ public class BoxPlotACKAmount extends ApplicationFrame {
                 if (Pf.size() == 1) {
                     dataset.add(list, popsize, getTechniqueName(mode) + " " + graphtype + fn2);
                 } else {
-                    //      dataset.add(list, String.valueOf(popsize) + "-" + pf, getTechniqueName(mode) + "+" + graphtype + fn2 + "+sk+" + skew + "+k" + getKurtosis(g));
+                    dataset.add(list, popsize, getTechniqueName(mode) + " " + graphtype + " " + pf + " " + fn2);
                 }
             }
             //}
@@ -509,7 +509,7 @@ public class BoxPlotACKAmount extends ApplicationFrame {
             sizeX = Integer.valueOf(args[2]);
         }
 
-        if (args.length > 2) {
+        if (args.length > 3) {
             sizeY = Integer.valueOf(args[2]);
         }
 
@@ -522,14 +522,22 @@ public class BoxPlotACKAmount extends ApplicationFrame {
         for (int i = 2; i < args.length; i++) {
             aMode[i - 2] = args[i];
         }*/
-        ArrayList<Double> failureProbs = getFailureProbs();
-
-        for (Double pf : failureProbs) {
+        if (sortCriteria.equals("all")) {
+            ArrayList<Double> failureProbs = getFailureProbs();
             ArrayList<Double> pfi = new ArrayList<>();
-            pfi.add(pf);
-            final BoxPlotACKAmount demo = new BoxPlotACKAmount("ACK Messages", pfi);
-        }
+            for (Double pf : failureProbs) {
+                pfi.add(pf);
+                final BoxPlotACKAmount demo = new BoxPlotACKAmount("ACK Messages", pfi);
+            }
+        } else {
+            ArrayList<Double> failureProbs = getFailureProbs();
 
+            for (Double pf : failureProbs) {
+                ArrayList<Double> pfi = new ArrayList<>();
+                pfi.add(pf);
+                final BoxPlotACKAmount demo = new BoxPlotACKAmount("ACK Messages", pfi);
+            }
+        }
         /*
          double pf = 0;
          ArrayList<Double> pf0 = new ArrayList<>();

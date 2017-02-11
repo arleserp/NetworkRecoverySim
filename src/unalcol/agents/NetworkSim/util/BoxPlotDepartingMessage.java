@@ -330,14 +330,14 @@ public class BoxPlotDepartingMessage extends ApplicationFrame {
                 avgSend = Double.valueOf(data[8]);
                 avgRecv = Double.valueOf(data[6]);
                 successulExperiments = Boolean.valueOf(data[0]);
-                
+
                 //Add Data and generate statistics 
                 acSt.add((double) agentsCorrect);
                 avgExp.add(averageExplored);
                 avSnd.add(avgSend);
                 avRecv.add(avgRecv);
                 avIndExpl.add(avgdataExplInd);
-                
+
                 if (successulExperiments && agentMovements != 0 && agentMovements != -1) {
                     list.add(new Double(agentMovements));
                 }
@@ -357,6 +357,7 @@ public class BoxPlotDepartingMessage extends ApplicationFrame {
                 if (Pf.size() == 1) {
                     dataset.add(list, popsize, getTechniqueName(mode) + " " + graphtype + fn2);
                 } else {
+                    dataset.add(list, popsize, getTechniqueName(mode) + " " + graphtype + " " + pf + " " + fn2);
                     //      dataset.add(list, String.valueOf(popsize) + "-" + pf, getTechniqueName(mode) + "+" + graphtype + fn2 + "+sk+" + skew + "+k" + getKurtosis(g));
                 }
             }
@@ -509,7 +510,11 @@ public class BoxPlotDepartingMessage extends ApplicationFrame {
             sizeX = Integer.valueOf(args[2]);
         }
 
-        if (args.length > 2) {
+        if (args.length > 3) {
+            sizeY = Integer.valueOf(args[3]);
+        }
+
+        if (args.length > 4) {
             sizeY = Integer.valueOf(args[2]);
         }
 
@@ -522,12 +527,21 @@ public class BoxPlotDepartingMessage extends ApplicationFrame {
         for (int i = 2; i < args.length; i++) {
             aMode[i - 2] = args[i];
         }*/
-        ArrayList<Double> failureProbs = getFailureProbs();
-
-        for (Double pf : failureProbs) {
+        if (sortCriteria.equals("all")) {
+            ArrayList<Double> failureProbs = getFailureProbs();
             ArrayList<Double> pfi = new ArrayList<>();
-            pfi.add(pf);
-            final BoxPlotDepartingMessage demo = new BoxPlotDepartingMessage("Depart Messages", pfi);
+            for (Double pf : failureProbs) {
+                pfi.add(pf);
+            }
+            final BoxPlotDepartingMessage demo = new BoxPlotDepartingMessage("Departing Messages", pfi);
+        } else {
+            ArrayList<Double> failureProbs = getFailureProbs();
+
+            for (Double pf : failureProbs) {
+                ArrayList<Double> pfi = new ArrayList<>();
+                pfi.add(pf);
+                final BoxPlotDepartingMessage demo = new BoxPlotDepartingMessage("Depart Messages", pfi);
+            }
         }
 
         /*
