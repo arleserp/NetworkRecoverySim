@@ -36,10 +36,13 @@ public class Node extends Agent {
     private HashMap<String, ArrayList<Integer>> nodeTimeouts;
     private int INITIAL_TIMEOUT = 10;
     private int WINDOW_SIZE = 10;
+    private HashMap<String, Object> networkdata;
+    
     //try to stimate pf locally 1/numberofagentcreated
 
     public Node(AgentProgram _program, GraphElements.MyVertex ve) {
         super(_program);
+        this.networkdata = new HashMap<>();
         this.v = ve;
         currentAgents = new ArrayList<>();
         responsibleAgents = new HashMap<>();
@@ -52,6 +55,7 @@ public class Node extends Agent {
 
     public Node(AgentProgram _program, GraphElements.MyVertex ve, HashMap tout) {
         super(_program);
+        this.networkdata = new HashMap<>();
         this.v = ve;
         currentAgents = new ArrayList<>();
         responsibleAgents = new HashMap<>();
@@ -486,6 +490,20 @@ public class Node extends Agent {
         //if (dtimeout.size() > 1) {
         StatisticsNormalDist st = new StatisticsNormalDist(dtimeout, dtimeout.size());
         return (int) st.getStdDevMedian();
+    }
+
+    /**
+     * @return the networkdata
+     */
+    public HashMap<String, Object> getNetworkdata() {
+        return networkdata;
+    }
+
+    /**
+     * @param networkdata the networkdata to set
+     */
+    public void setNetworkdata(HashMap<String, Object> networkdata) {
+        this.networkdata = networkdata;
     }
 
 }

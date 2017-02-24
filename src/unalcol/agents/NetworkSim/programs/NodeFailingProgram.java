@@ -1,0 +1,42 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package unalcol.agents.NetworkSim.programs;
+
+import unalcol.agents.Action;
+import unalcol.agents.AgentProgram;
+import unalcol.agents.NetworkSim.ActionParameters;
+import unalcol.agents.Percept;
+
+/**
+ *
+ * @author Arles Rodriguez
+ */
+public class NodeFailingProgram implements AgentProgram {
+
+    float pf;
+
+    public NodeFailingProgram(float pf) {
+        this.pf = pf;
+        System.out.println("pf: " + pf);
+    }
+
+    @Override
+    public Action compute(Percept p) {
+        ActionParameters act = new ActionParameters("communicate");
+        
+        //Now a node can fail also
+        if (Math.random() < pf) {
+            return new ActionParameters("die");
+        }
+        return act;
+    }
+
+    @Override
+    public void init() {
+        
+    }
+
+}

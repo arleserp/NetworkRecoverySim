@@ -5,15 +5,13 @@
  */
 package unalcol.agents.NetworkSim;
 
-import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.UndirectedSparseGraph;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import unalcol.agents.Agent;
-import unalcol.agents.AgentArchitecture;
 import unalcol.agents.AgentProgram;
-import unalcol.agents.NetworkSim.programs.PheromoneSynchronizationProgram;
 
 /**
  *
@@ -32,19 +30,23 @@ public class MobileAgent extends Agent implements Serializable {
     private int nMsgRecv;
     private int idFather;
     private GraphElements.MyVertex prevLocation;
-
+    private List<HashMap> localNetwork;
+    
     public MobileAgent(AgentProgram _program, int ida) {
         super(_program);
+        this.localNetwork = new ArrayList<>();
         data = new ArrayList();
         round = -1;
         id = ida;
         pheromone = 1.0f;
         idFather = -1;
+        
     }
 
     public MobileAgent(){
         //Default algorithm
         super(null, null);
+        this.localNetwork = new ArrayList<>();
     }
     
     public void setAttribute(String key, Object value) {
@@ -221,6 +223,20 @@ public class MobileAgent extends Agent implements Serializable {
      */
     public void setPrevLocation(GraphElements.MyVertex prevLocation) {
         this.prevLocation = prevLocation;
+    }
+
+    /**
+     * @return the localNetwork
+     */
+    public List<HashMap> getLocalNetwork() {
+        return localNetwork;
+    }
+
+    /**
+     * @param localNetwork the localNetwork to set
+     */
+    public void setLocalNetwork(List localNetwork) {
+        this.localNetwork = localNetwork;
     }
 
 }

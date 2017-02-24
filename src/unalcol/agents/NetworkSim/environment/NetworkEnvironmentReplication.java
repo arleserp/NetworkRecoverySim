@@ -210,7 +210,9 @@ public class NetworkEnvironmentReplication extends Environment {
 
             //System.out.println("sense - topology " + topology);
             //Load neighbors 
-            p.setAttribute("neighbors", getTopology().getNeighbors(a.getLocation()));
+            if (getTopology().containsVertex(a.getLocation())) {
+                p.setAttribute("neighbors", getTopology().getNeighbors(a.getLocation()));
+            }
             //System.out.println("agent" + anAgent.getId() + "- neighbor: " +  getTopology().getNeighbors(anAgent.getLocation()));
             //Load data in Agent
             //clone ArrayList
@@ -221,7 +223,6 @@ public class NetworkEnvironmentReplication extends Environment {
 
             //Stores agent time, agent time and agent id
             a.getLocation().saveAgentInfo(a.getData(), a.getId(), a.getRound(), age);
-
             //System.out.println("agent info size:" + anAgent.getData().size());
         }
         if (agent instanceof Node) {
@@ -241,7 +242,6 @@ public class NetworkEnvironmentReplication extends Environment {
             n.setCurrentAgents(agentNode);
             //p.setAttribute("agents", agentNode);
         }
-
         return p;
     }
 

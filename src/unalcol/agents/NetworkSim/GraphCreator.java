@@ -30,7 +30,7 @@ public class GraphCreator {
         }
     }
 
-    static class VertexFactory implements Factory {
+    public static class VertexFactory implements Factory {
 
         int a = 0;
         Vector agentes = new Vector();

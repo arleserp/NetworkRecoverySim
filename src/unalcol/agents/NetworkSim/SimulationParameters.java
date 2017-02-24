@@ -32,4 +32,6 @@ public class SimulationParameters {
     public static ArrayList globalData = null;
     public static String activateReplication = "replalgon";
     public static String nodeDelay = "NODELAY";
+    public static float npf = 0;
+    public static int nhops=2;
 }
