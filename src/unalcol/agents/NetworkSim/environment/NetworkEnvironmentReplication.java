@@ -468,7 +468,8 @@ public class NetworkEnvironmentReplication extends Environment {
         Double amountGlobalInfo = 0.0;
 
         synchronized (NetworkEnvironmentReplication.class) {
-            for (GraphElements.MyVertex v : topology.getVertices()) {
+            List<GraphElements.MyVertex> vertex_t = new ArrayList<>(topology.getVertices());
+            for (GraphElements.MyVertex v : vertex_t) {
                 ArrayList<Object> vertex_info = new ArrayList<>(v.getData());
                 //System.out.println("copy" + copy);
                 Iterator<Object> it = vertex_info.iterator();

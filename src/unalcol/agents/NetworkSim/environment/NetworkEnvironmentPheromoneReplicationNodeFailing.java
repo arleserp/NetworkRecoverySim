@@ -110,13 +110,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                 return false;
             }
 
-            //Sh Send neighbour data to node ex in HashMap format: {p51={p21, p22, p23}, p22={p1, p2}}
-            String[] msgnet = new String[2];
-            msgnet[0] = "networkdata";
-            msgnet[1] = StringSerializer.serialize(a.getLocalNetwork());
-            if (a.getLocation() != null) {
-                NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnet);
-            }
             currentNode = a.getLocation();
 
             //Sh Add neighbor data to agent as an array p51={p21, p22, p23}|p22={p1, p2}
@@ -128,6 +121,14 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             if (a.getLocalNetwork().size() > SimulationParameters.nhops) {
                 List nl = new ArrayList(a.getLocalNetwork().subList(a.getLocalNetwork().size() - SimulationParameters.nhops, a.getLocalNetwork().size()));
                 a.setLocalNetwork(nl);
+            }
+
+            //Sh Send neighbour data to node ex in HashMap format: {p51={p21, p22, p23}, p22={p1, p2}}
+            String[] msgnet = new String[2];
+            msgnet[0] = "networkdata";
+            msgnet[1] = StringSerializer.serialize(a.getLocalNetwork());
+            if (a.getLocation() != null) {
+                NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnet);
             }
 
             visitedNodes.add(currentNode);
@@ -268,7 +269,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                         break;
                 }
             }
-
             //updateWorldAge();
             setChanged();
             notifyObservers();
@@ -326,28 +326,51 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                         if (!n.getNetworkdata().containsKey(key)) {
                                             n.getNetworkdata().put(key, agentData.get(key));
                                         }
-                                        List nd = new ArrayList((Collection) n.getNetworkdata().get(key));
-                                        List ad = new ArrayList((Collection) agentData.get(key));
+                                        List<String> nd = new ArrayList((Collection) n.getNetworkdata().get(key));
+                                        List<String> ad = new ArrayList((Collection) agentData.get(key));
 
-                                        List dif = new ArrayList(nd);
+                                        List<String> dif = new ArrayList(nd);
                                         dif.removeAll(ad);
+                                        //System.out.println("node data:" + nd);
+                                        //System.out.println("agent data:" + ad);
 
                                         //Collections.sort(nd, new CustomComparator());
                                         //Collections.sort(ad, new CustomComparator());
                                         if (!dif.isEmpty()) {
+                                            int level = 0;
+
+                                            level++;
+                                            //Send message to node neigbours.
+                                            for (String neig : nd) {
+                                                //message msgnodediff: diffound|level|nodeid|
+                                                //System.out.println("difference found" + dif);
+                                                String[] msgnodediff = new String[4];
+                                                msgnodediff[0] = "diffound";
+                                                msgnodediff[1] = String.valueOf(level);
+                                                msgnodediff[2] = n.getVertex().getName();
+                                                msgnodediff[3] = StringSerializer.serialize(dif);
+                                                NetworkNodeMessageBuffer.getInstance().putMessage(neig, msgnodediff);
+
+                                            }
+                                        }
+
+                                        for (String nodename : dif) {
                                             GraphCreator.VertexFactory v = new GraphCreator.VertexFactory();
-                                            GraphCreator.EdgeFactory e = new GraphCreator.EdgeFactory();
-                                            System.out.println("Difference! " + key + ":" + nd + ", " + ad);
-                                            System.out.println("Dif:" + dif);
+                                            //GraphCreator.EdgeFactory e = new GraphCreator.EdgeFactory();
+                                            System.out.println("Creating " + nodename + ":");
                                             GraphCreator g = new GraphCreator();
                                             GraphElements.MyVertex vv = v.create();
-                                            vv.setName(key);
+                                            vv.setName(nodename);
                                             topology.addVertex(vv);
                                             topology.addEdge("e" + vv.getName() + n.getVertex().getName(), vv, n.getVertex());
                                             NodeFailingProgram np = new NodeFailingProgram(SimulationParameters.npf);
-                                            NetworkNodeMessageBuffer.getInstance().createBuffer(vv.getName());
-                                            Node   nod;
+                                            NetworkNodeMessageBuffer.getInstance().createBuffer(nodename);
+                                            Node nod;
                                             nod = new Node(np, vv);
+                                            /*if (!((List)(n.getNetworkdata().get(n.getVertex().getName()))).contains(nodename)) {
+                                                System.out.println("merged.");
+                                                ((List) (n.getNetworkdata().get(key))).add(nodename);
+                                            }*/
                                         }
                                     }
                                     //System.out.println("n" + n.getNetworkdata());
@@ -355,9 +378,53 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                             }
                             //System.out.println("");
                         }
+                        if (inbox[0].equals("diffound")) {
+                            int lvl = Integer.valueOf(inbox[1]);
+                            String ndet = String.valueOf(inbox[2]);
+                            List<String> l = (List) StringSerializer.deserialize(inbox[3]);
+                            List<String> nd = new ArrayList((Collection) n.getNetworkdata().get(n.getVertex().getName()));
+
+                            for (String ne : l) {
+                                //Get's neighbours from previous experiences, really?
+                                String[] msgndiffresp = new String[5];
+                                msgndiffresp[0] = "ndiffresp";
+                                msgndiffresp[1] = String.valueOf(lvl);
+                                msgndiffresp[2] = n.getVertex().getName();
+                                msgndiffresp[3] = ne;
+                                msgndiffresp[4] = String.valueOf(nd.contains(ne));
+                                NetworkNodeMessageBuffer.getInstance().putMessage(ndet, msgndiffresp);
+                            }
+                        }
+                        if (inbox[0].equals("ndiffresp")) {
+                            int count = 0;
+                            //int lvl = Integer.valueOf(inbox[1]);
+                            //String ndet = String.valueOf(inbox[2]);
+                            //List<String> l = (List) StringSerializer.deserialize(inbox[3]);
+                            //                          List<String> nd = new ArrayList((Collection) n.getNetworkdata().get(n.getVertex().getName()));
+                            System.out.println("con" + Boolean.valueOf(inbox[4]));
+                            if (Boolean.valueOf(inbox[4])) {
+                                count++;
+                                //this part creates a new node
+                                GraphCreator.VertexFactory v = new GraphCreator.VertexFactory();
+                                //GraphCreator.EdgeFactory e = new GraphCreator.EdgeFactory();
+                                System.out.println("Creating " + inbox[3] + ":");
+                                GraphCreator g = new GraphCreator();
+                                GraphElements.MyVertex vv = v.create();
+                                vv.setName(inbox[3]);
+                                topology.addVertex(vv);
+                                topology.addEdge("e" + vv.getName() + n.getVertex().getName(), vv, n.getVertex());
+                                NodeFailingProgram np = new NodeFailingProgram(SimulationParameters.npf);
+                                NetworkNodeMessageBuffer.getInstance().createBuffer(inbox[3]);
+                                Node nod;
+                                nod = new Node(np, vv);
+                            }
+                            //if (count == 0) {
+
+                            //}
+                        }
+
                     }
                     break;
-
                 case 1: //what happens if a node dies?
                     n.die();
                     //System.out.println("node fail?");
