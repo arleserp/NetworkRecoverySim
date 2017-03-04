@@ -23,9 +23,9 @@ import unalcol.agents.NetworkSim.environment.NetworkMessageBuffer;
 import unalcol.agents.NetworkSim.environment.NetworkNodeMessageBuffer;
 import unalcol.agents.NetworkSim.environment.ObjectSerializer;
 import unalcol.agents.NetworkSim.programs.NodeFailingProgram;
+import unalcol.agents.NetworkSim.util.DataReplicationNodeFailingObserver;
 import unalcol.agents.NetworkSim.util.GraphStats;
 //import unalcol.agents.NetworkSim.util.GraphStatistics;
-import unalcol.agents.NetworkSim.util.DataReplicationObserver;
 import unalcol.agents.NetworkSim.util.StringSerializer;
 
 /**
@@ -148,7 +148,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
             NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
         }
 
-        graphVisualization = new DataReplicationObserver();
+        graphVisualization = new DataReplicationNodeFailingObserver();
         world = new NetworkEnvironmentPheromoneReplicationNodeFailing(agents, agentsLanguage, nodeLanguaje, g);
         world.addObserver(graphVisualization);
         world.not();

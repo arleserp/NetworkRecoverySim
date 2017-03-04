@@ -37,11 +37,21 @@ public class Node extends Agent {
     private int INITIAL_TIMEOUT = 10;
     private int WINDOW_SIZE = 10;
     private HashMap<String, Object> networkdata;
+    private HashMap<Object, ArrayList> pending;
+
+    public HashMap<Object, ArrayList> getPending() {
+        return pending;
+    }
+
+    public void setPending(HashMap<Object, ArrayList> pending) {
+        this.pending = pending;
+    }
     
     //try to stimate pf locally 1/numberofagentcreated
 
     public Node(AgentProgram _program, GraphElements.MyVertex ve) {
         super(_program);
+        this.pending = new HashMap();
         this.networkdata = new HashMap<>();
         this.v = ve;
         currentAgents = new ArrayList<>();
@@ -51,10 +61,12 @@ public class Node extends Agent {
         lastMessageArrival = new HashMap<>();
         rounds = 0;
         nodeTimeouts = new HashMap();
+        
     }
 
     public Node(AgentProgram _program, GraphElements.MyVertex ve, HashMap tout) {
         super(_program);
+        this.pending = new HashMap();
         this.networkdata = new HashMap<>();
         this.v = ve;
         currentAgents = new ArrayList<>();
