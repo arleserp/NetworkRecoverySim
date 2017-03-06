@@ -337,22 +337,46 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                                 level++;
                                                 n.getPending().put(dif.toString(), new ArrayList<>());
 
-                                                //Send message to node neigbours.
-                                                for (String neig : nd) {
-                                                    //message msgnodediff: diffound|level|nodeid|
-                                                    System.out.println("difference found" + dif);
-                                                    String[] msgnodediff = new String[4];
-                                                    msgnodediff[0] = "diffound";
-                                                    msgnodediff[1] = String.valueOf(level);
-                                                    msgnodediff[2] = n.getVertex().getName();
-                                                    msgnodediff[3] = StringSerializer.serialize(dif);
-                                                    NetworkNodeMessageBuffer.getInstance().putMessage(neig, msgnodediff);
-                                                    n.getPending().get(dif.toString()).add(neig);
+                                                for (String d : dif) {
+                                                    List<String> neigdiff = (ArrayList) n.getNetworkdata().get(d);
+
+                                                    String min;
+                                                    min = n.getMinimumId(neigdiff);
+
+                                                    //I'm minimum, I create node
+                                                    if (min.equals(n.getVertex().getName())) {
+                                                        GraphCreator.VertexFactory v = new GraphCreator.VertexFactory();
+                                                        //GraphCreator.EdgeFactory e = new GraphCreator.EdgeFactory();
+                                                        System.out.println("Creating " + d + ":");
+                                                        GraphCreator g = new GraphCreator();
+                                                        GraphElements.MyVertex vv = v.create();
+                                                        vv.setName(d);
+                                                        topology.addVertex(vv);
+                                                        topology.addEdge("e" + vv.getName() + n.getVertex().getName(), vv, n.getVertex());
+                                                        NodeFailingProgram np = new NodeFailingProgram(SimulationParameters.npf);
+                                                        NetworkNodeMessageBuffer.getInstance().createBuffer(d);
+                                                        Node nod;
+                                                        nod = new Node(np, vv);
+                                                    }
+
+                                                    //Send message to node neigbours.
+                                                    //can be no nd but all agentData
+                                                    for (String neig : neigdiff) {
+                                                        //message msgnodediff: diffound|level|nodeid|dif|neigdif
+                                                        System.out.println("sending diff " + dif + "to" + neig);
+                                                        String[] msgnodediff = new String[5];
+                                                        msgnodediff[0] = "diffound";
+                                                        msgnodediff[1] = String.valueOf(level);
+                                                        msgnodediff[2] = n.getVertex().getName();
+                                                        msgnodediff[3] = StringSerializer.serialize(dif);
+                                                        msgnodediff[4] = StringSerializer.serialize(neigdiff);
+                                                        NetworkNodeMessageBuffer.getInstance().putMessage(neig, msgnodediff);
+                                                        n.getPending().get(dif.toString()).add(neig);
+                                                    }
                                                 }
                                             }
                                         }
                                     }
-
                                     for (String key : agentData.keySet()) {
                                         if (!n.getNetworkdata().containsKey(key)) {
                                             n.getNetworkdata().put(key, agentData.get(key));
@@ -360,56 +384,31 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                     }
                                 }
                             }
-                            /*for (String nodename : dif) {
-                                            GraphCreator.VertexFactory v = new GraphCreator.VertexFactory();
-                                            //GraphCreator.EdgeFactory e = new GraphCreator.EdgeFactory();
-                                            System.out.println("Creating " + nodename + ":");
-                                            GraphCreator g = new GraphCreator();
-                                            GraphElements.MyVertex vv = v.create();
-                                            vv.setName(nodename);
-                                            topology.addVertex(vv);
-                                            topology.addEdge("e" + vv.getName() + n.getVertex().getName(), vv, n.getVertex());
-                                            NodeFailingProgram np = new NodeFailingProgram(SimulationParameters.npf);
-                                            NetworkNodeMessageBuffer.getInstance().createBuffer(nodename);
-                                            Node nod;
-                                            nod = new Node(np, vv);
-                                            /*if (!((List)(n.getNetworkdata().get(n.getVertex().getName()))).contains(nodename)) {
-                                                System.out.println("merged.");
-                                                ((List) (n.getNetworkdata().get(key))).add(nodename);
-                                            }*/
-                            //}
-                            //System.out.println("n" + n.getNetworkdata());
-
-                            //System.out.println("");
+                            
                         }
                         if (inbox[0].equals("diffound")) {
                             int lvl = Integer.valueOf(inbox[1]);
                             String ndet = String.valueOf(inbox[2]);
                             List<String> l = (List) StringSerializer.deserialize(inbox[3]);
                             List<String> nd = new ArrayList((Collection) n.getNetworkdata().get(n.getVertex().getName()));
+                            List nemiss = (List)StringSerializer.deserialize(inbox[4]);
+                            //message msgnodediff: diffound|level|nodeid|dif|neigdif
                             
-                            for (String ne : nd) {
-                                //Get's neighbours from previous experiences, really?
-                                String[] msgndiffresp = new String[6];
-                                msgndiffresp[0] = "ndiffresp";
-                                msgndiffresp[1] = String.valueOf(lvl);
-                                msgndiffresp[2] = n.getVertex().getName();
-                                msgndiffresp[3] = ne;
-                                msgndiffresp[4] = String.valueOf(l.contains(ne));
-                                msgndiffresp[5] = l.toString();
-                                NetworkNodeMessageBuffer.getInstance().putMessage(ndet, msgndiffresp);
-                                //System.out.println("ndiffresp");
-                            }
+                            
                         }
                         if (inbox[0].equals("ndiffresp")) {
                             int count = 0;
                             int lvl = Integer.valueOf(inbox[1]);
                             String sender = String.valueOf(inbox[2]);
-
                             n.getPending().get(inbox[5]).remove(inbox[5]);
-                            System.out.println("entraaaaaaaaaaaaaaaaaaa"+n.getPending()+" sender" + sender + "in" + inbox[5]);
 
-                            if (n.getPending().get(inbox[5]).isEmpty()) {
+                            //is neigbor of missing node
+                            /*if(Boolean.valueOf(inbox[4])){
+                                
+                            }
+                            /*System.out.println("entraaaaaaaaaaaaaaaaaaa" + n.getPending() + " sender" + sender + "in" + inbox[5]);
+                             */
+ /*if (n.getPending().get(inbox[5]).isEmpty()) {
                                 GraphCreator.VertexFactory v = new GraphCreator.VertexFactory();
                                 //GraphCreator.EdgeFactory e = new GraphCreator.EdgeFactory();
                                 System.out.println("Creating " + inbox[3] + ":");
@@ -422,13 +421,12 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                 NetworkNodeMessageBuffer.getInstance().createBuffer(inbox[3]);
                                 Node nod;
                                 nod = new Node(np, vv);
-                            } else if (Boolean.valueOf(inbox[4])) {
+                            /*} else if (Boolean.valueOf(inbox[4])) {
                                 System.out.println("something must happen!");
                                 count++;
                                 //this part creates a new node
                                 //connect to node.
-                            }
-
+                            }*/
                             //if (count == 0) {
                             //}
                         }

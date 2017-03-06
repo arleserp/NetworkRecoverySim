@@ -6,11 +6,15 @@
 package unalcol.agents.NetworkSim;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
+import unalcol.agents.NetworkSim.util.BoxPlotACKAmount.CustomComparator;
 import unalcol.agents.NetworkSim.util.StatisticsNormalDist;
 
 /**
@@ -46,9 +50,8 @@ public class Node extends Agent {
     public void setPending(HashMap<Object, ArrayList> pending) {
         this.pending = pending;
     }
-    
-    //try to stimate pf locally 1/numberofagentcreated
 
+    //try to stimate pf locally 1/numberofagentcreated
     public Node(AgentProgram _program, GraphElements.MyVertex ve) {
         super(_program);
         this.pending = new HashMap();
@@ -61,7 +64,7 @@ public class Node extends Agent {
         lastMessageArrival = new HashMap<>();
         rounds = 0;
         nodeTimeouts = new HashMap();
-        
+
     }
 
     public Node(AgentProgram _program, GraphElements.MyVertex ve, HashMap tout) {
@@ -328,11 +331,11 @@ public class Node extends Agent {
                     int diff = Math.abs(getLastMessageArrival().get(KeyM.getKey()) - getLastAgentArrival().get(k));
                     //System.out.println("diff" +  diff);
                     //if (diff != 0) {
-                        if (!nodeTimeouts.containsKey(nodeId)) {
-                            getNodeTimeouts().put(nodeId, new ArrayList());
-                            getNodeTimeouts().get(nodeId).add(INITIAL_TIMEOUT);
-                        }
-                        getNodeTimeouts().get(nodeId).add(diff);
+                    if (!nodeTimeouts.containsKey(nodeId)) {
+                        getNodeTimeouts().put(nodeId, new ArrayList());
+                        getNodeTimeouts().get(nodeId).add(INITIAL_TIMEOUT);
+                    }
+                    getNodeTimeouts().get(nodeId).add(diff);
                     //}
                     //System.out.println("node:" + getVertex().getName() + ", antes:" + getLastMessageArrival());
                     iterM.remove();
@@ -489,7 +492,7 @@ public class Node extends Agent {
     }
 
     public double getStdDevTimeout(String nodeName) {
-        if(!getNodeTimeouts().containsKey(nodeName)){
+        if (!getNodeTimeouts().containsKey(nodeName)) {
             return 0;
         }
         ArrayList<Double> dtimeout = new ArrayList();
@@ -516,6 +519,26 @@ public class Node extends Agent {
      */
     public void setNetworkdata(HashMap<String, Object> networkdata) {
         this.networkdata = networkdata;
+    }
+
+    public class CustomComparator implements Comparator<String> {
+        @Override
+        public int compare(String f1, String f2) {
+            int v1 = Integer.valueOf(f1.substring(1));
+            int v2 = Integer.valueOf(f2.substring(1));
+            System.out.println("v1" + v1 + ", v2" + v2);
+            if (v1 == v2) {
+                return 0;
+            } else if (v1 > v2) {
+                return 1;
+            } else {
+                return -1;
+            }
+        }
+    }
+
+    public String getMinimumId(List<String> neigdiff) {
+        return Collections.min(neigdiff, new CustomComparator());
     }
 
 }
