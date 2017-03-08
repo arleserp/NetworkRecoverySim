@@ -34,8 +34,15 @@ public class NetworkNodeMessageBuffer {
     public void createBuffer(String pid) {
         mbuffer.put(pid, new LinkedBlockingQueue());
     }
+    
+    public void deleteBuffer(String pid) {
+        mbuffer.remove(pid);
+    }
 
     public void putMessage(String pid, String[] msg) {
+        /*if(!mbuffer.contains(pid)){
+            System.out.println("Destination does not exist:" + pid );
+        }*/
         if(pid == null){
             System.out.println("Destination is null");
             return;

@@ -36,12 +36,14 @@ public class PheromoneReplicationProgram implements AgentProgram {
         //    return new ActionParameters("die");
         //}
         try {
+            
             Collection<GraphElements.MyVertex> vs = (Collection<GraphElements.MyVertex>) p.getAttribute("neighbors");
             pos = (int) carry(vs);
             act.setAttribute("location", vs.toArray()[pos]);
             act.setAttribute("pf", pf);
         } catch (Exception ex) {
-            System.out.println("maybe return action.DIE" + ex.getMessage());
+            System.out.println("maybe return action.DIE " + ex.getLocalizedMessage());
+            
             return new ActionParameters("die");
         }
         /* If termite has a message then react to this message */

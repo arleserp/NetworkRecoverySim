@@ -212,6 +212,8 @@ public class NetworkEnvironmentReplication extends Environment {
             //Load neighbors 
             if (getTopology().containsVertex(a.getLocation())) {
                 p.setAttribute("neighbors", getTopology().getNeighbors(a.getLocation()));
+            }else{
+                System.out.println("wat??" + a.getLocation());
             }
             //System.out.println("agent" + anAgent.getId() + "- neighbor: " +  getTopology().getNeighbors(anAgent.getLocation()));
             //Load data in Agent

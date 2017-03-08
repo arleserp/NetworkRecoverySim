@@ -32,6 +32,7 @@ public class MobileAgent extends Agent implements Serializable {
     private GraphElements.MyVertex prevLocation;
     private List<HashMap> localNetwork;
     
+    
     public MobileAgent(AgentProgram _program, int ida) {
         super(_program);
         this.localNetwork = new ArrayList<>();

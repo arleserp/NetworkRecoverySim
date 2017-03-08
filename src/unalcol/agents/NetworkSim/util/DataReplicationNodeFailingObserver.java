@@ -80,7 +80,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
         if (o instanceof NetworkEnvironmentReplication) {
             final NetworkEnvironmentReplication n = (NetworkEnvironmentReplication) o;
 
-            if (Math.random() > 0.9) { //Receives to many notify if replication explodes.
+            //if (Math.random() > 0.9) { //Receives to many notify if replication explodes.
                 // The BasicVisualizationServer<V,E> is parameterized by the vertex and edge types
                 Graph<GraphElements.MyVertex, String> g = n.getTopology();
                 Layout<GraphElements.MyVertex, String> layout = null;
@@ -149,7 +149,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                 } else {
                     frame.repaint();
                 }
-            }
+            //}
 
             //System.out.println("World age" + n.getAge() + ", info:" + n.getAmountGlobalInfo());
             if (!globalInfo.containsKey(n.getAge())) {
@@ -170,7 +170,10 @@ public class DataReplicationNodeFailingObserver implements Observer {
             }
 
             boolean areAllAgentsDead = n.areAllAgentsDead();
-/*
+            if (areAllAgentsDead) {
+                System.out.println("are all death: " + areAllAgentsDead);
+            }
+            /*  
             //if ((SimulationParameters.maxIter == -1 && n.nodesComplete()) || (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) || (!SimulationParameters.activateReplication.equals("replalgon") && areAllAgentsDead)) {
 //                //StatsTemperaturesMapImpl sti = new StatsTemperaturesMapImpl("experiment-p-" + ((World) obs).getAgents().size() + "- pf-" + pf + ".csv");
 
@@ -281,7 +284,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     System.exit(0);
                 }
             }
-*/
+             */
         }
 
         // Transformer maps the vertex number to a vertex property
