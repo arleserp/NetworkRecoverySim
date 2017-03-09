@@ -1,6 +1,5 @@
 package unalcol.agents.NetworkSim.environment;
 
-import com.sun.javafx.scene.control.skin.VirtualFlow;
 import unalcol.agents.simulate.util.*;
 import unalcol.agents.*;
 
@@ -9,13 +8,11 @@ import java.util.Vector;
 import edu.uci.ics.jung.graph.*;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 import unalcol.agents.NetworkSim.ActionParameters;
 import unalcol.agents.NetworkSim.GraphCreator;
 import unalcol.agents.NetworkSim.GraphElements;
@@ -33,6 +30,11 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     private static SimpleLanguage nodeLanguage;
     private static int agentMovements = 0;
     private static int ACKAmount = 0;
+    private static List<Node> nodes;
+
+    public static List<Node> getNodes() {
+        return nodes;
+    }
 
     public static synchronized void incrementFalsePossitives() {
         falsePossitives++;
@@ -70,6 +72,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     public NetworkEnvironmentPheromoneReplicationNodeFailing(Vector<Agent> _agents, SimpleLanguage _language, SimpleLanguage _nlanguage, Graph<GraphElements.MyVertex, String> gr) {
         super(_agents, _language, gr);
         nodeLanguage = _nlanguage;
+        nodes = new ArrayList<>();
     }
 
     GraphElements.MyVertex findVertex(String nodename) {
@@ -86,6 +89,36 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     private void connect(GraphElements.MyVertex vertex, String nodetoConnect) {
         GraphElements.MyVertex nodeTo = findVertex(nodetoConnect);
         topology.addEdge("e" + vertex.getName() + nodeTo.getName(), vertex, nodeTo);
+    }
+
+    public void setNodes(List<Node> nds) {
+        nodes = nds;
+    }
+
+    private void createNewAgents(Integer number, Node n) {
+        System.out.println("create new agents");
+        for (int i = 0; i < number; i++) {
+            AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
+            int newAgentID = agents.size();
+            MobileAgent a = new MobileAgent(program, newAgentID);
+
+            //System.out.println("creating agent id" + newAgentID);
+            NetworkMessageBuffer.getInstance().createBuffer(newAgentID);
+
+            //getLocationAgents().add(new GraphElements.MyVertex("null"));
+            a.setId(newAgentID);
+            a.setData(new ArrayList(n.getVertex().getData()));
+            a.setRound(super.getAge());
+            this.agents.add(a);
+
+            a.live();
+            Thread t = new Thread(a);
+            a.setThread(t);
+            a.setLocation(n.getVertex());
+            a.setPrevLocation(n.getVertex());
+            a.setArchitecture(this);
+            setTotalAgents(getTotalAgents() + 1);
+        }
     }
 
     public class CustomComparator implements Comparator<GraphElements.MyVertex> {
@@ -116,6 +149,15 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         return names;
     }
 
+    Node getNode(String name) {
+        for (Node n : nodes) {
+            if (n.getVertex().getName().equals(name)) {
+                return n;
+            }
+        }
+        return null;
+    }
+
     @Override
     public boolean act(Agent agent, Action action) {
         agent.sleep(30);
@@ -132,8 +174,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             //Sh Add neighbor data to agent as an array p51={p21, p22, p23}|p22={p1, p2}
             HashMap<String, Object> nodeNet = new HashMap<>();
             nodeNet.put(a.getLocation().getName(), getTopologyNames(a.getLocation()));
-            
+
             a.getLocalNetwork().add(nodeNet);
+            a.getRespAgentsBkp().put(a.getLocation().getName(), getNode(a.getLocation().getName()).getResponsibleAgents().size());
 
             //let only nhops as local information by agent
             if (a.getLocalNetwork().size() > SimulationParameters.nhops) {
@@ -142,9 +185,10 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             }
 
             //Sh Send neighbour data to node ex in HashMap format: {p51={p21, p22, p23}, p22={p1, p2}}
-            String[] msgnet = new String[2];
+            String[] msgnet = new String[3];
             msgnet[0] = "networkdata";
             msgnet[1] = StringSerializer.serialize(a.getLocalNetwork());
+            msgnet[2] = StringSerializer.serialize(a.getRespAgentsBkp());
 
             if (a.getLocation() != null) {
                 NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnet);
@@ -336,7 +380,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                         if (inbox[0].equals("networkdata")) {
                             //completes and updates data
                             ArrayList<HashMap> agentLoc = (ArrayList) StringSerializer.deserialize(inbox[1]);
-
+                            HashMap<String, Integer> nagentsresp = (HashMap<String, Integer>) StringSerializer.deserialize(inbox[2]);
                             for (HashMap< String, Object> agentData : agentLoc) {
                                 //System.out.print(agentData + ",");
                                 if (!n.getNetworkdata().equals(agentData)) {
@@ -383,7 +427,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                                             nod.live();
                                                             Thread t = new Thread(nod);
                                                             nod.setThread(t);
+                                                            createNewAgents(3, nod);
                                                             t.start();
+
                                                         }
 
                                                         //Send message to node neigbours.
@@ -391,7 +437,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                                         for (String neig : neigdiff) {
                                                             //message msgnodediff: connect|level|nodeid|nodetoconnect
                                                             System.out.println(n.getVertex().getName() + "is sending diff " + dif + "to" + neig);
-                                                            String[] msgnodediff = new String[4];
+                                                            String[] msgnodediff = new String[5];
                                                             msgnodediff[0] = "connect";
                                                             msgnodediff[1] = String.valueOf(level);
                                                             msgnodediff[2] = n.getVertex().getName();
@@ -405,12 +451,13 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                                         for (String neig : neigdiff) {
                                                             //message msgnodediff: diffound|level|nodeid|dif|neigdif
                                                             System.out.println("sending diff " + dif + "to" + neig);
-                                                            String[] msgnodediff = new String[5];
+                                                            String[] msgnodediff = new String[6];
                                                             msgnodediff[0] = "diffound";
                                                             msgnodediff[1] = String.valueOf(level);
                                                             msgnodediff[2] = n.getVertex().getName();
                                                             msgnodediff[3] = StringSerializer.serialize(dif);
                                                             msgnodediff[4] = StringSerializer.serialize(neigdiff);
+                                                            msgnodediff[5] = inbox[2];
                                                             NetworkNodeMessageBuffer.getInstance().putMessage(neig, msgnodediff);
                                                             n.getPending().get(dif.toString()).add(neig);
                                                         }
@@ -434,12 +481,14 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                             //String ndet = String.valueOf(inbox[2]);
                             String nodetoConnect = inbox[3];
                             connect(n.getVertex(), nodetoConnect);
+                            createNewAgents(5, n);
                         }
                         if (inbox[0].equals("diffound")) {
                             //msgnodediff: diffound|level|nodeid|dif|neigdif
                             int level = Integer.valueOf(inbox[1]);
                             String nodeid = String.valueOf(inbox[2]);
                             List<String> dif = (List) StringSerializer.deserialize(inbox[3]);
+                            //HashMap<String, Integer> nagentsresp = (HashMap<String, Integer>) StringSerializer.deserialize(inbox[5]);
                             //List<String> nd = new ArrayList((Collection) n.getNetworkdata().get(n.getVertex().getName()));
                             //List nemiss = (List) StringSerializer.deserialize(inbox[4]);
                             //message msgnodediff: diffound|level|nodeid|dif|neigdif
@@ -473,6 +522,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                         nod.live();
                                         Thread t = new Thread(nod);
                                         nod.setThread(t);
+                                        
+                                        createNewAgents(3, nod);
                                         t.start();
                                     }
                                     //Send message to node neigbours.

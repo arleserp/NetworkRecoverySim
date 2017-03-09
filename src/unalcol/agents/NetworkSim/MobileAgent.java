@@ -31,17 +31,18 @@ public class MobileAgent extends Agent implements Serializable {
     private int idFather;
     private GraphElements.MyVertex prevLocation;
     private List<HashMap> localNetwork;
+    private HashMap<String, Integer> respAgentsBkp;
     
     
     public MobileAgent(AgentProgram _program, int ida) {
         super(_program);
-        this.localNetwork = new ArrayList<>();
+        localNetwork = new ArrayList<>();
         data = new ArrayList();
         round = -1;
         id = ida;
         pheromone = 1.0f;
         idFather = -1;
-        
+        respAgentsBkp = new HashMap<>();
     }
 
     public MobileAgent(){
@@ -239,5 +240,21 @@ public class MobileAgent extends Agent implements Serializable {
     public void setLocalNetwork(List localNetwork) {
         this.localNetwork = localNetwork;
     }
+
+    /**
+     * @return the respAgentsBkp
+     */
+    public HashMap<String, Integer> getRespAgentsBkp() {
+        return respAgentsBkp;
+    }
+
+    /**
+     * @param respAgentsBkp the respAgentsBkp to set
+     */
+    public void setRespAgentsBkp(HashMap<String, Integer> respAgentsBkp) {
+        this.respAgentsBkp = respAgentsBkp;
+    }
+    
+    
 
 }

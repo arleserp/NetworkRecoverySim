@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Observer;
 // unalcol.agent.networkSim.reports.GraphicReportHealingObserver;
@@ -78,6 +79,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
      */
     public void init() {
         Vector<Agent> agents = new Vector();
+        List<Node> nodes = new ArrayList<>();
         System.out.println("fp" + probFailure);
 
         //Language for Agents
@@ -121,6 +123,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
             n.setPfCreate(0);
             NetworkNodeMessageBuffer.getInstance().createBuffer(v.getName());
             agents.add(n);
+            nodes.add(n);
         }
 
         if (SimulationParameters.filenameLoc.length() > 1) {
@@ -150,6 +153,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
 
         graphVisualization = new DataReplicationNodeFailingObserver();
         world = new NetworkEnvironmentPheromoneReplicationNodeFailing(agents, agentsLanguage, nodeLanguaje, g);
+        ((NetworkEnvironmentPheromoneReplicationNodeFailing)world).setNodes(nodes);
         world.addObserver(graphVisualization);
         world.not();
         world.run();

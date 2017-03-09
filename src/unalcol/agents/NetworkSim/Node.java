@@ -541,4 +541,6 @@ public class Node extends Agent {
         return Collections.min(neigdiff, new CustomComparator());
     }
 
+
+    
 }
