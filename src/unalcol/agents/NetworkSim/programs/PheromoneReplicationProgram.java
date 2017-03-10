@@ -31,20 +31,23 @@ public class PheromoneReplicationProgram implements AgentProgram {
     public Action compute(Percept p) {
         ActionParameters act = new ActionParameters("move");
 
+        if (p.getAttribute("nodedeath") != null) {
+            System.out.println("nodedeath!");
+            return new ActionParameters("die");
+        }
+
         int pos;
         //if (Math.random() < pf) {
         //    return new ActionParameters("die");
         //}
         try {
-            
             Collection<GraphElements.MyVertex> vs = (Collection<GraphElements.MyVertex>) p.getAttribute("neighbors");
             pos = (int) carry(vs);
             act.setAttribute("location", vs.toArray()[pos]);
             act.setAttribute("pf", pf);
         } catch (Exception ex) {
-            System.out.println("maybe return action.DIE " + ex.getLocalizedMessage());
-            
-            return new ActionParameters("die");
+            System.out.println("Inform node that possibly a node is death." + ex.getLocalizedMessage());
+            return new ActionParameters("informfailure");
         }
         /* If termite has a message then react to this message */
         return act;
@@ -77,47 +80,44 @@ public class PheromoneReplicationProgram implements AgentProgram {
     private int carry(Collection<GraphElements.MyVertex> vs) {
         int dirPos = 0;
         float q0 = 0.9f;
-        try {
-            ArrayList<Integer> temp = new ArrayList();
-            if (Math.random() <= q0) {
 
-                for (int k = 0; k < vs.size(); k++) {
-                    if (((GraphElements.MyVertex) vs.toArray()[k]).getPh() != -1) {
-                        dirPos = k;
-                        break;
-                    }
-                }
+        ArrayList<Integer> temp = new ArrayList();
+        if (Math.random() <= q0) {
 
-                for (int k = dirPos + 1; k < vs.size(); k++) {
-                    if (((GraphElements.MyVertex) vs.toArray()[k]).getPh() != -1 && ((GraphElements.MyVertex) vs.toArray()[dirPos]).getPh() > ((GraphElements.MyVertex) vs.toArray()[k]).getPh()) {
-                        dirPos = k;
-                    }
+            for (int k = 0; k < vs.size(); k++) {
+                if (((GraphElements.MyVertex) vs.toArray()[k]).getPh() != -1) {
+                    dirPos = k;
+                    break;
                 }
-
-                //store location with the min amount of pheromone
-                float min = ((GraphElements.MyVertex) vs.toArray()[dirPos]).getPh();
-                temp.add(dirPos);
-                for (int k = 0; k < vs.size(); k++) {
-                    if (((GraphElements.MyVertex) vs.toArray()[k]).getPh() == min) {
-                        temp.add(k);
-                    }
-                }
-                //dirPos = LevyWalk(proximitySensor, termitesNeighbor);
-                //if (!temp.contains(dirPos)) {
-
-                dirPos = temp.get(RandomUtil.nextInt(temp.size()));
-                //}
-            } else {
-                //Idea is choose direction with the less amount of pheromone
-                float[] phinv = new float[vs.size()];
-                for (int i = 0; i < vs.size(); i++) {
-                    phinv[i] = 1 - ((GraphElements.MyVertex) vs.toArray()[i]).getPh();
-                }
-                dirPos = Roulette(phinv);
-                //dirPos = LevyWalk(proximitySensor, termitesNeighbor);
             }
-        } catch (Exception ex) {
-            System.out.println("error" + ex.getMessage());
+
+            for (int k = dirPos + 1; k < vs.size(); k++) {
+                if (((GraphElements.MyVertex) vs.toArray()[k]).getPh() != -1 && ((GraphElements.MyVertex) vs.toArray()[dirPos]).getPh() > ((GraphElements.MyVertex) vs.toArray()[k]).getPh()) {
+                    dirPos = k;
+                }
+            }
+
+            //store location with the min amount of pheromone
+            float min = ((GraphElements.MyVertex) vs.toArray()[dirPos]).getPh();
+            temp.add(dirPos);
+            for (int k = 0; k < vs.size(); k++) {
+                if (((GraphElements.MyVertex) vs.toArray()[k]).getPh() == min) {
+                    temp.add(k);
+                }
+            }
+            //dirPos = LevyWalk(proximitySensor, termitesNeighbor);
+            //if (!temp.contains(dirPos)) {
+
+            dirPos = temp.get(RandomUtil.nextInt(temp.size()));
+            //}
+        } else {
+            //Idea is choose direction with the less amount of pheromone
+            float[] phinv = new float[vs.size()];
+            for (int i = 0; i < vs.size(); i++) {
+                phinv[i] = 1 - ((GraphElements.MyVertex) vs.toArray()[i]).getPh();
+            }
+            dirPos = Roulette(phinv);
+            //dirPos = LevyWalk(proximitySensor, termitesNeighbor);
         }
         return dirPos;
     }

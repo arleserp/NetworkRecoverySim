@@ -84,7 +84,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
 
         //Language for Agents
         String[] _percepts = {"data", "neighbors"};
-        String[] _actions = {"move", "die"};
+        String[] _actions = {"move", "die", "informfailure"};
         SimpleLanguage agentsLanguage = new SimpleLanguage(_percepts, _actions);
 
         //Language for nodes
