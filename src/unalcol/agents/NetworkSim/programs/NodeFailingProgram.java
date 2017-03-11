@@ -26,9 +26,10 @@ public class NodeFailingProgram implements AgentProgram {
     @Override
     public Action compute(Percept p) {
         ActionParameters act = new ActionParameters("communicate");
-        
+        //System.out.println("communicate!");
         //Now a node can fail also
         if (Math.random() < pf) {
+            //System.out.println("die");
             return new ActionParameters("die");
         }
         return act;

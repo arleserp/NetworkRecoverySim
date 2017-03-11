@@ -31,10 +31,10 @@ public class PheromoneReplicationProgram implements AgentProgram {
     public Action compute(Percept p) {
         ActionParameters act = new ActionParameters("move");
 
-        if (p.getAttribute("nodedeath") != null) {
+        /*if (p.getAttribute("nodedeath") != null) {
             System.out.println("nodedeath!");
             return new ActionParameters("die");
-        }
+        }*/
 
         int pos;
         //if (Math.random() < pf) {
@@ -46,7 +46,7 @@ public class PheromoneReplicationProgram implements AgentProgram {
             act.setAttribute("location", vs.toArray()[pos]);
             act.setAttribute("pf", pf);
         } catch (Exception ex) {
-            System.out.println("Inform node that possibly a node is death." + ex.getLocalizedMessage());
+            System.out.println("Inform node that possibly a node is death: " + ex.getLocalizedMessage());
             return new ActionParameters("informfailure");
         }
         /* If termite has a message then react to this message */

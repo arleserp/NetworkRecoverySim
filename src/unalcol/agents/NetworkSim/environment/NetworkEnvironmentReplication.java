@@ -211,37 +211,42 @@ public class NetworkEnvironmentReplication extends Environment {
             //System.out.println("sense - topology " + topology);
             //Load neighbors 
             if (getTopology().containsVertex(a.getLocation())) {
-                p.setAttribute("neighbors", getTopology().getNeighbors(a.getLocation()));
-            }else{
+                p.setAttribute("neighbors", topology.getNeighbors(a.getLocation()));
+                //System.out.println("agent" + anAgent.getId() + "- neighbor: " +  getTopology().getNeighbors(anAgent.getLocation()));
+                //Load data in Agent
+                //clone ArrayList
+                //getData from the node and put in the agent
+                a.getData().removeAll(a.getLocation().getData());
+                a.getData().addAll(a.getLocation().getData());
+
+                //Stores agent time, agent time and agent id
+                a.getLocation().saveAgentInfo(a.getData(), a.getId(), a.getRound(), age);
+                //System.out.println("agent info size:" + anAgent.getData().size());
+            } else {
+                System.out.println("no vertex alive! wat?");
                 p.setAttribute("nodedeath", a.getLocation());
             }
-            //System.out.println("agent" + anAgent.getId() + "- neighbor: " +  getTopology().getNeighbors(anAgent.getLocation()));
-            //Load data in Agent
-            //clone ArrayList
-
-            //getData from the node and put in the agent
-            a.getData().removeAll(a.getLocation().getData());
-            a.getData().addAll(a.getLocation().getData());
-
-            //Stores agent time, agent time and agent id
-            a.getLocation().saveAgentInfo(a.getData(), a.getId(), a.getRound(), age);
-            //System.out.println("agent info size:" + anAgent.getData().size());
         }
         if (agent instanceof Node) {
-            ArrayList<Agent> agentNode = new ArrayList<>();
             Node n = (Node) agent;
-            synchronized (NetworkEnvironmentReplication.class) {
-                ArrayList<Agent> agentsCopy = new ArrayList(getAgents());
-                for (Agent a : agentsCopy) {
-                    if (a instanceof MobileAgent) {
-                        MobileAgent ma = (MobileAgent) a;
-                        if (ma.getLocation() != null && ma.getLocation().getName().equals(n.getVertex().getName())) {
-                            agentNode.add(ma);
+           //System.out.println("sense node: " + n.getVertex().getName());
+            try {
+                ArrayList<Agent> agentNode = new ArrayList<>();
+                synchronized (NetworkEnvironmentReplication.class) {
+                    ArrayList<Agent> agentsCopy = new ArrayList(getAgents());
+                    for (Agent a : agentsCopy) {
+                        if (a instanceof MobileAgent) {
+                            MobileAgent ma = (MobileAgent) a;
+                            if (ma.getLocation() != null && ma.getLocation().getName().equals(n.getVertex().getName())) {
+                                agentNode.add(ma);
+                            }
                         }
                     }
                 }
+                n.setCurrentAgents(agentNode);
+            } catch (Exception e) {
+                System.out.println("Exception loading agents in this location" + e.getMessage() + " node:" + n.getVertex().getName());
             }
-            n.setCurrentAgents(agentNode);
             //p.setAttribute("agents", agentNode);
         }
         return p;
@@ -564,4 +569,24 @@ public class NetworkEnvironmentReplication extends Environment {
         }
         return true;
     }
+    
+    
+    public int getAgentsAlive() {
+        int agentsAlive = 0;
+        synchronized (NetworkEnvironmentReplication.class) {
+            Vector cloneAgents = (Vector) this.getAgents().clone();
+            Iterator itr = cloneAgents.iterator();
+            
+            while (itr.hasNext()) {
+                Agent a = (Agent) itr.next();
+                if (a instanceof MobileAgent) {
+                    if (((MobileAgent) a).status != Action.DIE) {
+                        agentsAlive++;
+                    }
+                }
+            }
+        }
+        return agentsAlive;
+    }
+    
 }

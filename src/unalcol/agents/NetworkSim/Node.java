@@ -64,7 +64,6 @@ public class Node extends Agent {
         lastMessageArrival = new HashMap<>();
         rounds = 0;
         nodeTimeouts = new HashMap();
-
     }
 
     public Node(AgentProgram _program, GraphElements.MyVertex ve, HashMap tout) {
@@ -521,6 +520,13 @@ public class Node extends Agent {
         this.networkdata = networkdata;
     }
 
+    /**
+     * @param v the v to set
+     */
+    public void setVertex(GraphElements.MyVertex v) {
+        this.v = v;
+    }
+
     public class CustomComparator implements Comparator<String> {
         @Override
         public int compare(String f1, String f2) {
@@ -538,6 +544,7 @@ public class Node extends Agent {
     }
 
     public String getMinimumId(List<String> neigdiff) {
+        
         return Collections.min(neigdiff, new CustomComparator());
     }
 

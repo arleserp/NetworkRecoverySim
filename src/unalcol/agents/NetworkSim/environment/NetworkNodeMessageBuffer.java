@@ -19,7 +19,6 @@ public class NetworkNodeMessageBuffer {
     static final int MAXQUEUE = 5; //Max input buffer size by process
 
     private static class Holder {
-
         static final NetworkNodeMessageBuffer INSTANCE = new NetworkNodeMessageBuffer();
     }
 
@@ -32,18 +31,23 @@ public class NetworkNodeMessageBuffer {
     }
 
     public void createBuffer(String pid) {
-        mbuffer.put(pid, new LinkedBlockingQueue());
+        if (mbuffer.contains(pid)) {
+            System.out.println("error already exists!!!!");
+        } else {
+            mbuffer.put(pid, new LinkedBlockingQueue());
+        }
     }
-    
+
     public void deleteBuffer(String pid) {
         mbuffer.remove(pid);
     }
 
     public void putMessage(String pid, String[] msg) {
-        /*if(!mbuffer.contains(pid)){
+        if(!mbuffer.containsKey(pid)){
             System.out.println("Destination does not exist:" + pid );
-        }*/
-        if(pid == null){
+            return;
+        }
+        if (pid == null) {
             System.out.println("Destination is null");
             return;
         }
