@@ -244,14 +244,14 @@ public class MobileAgent extends Agent implements Serializable {
     /**
      * @return the respAgentsBkp
      */
-    public HashMap<String, Integer> getRespAgentsBkp() {
+    public HashMap getRespAgentsBkp() {
         return respAgentsBkp;
     }
 
     /**
      * @param respAgentsBkp the respAgentsBkp to set
      */
-    public void setRespAgentsBkp(HashMap<String, Integer> respAgentsBkp) {
+    public void setRespAgentsBkp(HashMap respAgentsBkp) {
         this.respAgentsBkp = respAgentsBkp;
     }
     

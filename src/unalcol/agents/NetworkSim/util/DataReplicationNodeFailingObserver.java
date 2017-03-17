@@ -58,6 +58,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
     HashMap<Integer, Integer> agentsNumber = new HashMap<>();
     HashMap<Integer, Integer> nodesComplete = new HashMap<>();
     public static int lastagentsAlive = -1;
+    public static int lastnodesAlive = -1;
 
     XYSeries agentsLive;
     XYSeriesCollection juegoDatos = new XYSeriesCollection();
@@ -173,17 +174,23 @@ public class DataReplicationNodeFailingObserver implements Observer {
                 nodesComplete.put(n.getAge(), n.getCompletionPercentage());
             }
 
-            boolean areAllAgentsDead = n.areAllAgentsDead();
+            /*boolean areAllAgentsDead = n.areAllAgentsDead();
             if (areAllAgentsDead) {
                 System.out.println("are all death: " + areAllAgentsDead);
-            }
+            }*/
 
             int agentsAlive = n.getAgentsAlive();
-            //if (lastagentsAlive == -1 && agentsAlive != lastagentsAlive) {
+            int nodesAlive = n.getNodesAlive();
+            if (lastnodesAlive == -1 || nodesAlive != lastnodesAlive) {
+                System.out.println("Nodes alive: " + nodesAlive);
+                lastnodesAlive = nodesAlive;
+            }
+            
+            if (lastagentsAlive == -1 || agentsAlive != lastagentsAlive) {
                 
                 System.out.println("Agents alive: " + agentsAlive);
                 lastagentsAlive = agentsAlive;
-            //}
+            }
             /*  
             //if ((SimulationParameters.maxIter == -1 && n.nodesComplete()) || (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) || (!SimulationParameters.activateReplication.equals("replalgon") && areAllAgentsDead)) {
 //                //StatsTemperaturesMapImpl sti = new StatsTemperaturesMapImpl("experiment-p-" + ((World) obs).getAgents().size() + "- pf-" + pf + ".csv");

@@ -210,7 +210,7 @@ public class NetworkEnvironmentReplication extends Environment {
 
             //System.out.println("sense - topology " + topology);
             //Load neighbors 
-            if (getTopology().containsVertex(a.getLocation())) {
+            if (topology.containsVertex(a.getLocation())) {
                 p.setAttribute("neighbors", topology.getNeighbors(a.getLocation()));
                 //System.out.println("agent" + anAgent.getId() + "- neighbor: " +  getTopology().getNeighbors(anAgent.getLocation()));
                 //Load data in Agent
@@ -229,7 +229,7 @@ public class NetworkEnvironmentReplication extends Environment {
         }
         if (agent instanceof Node) {
             Node n = (Node) agent;
-           //System.out.println("sense node: " + n.getVertex().getName());
+            //System.out.println("sense node: " + n.getVertex().getName());
             try {
                 ArrayList<Agent> agentNode = new ArrayList<>();
                 synchronized (NetworkEnvironmentReplication.class) {
@@ -247,6 +247,7 @@ public class NetworkEnvironmentReplication extends Environment {
             } catch (Exception e) {
                 System.out.println("Exception loading agents in this location" + e.getMessage() + " node:" + n.getVertex().getName());
             }
+            //p.setAttribute("neighbors", topology.getNeighbors(n.getVertex()));
             //p.setAttribute("agents", agentNode);
         }
         return p;
@@ -569,14 +570,31 @@ public class NetworkEnvironmentReplication extends Environment {
         }
         return true;
     }
-    
-    
+
+    public int getNodesAlive() {
+        int nodesAlive = 0;
+        synchronized (NetworkEnvironmentReplication.class) {
+            Vector cloneAgents = (Vector) this.getAgents().clone();
+            Iterator itr = cloneAgents.iterator();
+
+            while (itr.hasNext()) {
+                Agent a = (Agent) itr.next();
+                if (a instanceof Node) {
+                    if (((Node) a).status != Action.DIE) {
+                        nodesAlive++;
+                    }
+                }
+            }
+        }
+        return nodesAlive;
+    }
+
     public int getAgentsAlive() {
         int agentsAlive = 0;
         synchronized (NetworkEnvironmentReplication.class) {
             Vector cloneAgents = (Vector) this.getAgents().clone();
             Iterator itr = cloneAgents.iterator();
-            
+
             while (itr.hasNext()) {
                 Agent a = (Agent) itr.next();
                 if (a instanceof MobileAgent) {
@@ -588,5 +606,5 @@ public class NetworkEnvironmentReplication extends Environment {
         }
         return agentsAlive;
     }
-    
+
 }

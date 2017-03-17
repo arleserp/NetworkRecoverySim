@@ -42,6 +42,7 @@ public class Node extends Agent {
     private int WINDOW_SIZE = 10;
     private HashMap<String, Object> networkdata;
     private HashMap<Object, ArrayList> pending;
+    private HashMap<String, Integer> respAgentsBkp;
 
     public HashMap<Object, ArrayList> getPending() {
         return pending;
@@ -64,6 +65,7 @@ public class Node extends Agent {
         lastMessageArrival = new HashMap<>();
         rounds = 0;
         nodeTimeouts = new HashMap();
+        respAgentsBkp = new HashMap<>();
     }
 
     public Node(AgentProgram _program, GraphElements.MyVertex ve, HashMap tout) {
@@ -78,6 +80,7 @@ public class Node extends Agent {
         lastMessageArrival = new HashMap<>();
         rounds = 0;
         nodeTimeouts = tout;
+        respAgentsBkp = new HashMap<>();
     }
 
     public GraphElements.MyVertex getVertex() {
@@ -527,27 +530,20 @@ public class Node extends Agent {
         this.v = v;
     }
 
-    public class CustomComparator implements Comparator<String> {
-        @Override
-        public int compare(String f1, String f2) {
-            int v1 = Integer.valueOf(f1.substring(1));
-            int v2 = Integer.valueOf(f2.substring(1));
-            System.out.println("v1" + v1 + ", v2" + v2);
-            if (v1 == v2) {
-                return 0;
-            } else if (v1 > v2) {
-                return 1;
-            } else {
-                return -1;
-            }
-        }
+    /**
+     * @return the respAgentsBkp
+     */
+    public HashMap<String, Integer> getRespAgentsBkp() {
+        return respAgentsBkp;
     }
 
-    public String getMinimumId(List<String> neigdiff) {
-        
-        return Collections.min(neigdiff, new CustomComparator());
+    /**
+     * @param respAgentsBkp the respAgentsBkp to set
+     */
+    public void setRespAgentsBkp(HashMap<String, Integer> respAgentsBkp) {
+        this.respAgentsBkp = respAgentsBkp;
     }
 
 
-    
+
 }

@@ -31,10 +31,11 @@ public class PheromoneReplicationProgram implements AgentProgram {
     public Action compute(Percept p) {
         ActionParameters act = new ActionParameters("move");
 
-        /*if (p.getAttribute("nodedeath") != null) {
-            System.out.println("nodedeath!");
+        //This can happen!
+        if (p.getAttribute("nodedeath") != null) {
+            System.out.println("agent fail because node is not running.");
             return new ActionParameters("die");
-        }*/
+        }
 
         int pos;
         //if (Math.random() < pf) {

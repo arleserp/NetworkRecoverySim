@@ -8,6 +8,7 @@ import java.util.Vector;
 import edu.uci.ics.jung.graph.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -120,6 +121,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             a.setPrevLocation(n.getVertex());
             a.setArchitecture(this);
             setTotalAgents(getTotalAgents() + 1);
+            t.start();
         }
     }
 
@@ -130,15 +132,54 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             if (a instanceof MobileAgent) {
                 MobileAgent ma = (MobileAgent) a;
                 if (ma.getLocation() != null && ma.getLocation().getName().equals(name)) {
-                    ma.die();
                     increaseAgentsDie();
                     getLocationAgents().put(ma, null);
                     ma.setLocation(null);
                     killedAgents++;
+                    ma.die();
                 }
             }
         }
         return killedAgents;
+    }
+
+    void createNewNode(Node n, String d) {
+        if (findVertex(d) != null) { //can ping node and discover
+            System.out.println("already created." + d);
+        } else {
+
+            GraphCreator.VertexFactory v = new GraphCreator.VertexFactory();
+            //GraphCreator.EdgeFactory e = new GraphCreator.EdgeFactory();
+            System.out.println(n.getVertex().getName() + " is creating " + d + ":");
+            GraphCreator g = new GraphCreator();
+            GraphElements.MyVertex vv = v.create();
+            vv.setName(d);
+            topology.addVertex(vv);
+            topology.addEdge("e" + vv.getName() + n.getVertex().getName(), vv, n.getVertex());
+            NodeFailingProgram np = new NodeFailingProgram(SimulationParameters.npf);
+            NetworkNodeMessageBuffer.getInstance().createBuffer(d);
+
+            Node nod;
+            nod = new Node(np, vv);
+            nod.setVertex(vv);
+            nod.setArchitecture(this);
+            this.agents.add(nod);
+            nod.live();
+            Thread t = new Thread(nod);
+            nod.setThread(t);
+
+            if (n.getRespAgentsBkp().containsKey(d)) {
+                int i = n.getRespAgentsBkp().get(d);
+                System.out.println("creating " + i + " agents");
+                createNewAgents(i, nod);
+            }
+            createNewAgents(3, nod); //we cannot create agents yet! maybe after network is connected.
+            t.start();
+            nod.setNetworkdata(new HashMap(n.getNetworkdata()));
+            nodes.add(nod);
+            setChanged();
+            notifyObservers();
+        }
     }
 
     public class CustomComparator implements Comparator<GraphElements.MyVertex> {
@@ -147,7 +188,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         public int compare(GraphElements.MyVertex f1, GraphElements.MyVertex f2) {
             int v1 = Integer.valueOf(f1.getName().substring(1));
             int v2 = Integer.valueOf(f2.getName().substring(1));
-            System.out.println("v1" + v1 + ", v2" + v2);
+            //System.out.println("v1" + v1 + ", v2" + v2);
             if (v1 == v2) {
                 return 0;
             } else if (v1 > v2) {
@@ -171,11 +212,41 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
 
     Node getNode(String name) {
         for (Node n : nodes) {
-            if (n.getVertex().getName().equals(name)) {
+            if (n.status != Action.DIE && n.getVertex().getName().equals(name)) {
+                // System.out.println("found d");
                 return n;
             }
         }
+        //System.out.println("retun nul");
         return null;
+    }
+
+    public class CustomComparatorNode implements Comparator<String> {
+
+        @Override
+        public int compare(String f1, String f2) {
+            int v1 = Integer.valueOf(f1.substring(1));
+            int v2 = Integer.valueOf(f2.substring(1));
+//            System.out.println("v1" + v1 + ", v2" + v2);
+            if (v1 == v2) {
+                return 0;
+            } else if (v1 > v2) {
+                return 1;
+            } else {
+                return -1;
+            }
+        }
+    }
+
+    public String getMinimumId(List<String> neigdiff) {
+        
+        List<String> nodesAlive = new ArrayList();
+        for(String s: neigdiff){
+            if(getNode(s) != null){
+                nodesAlive.add(s);
+            }
+        }
+        return Collections.min(nodesAlive, new CustomComparatorNode());
     }
 
     @Override
@@ -185,6 +256,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             boolean flag = (action != null);
             MobileAgent a = (MobileAgent) agent;
 
+            //System.out.println("thread:" + a.getId());
             if (a.status == Action.DIE || a.getLocation() == null) {
                 return false;
             }
@@ -192,27 +264,30 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
 
             //New: informfailure
             if (language.getActionIndex(act) == 2) {
-                System.out.println("Agent " + a.getId() + " detect that something happened, sending noneighdetected to: " + a.getLocation().getName());
+                //System.out.println("Agent " + a.getId() + " detect that something happened, sending noneighdetected to: " + a.getLocation().getName());
                 //Sh Send neighbour data to node ex in HashMap format: {p51={p21, p22, p23}, p22={p1, p2}}
                 String[] msgnet = new String[3];
                 msgnet[0] = "noneighdetected";
                 msgnet[1] = StringSerializer.serialize(a.getLocalNetwork());
                 msgnet[2] = StringSerializer.serialize(a.getRespAgentsBkp());
-                
+                //System.out.println("hey");
                 if (a.getLocation() != null) {
                     NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnet);
                 }
                 currentNode = a.getLocation();
             } else {
-
                 currentNode = a.getLocation();
 
                 //Sh Add neighbor data to agent as an array p51={p21, p22, p23}|p22={p1, p2}
                 HashMap<String, Object> nodeNet = new HashMap<>();
                 nodeNet.put(a.getLocation().getName(), getTopologyNames(a.getLocation()));
 
+                //Add resposible agents v
+                Node c = getNode(a.getLocation().getName());
+                if (!c.getResponsibleAgents().isEmpty()) {
+                    a.getRespAgentsBkp().put(a.getLocation().getName(), c.getResponsibleAgents().size());
+                }
                 a.getLocalNetwork().add(nodeNet);
-                a.getRespAgentsBkp().put(a.getLocation().getName(), getNode(a.getLocation().getName()).getResponsibleAgents().size());
 
                 //let only nhops as local information by agent
                 if (a.getLocalNetwork().size() > SimulationParameters.nhops) {
@@ -378,12 +453,55 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             return flag;
         }
         if (agent instanceof Node) {
-            
             Node n = (Node) agent;
             //System.out.println("thread of node " + n.getVertex().getName());
             n.incRounds();
             //System.out.println("node thread:" + n.getVertex().getName());
             String act = action.getCode();
+
+            //Node has no neighbours
+            if (topology.getNeighbors(n.getVertex()).isEmpty()) {
+                System.out.println("empty");
+                if (n.getNetworkdata().containsKey(n.getVertex().getName())) {
+                    System.out.println("entra");
+
+                    List<String> nd = new ArrayList((Collection) n.getNetworkdata().get(n.getVertex().getName()));
+                    List<String> dif = new ArrayList(nd);
+
+                    if (!dif.isEmpty()) {
+                        System.out.println(n.getVertex().getName() + ", diff nd" + nd);
+                        int level = 0;
+                        level++;
+                        n.getPending().put(dif.toString(), new ArrayList<>());
+
+                        for (String d : dif) {
+                            List<String> neigdiff = (ArrayList) n.getNetworkdata().get(d);
+                            String min;
+                            min = getMinimumId(neigdiff);
+                            // System.out.println("neighdiff size" + neigdiff.size());
+                            //I'm minimum, I create node
+                            if (min.equals(n.getVertex().getName())) {
+                                System.out.println("create node because node does not detect");
+                                createNewNode(n, d);
+                                //Send message to node neigbours.
+                                //can be no nd but all agentData
+                                for (String neig : neigdiff) {
+                                    //message msgnodediff: connect|level|nodeid|nodetoconnect
+                                    //System.out.println(n.getVertex().getName() + "is sending diff " + dif + "to" + neig);
+                                    String[] msgnodediff = new String[5];
+                                    msgnodediff[0] = "connect";
+                                    msgnodediff[1] = String.valueOf(level);
+                                    msgnodediff[2] = n.getVertex().getName();
+                                    msgnodediff[3] = d;
+                                    NetworkNodeMessageBuffer.getInstance().putMessage(neig, msgnodediff);
+                                    //n.getPending().get(dif.toString()).add(neig);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             //System.out.println("action" + act + ", code:" + nodeLanguage.getActionIndex(act));
             switch (nodeLanguage.getActionIndex(act)) {
                 case 0: //Communicate
@@ -432,41 +550,17 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                     for (String d : dif) {
                                         List<String> neigdiff = (ArrayList) n.getNetworkdata().get(d);
                                         String min;
-                                        min = n.getMinimumId(neigdiff);
-                                        System.out.println("neighdiff size" + neigdiff.size());
+                                        min = getMinimumId(neigdiff);
+                                        // System.out.println("neighdiff size" + neigdiff.size());
                                         //I'm minimum, I create node
                                         if (min.equals(n.getVertex().getName())) {
-
-                                            if (findVertex(d) != null) {
-                                                System.out.println("already created." + d);
-                                            } else {
-                                                GraphCreator.VertexFactory v = new GraphCreator.VertexFactory();
-                                                //GraphCreator.EdgeFactory e = new GraphCreator.EdgeFactory();
-                                                System.out.println(n.getVertex().getName() + "is creating " + d + ":");
-                                                GraphElements.MyVertex vv = v.create();
-                                                vv.setName(d);
-                                                
-                                                topology.addVertex(vv);
-                                                topology.addEdge("e" + vv.getName() + n.getVertex().getName(), vv, n.getVertex());
-                                                NodeFailingProgram np = new NodeFailingProgram(SimulationParameters.npf);
-                                                NetworkNodeMessageBuffer.getInstance().createBuffer(d);
-                                                Node nod;
-
-                                                nod = new Node(np, vv);
-                                                nod.setPfCreate(0);
-                                                this.agents.add(nod);
-                                                nod.live();
-                                                Thread t = new Thread(nod);
-                                                nod.setThread(t);
-                                                //createNewAgents(3, nod);
-                                                t.start();
-                                            }
-
+                                            System.out.println("Create node method:" + inbox[0]);
+                                            createNewNode(n, d);
                                             //Send message to node neigbours.
                                             //can be no nd but all agentData
                                             for (String neig : neigdiff) {
                                                 //message msgnodediff: connect|level|nodeid|nodetoconnect
-                                                System.out.println(n.getVertex().getName() + "is sending diff " + dif + "to" + neig);
+                                                //System.out.println(n.getVertex().getName() + "is sending diff " + dif + "to" + neig);
                                                 String[] msgnodediff = new String[5];
                                                 msgnodediff[0] = "connect";
                                                 msgnodediff[1] = String.valueOf(level);
@@ -480,7 +574,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                             //can be no nd but all agentData
                                             for (String neig : neigdiff) {
                                                 //message msgnodediff: diffound|level|nodeid|dif|neigdif
-                                                System.out.println("sending diff " + dif + "to" + neig);
+                                                //System.out.println("sending diff " + dif + "to" + neig);
                                                 String[] msgnodediff = new String[6];
                                                 msgnodediff[0] = "diffound";
                                                 msgnodediff[1] = String.valueOf(level);
@@ -500,6 +594,13 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                         }
                         if (inbox[0].equals("networkdata")) {
                             //completes and updates data
+                            HashMap<String, Integer> agentBkp = (HashMap) StringSerializer.deserialize(inbox[2]);
+
+                            for (String key : agentBkp.keySet()) {
+                                n.getRespAgentsBkp().put(key, agentBkp.get(key));
+                            }
+                            //System.out.println("res" + n.getRespAgentsBkp());
+
                             ArrayList<HashMap> agentLoc = (ArrayList) StringSerializer.deserialize(inbox[1]);
                             HashMap<String, Integer> nagentsresp = (HashMap<String, Integer>) StringSerializer.deserialize(inbox[2]);
                             for (HashMap< String, Object> agentData : agentLoc) {
@@ -514,7 +615,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                             dif.removeAll(ad);
 
                                             if (!dif.isEmpty()) {
-                                                System.out.println(n.getVertex().getName() + ", diff nd" + nd + " vs " + "ad" + ad);
+                                                //System.out.println(n.getVertex().getName() + ", diff nd" + nd + " vs " + "ad" + ad);
                                                 int level = 0;
                                                 level++;
                                                 n.getPending().put(dif.toString(), new ArrayList<>());
@@ -522,43 +623,17 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                                 for (String d : dif) {
                                                     List<String> neigdiff = (ArrayList) n.getNetworkdata().get(d);
                                                     String min;
-                                                    min = n.getMinimumId(neigdiff);
+                                                    min = getMinimumId(neigdiff);
                                                     System.out.println("neighdiff size" + neigdiff.size());
                                                     //I'm minimum, I create node
                                                     if (neigdiff.size() == 1 || min.equals(n.getVertex().getName())) {
-                                                        if (findVertex(d) != null) {
-                                                            System.out.println("already created." + d);
-                                                        } else {
-                                                            GraphCreator.VertexFactory v = new GraphCreator.VertexFactory();
-                                                            //GraphCreator.EdgeFactory e = new GraphCreator.EdgeFactory();
-                                                            System.out.println(n.getVertex().getName() + " is creating " + d + ":");
-                                                            GraphCreator g = new GraphCreator();
-                                                            GraphElements.MyVertex vv = v.create();
-                                                            vv.setName(d);
-                                                            topology.addVertex(vv);
-                                                            topology.addEdge("e" + vv.getName() + n.getVertex().getName(), vv, n.getVertex());
-                                                            NodeFailingProgram np = new NodeFailingProgram(SimulationParameters.npf);
-                                                            NetworkNodeMessageBuffer.getInstance().createBuffer(d);
-                                                            Node nod;
-                                                            nod = new Node(np, vv);
-                                                            nod.setVertex(vv);
-                                                            nod.setArchitecture(this);
-                                                            this.agents.add(nod);
-                                                            nod.live();
-                                                            Thread t = new Thread(nod);
-                                                            nod.setThread(t);
-                                                            //createNewAgents(5, nod);
-                                                            t.start();
-                                                            nod.setNetworkdata(new HashMap(n.getNetworkdata()));
-                                                            setChanged();
-                                                            notifyObservers();
-                                                        }
-
+                                                        System.out.println("Create node method:" + inbox[0]);
+                                                        createNewNode(n, d);
                                                         //Send message to node neigbours.
                                                         //can be no nd but all agentData
                                                         for (String neig : neigdiff) {
                                                             //message msgnodediff: connect|level|nodeid|nodetoconnect
-                                                            System.out.println(n.getVertex().getName() + "is sending diff " + dif + "to" + neig);
+                                                            //System.out.println(n.getVertex().getName() + "is sending diff " + dif + "to" + neig);
                                                             String[] msgnodediff = new String[5];
                                                             msgnodediff[0] = "connect";
                                                             msgnodediff[1] = String.valueOf(level);
@@ -572,7 +647,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                                         //can be no nd but all agentData
                                                         for (String neig : neigdiff) {
                                                             //message msgnodediff: diffound|level|nodeid|dif|neigdif
-                                                            System.out.println("sending diff " + dif + "to" + neig);
+                                                            //System.out.println("sending diff " + dif + "to" + neig);
                                                             String[] msgnodediff = new String[6];
                                                             msgnodediff[0] = "diffound";
                                                             msgnodediff[1] = String.valueOf(level);
@@ -619,51 +694,17 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                 List<String> neigdiff = (ArrayList) n.getNetworkdata().get(d);
 
                                 String min;
-                                min = n.getMinimumId(neigdiff);
+                                min = getMinimumId(neigdiff);
 
                                 //I'm minimum, I create node
                                 if (min.equals(n.getVertex().getName())) {
-
-                                    if (findVertex(d) != null) { //really not true ??????
-                                        System.out.println("already created." + d);
-                                    } else {
-
-                                        //Language for nodes
-                                        String[] nodePercepts = {"data", "neighbors"};
-                                        String[] nodeActions = {"communicate", "die"};
-                                        SimpleLanguage nodeLanguaje = new SimpleLanguage(nodePercepts, nodeActions);
-                                        NodeFailingProgram np = new NodeFailingProgram(SimulationParameters.npf);
-
-                                        GraphCreator.VertexFactory v = new GraphCreator.VertexFactory();
-                                        //GraphCreator.EdgeFactory e = new GraphCreator.EdgeFactory();
-                                        System.out.println(n.getVertex().getName() + "is creating " + d + ":");
-                                        GraphElements.MyVertex vv = v.create();
-                                        vv.setName(d);
-                                        topology.addVertex(vv);
-                                        topology.addEdge("e" + vv.getName() + n.getVertex().getName(), vv, n.getVertex());
-                                        NetworkNodeMessageBuffer.getInstance().createBuffer(d);
-
-                                        Node nod;
-                                        nod = new Node(np, vv);
-                                        nod.setArchitecture(this);
-                                        nod.setVertex(vv);
-                                        this.agents.add(nod);
-                                        nodes.add(nod);
-                                        nod.live();
-                                        Thread t = new Thread(nod);
-                                        nod.setThread(t);
-                                        nod.setNetworkdata(new HashMap(n.getNetworkdata()));
-
-                                        //createNewAgents(5, nod);
-                                        t.start();
-                                        setChanged();
-                                        notifyObservers();
-                                    }
+                                    System.out.println("Create node method:" + inbox[0]);
+                                    createNewNode(n, d);
                                     //Send message to node neigbours.
                                     //can be no nd but all agentData
                                     for (String neig : neigdiff) {
                                         //message msgnodediff: connect|level|nodeid|nodetoconnect
-                                        System.out.println("sending diff " + dif + "to" + neig);
+                                        // System.out.println("sending diff " + dif + "to" + neig);
                                         String[] msgnodediff = new String[4];
                                         msgnodediff[0] = "connect";
                                         msgnodediff[1] = String.valueOf(level);
@@ -672,12 +713,12 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                         NetworkNodeMessageBuffer.getInstance().putMessage(neig, msgnodediff);
                                         //n.getPending().get(dif.toString()).add(neig);
                                     }
-                                } else {
+                                } /*else {
                                     //Send message to node neigbours.
                                     //can be no nd but all agentData
                                     for (String neig : neigdiff) {
                                         //message msgnodediff: diffound|level|nodeid|dif|neigdif
-                                        System.out.println("sending diff " + dif + "to" + neig);
+                                        //System.out.println("sending diff " + dif + "to" + neig);
                                         String[] msgnodediff = new String[5];
                                         msgnodediff[0] = "diffound";
                                         msgnodediff[1] = String.valueOf(level);
@@ -688,27 +729,27 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                         NetworkNodeMessageBuffer.getInstance().putMessage(neig, msgnodediff);
                                         n.getPending().get(dif.toString()).add(neig);
                                     }
-                                }
+                                }*/
                             }
                         }
                     }
                     break;
 
                 case 1: //what happens if a node dies?
-                    
-                    System.out.println("killed: "+killAgentsInlocation(n.getVertex().getName()));
+                    System.out.println("Node" + n.getVertex().getName() + " has failed.");
+                    System.out.println("killed: " + killAgentsInlocation(n.getVertex().getName()));
                     NetworkNodeMessageBuffer.getInstance().deleteBuffer(n.getVertex().getName());
                     //System.out.println("node fail?");
                     topology.removeVertex(n.getVertex());
+                    nodes.remove(n);
                     n.die();
                     break;
                 default:
-                    System.out.println("action not specified");
+                    System.out.println("acrtion not specified");
             }
-
-            //setChanged();
-            //notifyObservers();
         }
+        setChanged();
+        notifyObservers();
 
         return false;
     }
@@ -723,7 +764,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
 
     //Example: It is better handshake protocol. J. Gomez
     public void evaluateAgentCreation(Node n) {
-
         synchronized (NetworkEnvironmentPheromoneReplicationNodeFailing.class) {
             Iterator<Map.Entry<Integer, Integer>> iter = n.getResponsibleAgents().entrySet().iterator();
             Iterator<Map.Entry<Integer, String>> iterLoc = n.getResponsibleAgentsLocation().entrySet().iterator();
