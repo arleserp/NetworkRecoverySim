@@ -239,14 +239,16 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     }
 
     public String getMinimumId(List<String> neigdiff) {
-        
         List<String> nodesAlive = new ArrayList();
         for(String s: neigdiff){
             if(getNode(s) != null){
                 nodesAlive.add(s);
             }
         }
-        return Collections.min(nodesAlive, new CustomComparatorNode());
+        System.out.println("nodes alive size " + nodesAlive.size());
+        String min = Collections.min(neigdiff, new CustomComparatorNode());
+        System.out.println(" min " + min);
+        return min;
     }
 
     @Override
@@ -284,9 +286,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
 
                 //Add resposible agents v
                 Node c = getNode(a.getLocation().getName());
-                if (!c.getResponsibleAgents().isEmpty()) {
+                /*if (!c.getResponsibleAgents().isEmpty()) {
                     a.getRespAgentsBkp().put(a.getLocation().getName(), c.getResponsibleAgents().size());
-                }
+                }*/
                 a.getLocalNetwork().add(nodeNet);
 
                 //let only nhops as local information by agent
@@ -480,7 +482,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                             min = getMinimumId(neigdiff);
                             // System.out.println("neighdiff size" + neigdiff.size());
                             //I'm minimum, I create node
-                            if (min.equals(n.getVertex().getName())) {
+                            if (min.equals(n.getVertex().getName()) ) {
                                 System.out.println("create node because node does not detect");
                                 createNewNode(n, d);
                                 //Send message to node neigbours.
@@ -540,7 +542,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                             if (n.getNetworkdata().containsKey(n.getVertex().getName())) {
                                 List<String> nd = new ArrayList((Collection) n.getNetworkdata().get(n.getVertex().getName()));
                                 List<String> dif = new ArrayList(nd);
-
+                                   
+                                
                                 if (!dif.isEmpty()) {
                                     //System.out.println(n.getVertex().getName() + ", diff nd" + nd + " vs " + "ad" + ad);
                                     int level = 0;

@@ -68,8 +68,8 @@ public class PheromoneReplicationProgram implements AgentProgram {
         double rand = (double) (Math.random() * sum);
         sum = 0;
         int mov = 0;
-        for (int k = 0; k < pheromone.length; k++) {
-            sum += pheromone[k];
+        for (int k = 0; k < pheromone.length; k++) { 
+           sum += pheromone[k];
             if (rand < sum) {
                 mov = k;
                 break;
