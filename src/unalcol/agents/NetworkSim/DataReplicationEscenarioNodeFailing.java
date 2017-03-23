@@ -136,24 +136,24 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
             MobileAgent a = new MobileAgent(program, i);
             GraphElements.MyVertex tmp = getLocation(g);
             //System.out.println("tmp" + tmp);
+            a.setRound(-1);
             a.setLocation(tmp);
             a.setPrevLocation(tmp);
             a.setProgram(program);
             a.setAttribute("infi", new ArrayList<String>());
             NetworkMessageBuffer.getInstance().createBuffer(a.getId());
             agents.add(a);
-            //Initialize implies arrival message from nodes!
             String[] msgnode = new String[4];
             msgnode[0] = "arrived";
             msgnode[1] = String.valueOf(a.getId());
             msgnode[2] = String.valueOf(a.getIdFather());
-            msgnode[3] = String.valueOf(-1);
             NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
+            //Initialize implies arrival message from nodes!
         }
 
         graphVisualization = new DataReplicationNodeFailingObserver();
         world = new NetworkEnvironmentPheromoneReplicationNodeFailing(agents, agentsLanguage, nodeLanguaje, g);
-        ((NetworkEnvironmentPheromoneReplicationNodeFailing)world).setNodes(nodes);
+        ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).setNodes(nodes);
         world.addObserver(graphVisualization);
         world.not();
         world.run();

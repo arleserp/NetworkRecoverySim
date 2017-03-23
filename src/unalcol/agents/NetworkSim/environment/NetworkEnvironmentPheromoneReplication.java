@@ -242,7 +242,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     //msgnode: "departing"|agentId|FatherId|newDest
                     if (inbox[0].equals("departing")) {
                         int agentId = Integer.valueOf(inbox[1]);
-                        n.setLastAgentArrival(agentId, n.getRounds());
+                        n.setLastAgentDeparting(agentId, n.getRounds());
                         n.incMsgRecv();
                         //System.out.println("Node " + n.getVertex().getName() + " recv message: " + inbox[0]);
                         n.getResponsibleAgents().put(agentId, Integer.valueOf(inbox[2]));
@@ -259,7 +259,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                         //System.out.println("Node " + n.getVertex().getName() + " recv message: " + inbox[0] + "," + n.getRounds());
                         int agentId = Integer.valueOf(inbox[1]);
                         String newLocation = inbox[2];
-                        n.setLastMessageArrival(agentId, n.getRounds(), newLocation);
+                        n.setLastMessageFreeResp(agentId, n.getRounds(), newLocation);
                         n.calculateTimeout();
                         if (n.getResponsibleAgents().containsKey(agentId)) {
                             n.getResponsibleAgents().remove(agentId);
@@ -309,7 +309,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 estimatedTimeout = n.estimateExpectedTime(n.getResponsibleAgentsLocation().get(k));
                 stdDevTimeout = (int) n.getStdDevTimeout(n.getResponsibleAgentsLocation().get(k));
 
-                if (n.getLastAgentArrival().containsKey(k) && Math.abs((n.getRounds() - n.getLastAgentArrival(k))) > (estimatedTimeout + 3 * stdDevTimeout)) { //this is not the expresion
+                if (n.getLastAgentDeparting().containsKey(k) && Math.abs((n.getRounds() - n.getLastAgentDeparting(k))) > (estimatedTimeout + 3 * stdDevTimeout)) { //this is not the expresion
                     /*if (n.getResponsibleAgentsLocation().containsKey(k) && n.getNodeTimeouts().containsKey(n.getResponsibleAgentsLocation().get(k))) {
                         n.getNodeTimeouts().get(n.getResponsibleAgentsLocation().get(k)).add(estimatedTimeout);
                         //n.addTimeout(estimatedTimeout);

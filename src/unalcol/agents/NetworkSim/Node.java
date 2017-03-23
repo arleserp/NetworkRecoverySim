@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.print.attribute.HashAttributeSet;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 import unalcol.agents.NetworkSim.util.BoxPlotACKAmount.CustomComparator;
@@ -26,6 +27,7 @@ public class Node extends Agent {
     private GraphElements.MyVertex v;
     private ArrayList<Agent> currentAgents;
     private HashMap<Integer, Integer> responsibleAgents;
+    private HashMap<Integer, Integer> responsibleAgentsArrival;
     private HashMap<Integer, String> responsibleAgentsLocation;
     private double pfCreate;
     private int roundsWithOutVisit;
@@ -33,11 +35,17 @@ public class Node extends Agent {
     private int nMsgSend;
     private int nMsgRecv;
     private int rounds;
+    private HashMap<Integer, Integer> lastAgentDeparting;
     private HashMap<Integer, Integer> lastAgentArrival;
-    private HashMap<String, Integer> lastMessageArrival;
+
+    private HashMap<Integer, Integer> lastStartDeparting;
+
+    private HashMap<String, Integer> lastMessageFreeResp;
     // private ArrayList<Integer> timeout;
     private int amountRounds;
     private HashMap<String, ArrayList<Integer>> nodeTimeouts;
+    private ArrayList<Integer> nodeTimeoutsArrival;
+
     private int INITIAL_TIMEOUT = 10;
     private int WINDOW_SIZE = 10;
     private HashMap<String, Object> networkdata;
@@ -61,11 +69,16 @@ public class Node extends Agent {
         currentAgents = new ArrayList<>();
         responsibleAgents = new HashMap<>();
         responsibleAgentsLocation = new HashMap<>();
-        lastAgentArrival = new HashMap<>();
-        lastMessageArrival = new HashMap<>();
+        lastAgentDeparting = new HashMap<>();
+        lastMessageFreeResp = new HashMap<>();
         rounds = 0;
         nodeTimeouts = new HashMap();
         respAgentsBkp = new HashMap<>();
+        lastStartDeparting = new HashMap<>();
+        responsibleAgentsArrival = new HashMap<>();
+        nodeTimeoutsArrival = new ArrayList<>();
+        lastAgentArrival = new HashMap<>();
+
     }
 
     public Node(AgentProgram _program, GraphElements.MyVertex ve, HashMap tout) {
@@ -76,11 +89,15 @@ public class Node extends Agent {
         currentAgents = new ArrayList<>();
         responsibleAgents = new HashMap<>();
         responsibleAgentsLocation = new HashMap<>();
-        lastAgentArrival = new HashMap<>();
-        lastMessageArrival = new HashMap<>();
+        lastAgentDeparting = new HashMap<>();
+        lastMessageFreeResp = new HashMap<>();
         rounds = 0;
         nodeTimeouts = tout;
         respAgentsBkp = new HashMap<>();
+        lastStartDeparting = new HashMap<>();
+        responsibleAgentsArrival = new HashMap<>();
+        nodeTimeoutsArrival = new ArrayList<>();
+        lastAgentArrival = new HashMap<>();
     }
 
     public GraphElements.MyVertex getVertex() {
@@ -248,32 +265,32 @@ public class Node extends Agent {
      * @param agentId
      * @return the lastAgentArrival
      */
-    public int getLastAgentArrival(int agentId) {
-        return getLastAgentArrival().get(agentId);
+    public int getLastAgentDeparting(int agentId) {
+        return getLastAgentDeparting().get(agentId);
     }
 
     /**
      * @param lastAgentArrival the lastAgentArrival to set
      * @param agentId
      */
-    public void setLastAgentArrival(int agentId, int nodeAge) {
-        this.getLastAgentArrival().put(agentId, nodeAge);
+    public void setLastAgentDeparting(int agentId, int nodeAge) {
+        this.getLastAgentDeparting().put(agentId, nodeAge);
     }
 
     /**
      * @param agentId
      * @return the lastMessageArrival
      */
-    public int getLastMessageArrival(int agentId) {
-        return getLastMessageArrival().get(agentId);
+    public int getLastMessageFreeResp(int agentId) {
+        return getLastMessageFreeResp().get(agentId);
     }
 
     /**
      * @param lastMessageArrival the lastMessageArrival to set
      */
-    public void setLastMessageArrival(int agentId, int nodeAge, String newLocation) {
+    public void setLastMessageFreeResp(int agentId, int nodeAge, String newLocation) {
         String key = agentId + "-" + newLocation;
-        getLastMessageArrival().put(key, nodeAge);
+        getLastMessageFreeResp().put(key, nodeAge);
     }
 
     /*
@@ -315,7 +332,7 @@ public class Node extends Agent {
      */
     public void calculateTimeout() {
         Iterator<Map.Entry<Integer, Integer>> iter = getResponsibleAgents().entrySet().iterator();
-        Iterator<Map.Entry<String, Integer>> iterM = getLastMessageArrival().entrySet().iterator();
+        Iterator<Map.Entry<String, Integer>> iterM = getLastMessageFreeResp().entrySet().iterator();
 
         while (iter.hasNext()) {
             //Key: agentId|roundNumber
@@ -329,8 +346,8 @@ public class Node extends Agent {
                 int agentId = Integer.valueOf(dataKey[0]);
                 String nodeId = dataKey[1];
 
-                if (agentId == k && getLastAgentArrival().containsKey(k) && getLastMessageArrival().containsKey(KeyM.getKey())) {
-                    int diff = Math.abs(getLastMessageArrival().get(KeyM.getKey()) - getLastAgentArrival().get(k));
+                if (agentId == k && getLastAgentDeparting().containsKey(k) && getLastMessageFreeResp().containsKey(KeyM.getKey())) {
+                    int diff = Math.abs(getLastMessageFreeResp().get(KeyM.getKey()) - getLastAgentDeparting().get(k));
                     //System.out.println("diff" +  diff);
                     //if (diff != 0) {
                     if (!nodeTimeouts.containsKey(nodeId)) {
@@ -341,7 +358,7 @@ public class Node extends Agent {
                     //}
                     //System.out.println("node:" + getVertex().getName() + ", antes:" + getLastMessageArrival());
                     iterM.remove();
-                    getLastAgentArrival().remove(k);
+                    getLastAgentDeparting().remove(k);
                 }
             }
         }
@@ -394,22 +411,22 @@ public class Node extends Agent {
     /**
      * @return the lastAgentArrival
      */
-    public HashMap<Integer, Integer> getLastAgentArrival() {
-        return lastAgentArrival;
+    public HashMap<Integer, Integer> getLastAgentDeparting() {
+        return lastAgentDeparting;
     }
 
     /**
      * @return the lastMessageArrival
      */
-    public HashMap<String, Integer> getLastMessageArrival() {
-        return lastMessageArrival;
+    public HashMap<String, Integer> getLastMessageFreeResp() {
+        return lastMessageFreeResp;
     }
 
     /**
-     * @param lastMessageArrival the lastMessageArrival to set
+     * @param lastMessageFreeResp the lastMessageArrival to set
      */
-    public void setLastMessageArrival(HashMap<String, Integer> lastMessageArrival) {
-        this.lastMessageArrival = lastMessageArrival;
+    public void setLastMessageFreeResp(HashMap<String, Integer> lastMessageFreeResp) {
+        this.lastMessageFreeResp = lastMessageFreeResp;
     }
 
     public double getStdDevTimeout() {
@@ -544,6 +561,105 @@ public class Node extends Agent {
         this.respAgentsBkp = respAgentsBkp;
     }
 
+    /*
+      @param
+     */
+    public void setLastAgentArrive(int agentId, int rounds) {
+        getLastAgentArrive().put(agentId, rounds);
+    }
 
+    /**
+     * @return the responsibleAgentsArrival
+     */
+    public HashMap<Integer, Integer> getResponsibleAgentsArrival() {
+        return responsibleAgentsArrival;
+    }
+
+    /**
+     * @param responsibleAgentsArrival the responsibleAgentsArrival to set
+     */
+    public void setResponsibleAgentsArrival(HashMap<Integer, Integer> responsibleAgentsArrival) {
+        this.responsibleAgentsArrival = responsibleAgentsArrival;
+    }
+
+    public void calculateTimeoutArrival() {
+        Iterator<Map.Entry<Integer, Integer>> iter = responsibleAgentsArrival.entrySet().iterator();
+
+        while (iter.hasNext()) {
+            ArrayList<Integer> times = new ArrayList<>();
+            Map.Entry<Integer, Integer> Key = iter.next();
+            int k = Key.getKey();
+            if (responsibleAgentsArrival.containsKey(k) && lastStartDeparting.containsKey(k)) {
+                int diff = Math.abs(responsibleAgentsArrival.get(k) - lastStartDeparting.get(k));
+                nodeTimeoutsArrival.add(diff);
+                iter.remove();
+                lastStartDeparting.remove(k);
+            }
+
+        }
+    }
+
+    public void setLastStartDeparting(int agentId, int rounds) {
+        lastStartDeparting.put(agentId, rounds);
+    }
+
+    /**
+     * @return the lastStartDeparting
+     */
+    public HashMap<Integer, Integer> getLastStartDeparting() {
+        return lastStartDeparting;
+    }
+
+    /**
+     * @param lastStartDeparting the lastStartDeparting to set
+     */
+    public void setLastStartDeparting(HashMap<Integer, Integer> lastStartDeparting) {
+        this.lastStartDeparting = lastStartDeparting;
+    }
+
+    public int estimateExpectedTimeArrival() {
+        //System.out.println("nodeTimeouts" + getNodeTimeouts());
+        if (nodeTimeoutsArrival.isEmpty()) {
+            return INITIAL_TIMEOUT;
+        }
+        //for (String key : getNodeTimeouts().keySet()) {
+        ArrayList<Double> dtimeout = new ArrayList();
+        for (Integer d : nodeTimeoutsArrival) {
+            dtimeout.add(d.doubleValue());
+        }
+        if (dtimeout.size() >= WINDOW_SIZE) {
+            dtimeout = new ArrayList<>(dtimeout.subList(dtimeout.size() - WINDOW_SIZE, dtimeout.size() - 1));
+        }
+        //if (dtimeout.size() > 1) {
+        StatisticsNormalDist st = new StatisticsNormalDist(dtimeout, dtimeout.size());
+        return (int) st.getMedian();
+    }
+
+    public double getStdDevTimeoutArrival() {
+        if (nodeTimeoutsArrival.isEmpty()) {
+            return 0;
+        }
+        ArrayList<Double> dtimeout = new ArrayList();
+        for (Integer d : nodeTimeoutsArrival) {
+            dtimeout.add(d.doubleValue());
+        }
+        if (dtimeout.size() >= WINDOW_SIZE) {
+            dtimeout = new ArrayList<>(dtimeout.subList(dtimeout.size() - WINDOW_SIZE, dtimeout.size() - 1));
+        }
+        //if (dtimeout.size() > 1) {
+        StatisticsNormalDist st = new StatisticsNormalDist(dtimeout, dtimeout.size());
+        return (int) st.getStdDevMedian();
+    }
+
+    /**
+     * @return the lastAgentArrival
+     */
+    public HashMap<Integer, Integer> getLastAgentArrive() {
+        return lastAgentArrival;
+    }
+
+    public int getLastAgentArrive(int agentId) {
+        return lastAgentArrival.get(agentId);
+    }
 
 }
