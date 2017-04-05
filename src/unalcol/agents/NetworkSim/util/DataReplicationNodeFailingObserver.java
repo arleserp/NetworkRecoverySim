@@ -8,7 +8,9 @@ package unalcol.agents.NetworkSim.util;
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.UndirectedSparseGraph;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import java.awt.Color;
@@ -84,12 +86,22 @@ public class DataReplicationNodeFailingObserver implements Observer {
 
             //if (Math.random() > 0.9) { //Receives to many notify if replication explodes.
             // The BasicVisualizationServer<V,E> is parameterized by the vertex and edge types
+            /* Graph<GraphElements.MyVertex, String> src = n.getTopology();
+            Graph<GraphElements.MyVertex, String> g = new UndirectedSparseGraph<>();
+
+            for (GraphElements.MyVertex v : src.getVertices()) {
+                g.addVertex(v);
+            }
+            for (String e : src.getEdges()) {
+                g.addEdge(e, src.getIncidentVertices(e));
+            }
+             */
             Graph<GraphElements.MyVertex, String> g = n.getTopology();
             if (g.getVertexCount() == 0) {
                 System.out.println("no nodes alive.");
             } else {
                 Layout<GraphElements.MyVertex, String> layout = null;
-
+/*
                 switch (SimulationParameters.graphMode) {
                     case "scalefree":
                         layout = new ISOMLayout<>(g);
@@ -115,8 +127,9 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     default:
                         layout = new ISOMLayout<>(g);
                         break;
-                }
-
+                }*/
+                layout = new ISOMLayout<>(g);
+                
                 BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
                 vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
 
@@ -142,7 +155,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                 };
 
                 vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-                vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
+                //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
                 //n.setVV(vv);
                 vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
 

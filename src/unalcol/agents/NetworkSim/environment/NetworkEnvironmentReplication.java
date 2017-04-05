@@ -30,7 +30,8 @@ public class NetworkEnvironmentReplication extends Environment {
      */
     public int getTotalAgents() {
         totalAgents = 0;
-        for (Agent a : this.getAgents()) {
+        Vector<Agent> agents1 = (Vector<Agent>)this.getAgents().clone();
+        for (Agent a : agents1) {
             if (a instanceof MobileAgent) {
                 totalAgents++;
             }
