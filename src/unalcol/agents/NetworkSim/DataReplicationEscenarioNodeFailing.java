@@ -92,7 +92,9 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         String[] nodeActions = {"communicate", "die"};
         SimpleLanguage nodeLanguaje = new SimpleLanguage(nodePercepts, nodeActions);
         NodeFailingProgram np = new NodeFailingProgram(SimulationParameters.npf);
+       // NodeFailingProgram np = new NodeFailingProgram((float)Math.random()*SimulationParameters.npf);
 
+       
         //report = new reportHealingProgram(population, probFailure, this);
         //greport = new GraphicReportHealingObserver(probFailure);
         //Create graph

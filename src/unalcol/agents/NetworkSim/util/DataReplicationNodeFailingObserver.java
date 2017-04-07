@@ -84,24 +84,14 @@ public class DataReplicationNodeFailingObserver implements Observer {
         if (o instanceof NetworkEnvironmentReplication) {
             final NetworkEnvironmentReplication n = (NetworkEnvironmentReplication) o;
 
-            //if (Math.random() > 0.9) { //Receives to many notify if replication explodes.
-            // The BasicVisualizationServer<V,E> is parameterized by the vertex and edge types
-            /* Graph<GraphElements.MyVertex, String> src = n.getTopology();
-            Graph<GraphElements.MyVertex, String> g = new UndirectedSparseGraph<>();
+            if (Math.random() > 0.9) { //Receives to many notify if replication explodes.
 
-            for (GraphElements.MyVertex v : src.getVertices()) {
-                g.addVertex(v);
-            }
-            for (String e : src.getEdges()) {
-                g.addEdge(e, src.getIncidentVertices(e));
-            }
-             */
-            Graph<GraphElements.MyVertex, String> g = n.getTopology();
-            if (g.getVertexCount() == 0) {
-                System.out.println("no nodes alive.");
-            } else {
-                Layout<GraphElements.MyVertex, String> layout = null;
-/*
+                Graph<GraphElements.MyVertex, String> g = n.getTopology();
+                if (g.getVertexCount() == 0) {
+                    System.out.println("no nodes alive.");
+                } else {
+                    Layout<GraphElements.MyVertex, String> layout = null;
+                    /*
                 switch (SimulationParameters.graphMode) {
                     case "scalefree":
                         layout = new ISOMLayout<>(g);
@@ -128,47 +118,48 @@ public class DataReplicationNodeFailingObserver implements Observer {
                         layout = new ISOMLayout<>(g);
                         break;
                 }*/
-                layout = new ISOMLayout<>(g);
-                
-                BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
-                vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
+                    layout = new ISOMLayout<>(g);
+                    //layout = new CircleLayout<>(g);
 
-                // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
-                // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
-                Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
-                    @Override
-                    public Paint transform(GraphElements.MyVertex i) {
-                        if (n.getLocationAgents().containsValue(i)) {
-                            return Color.YELLOW;
+                    BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
+                    vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
+
+                    // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
+                    // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
+                    Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
+                        @Override
+                        public Paint transform(GraphElements.MyVertex i) {
+                            if (n.getLocationAgents().containsValue(i)) {
+                                return Color.YELLOW;
+                            }
+                            if (n.getVisitedNodes().contains(i)) {
+                                return Color.BLUE;
+                            }
+                            //if(i.getData().size() > 0){
+                            //    System.out.println("i"+ i.getData().size());
+                            //}
+                            if (i.getData().size() == n.getTopology().getVertices().size()) {
+                                return Color.GREEN;
+                            }
+                            return Color.RED;
                         }
-                        if (n.getVisitedNodes().contains(i)) {
-                            return Color.BLUE;
-                        }
-                        //if(i.getData().size() > 0){
-                        //    System.out.println("i"+ i.getData().size());
-                        //}
-                        if (i.getData().size() == n.getTopology().getVertices().size()) {
-                            return Color.GREEN;
-                        }
-                        return Color.RED;
+                    };
+
+                    vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+                    //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
+                    //n.setVV(vv);
+                    vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
+
+                    if (!added) {
+                        frame.getContentPane().add(vv);
+                        added = true;
+                        frame.pack();
+                        frame.setVisible(true);
+                    } else {
+                        frame.repaint();
                     }
-                };
-
-                vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-                //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
-                //n.setVV(vv);
-                vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
-
-                if (!added) {
-                    frame.getContentPane().add(vv);
-                    added = true;
-                    frame.pack();
-                    frame.setVisible(true);
-                } else {
-                    frame.repaint();
                 }
             }
-
             //System.out.println("World age" + n.getAge() + ", info:" + n.getAmountGlobalInfo());
             if (!globalInfo.containsKey(n.getAge())) {
                 //System.out.println("n" + n.getAge() + ", al:" + n.getAgentsLive());
@@ -369,10 +360,14 @@ public class DataReplicationNodeFailingObserver implements Observer {
         try {
             output = new FileOutputStream(filename + ".jpg");
             ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, 400, 400, null);
+
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DataReplicationNodeFailingObserver.class
+                    .getName()).log(Level.SEVERE, null, ex);
+
         } catch (IOException ex) {
-            Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DataReplicationNodeFailingObserver.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
     }
 
