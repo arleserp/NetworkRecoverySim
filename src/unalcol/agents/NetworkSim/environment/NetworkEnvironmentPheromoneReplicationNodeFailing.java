@@ -271,8 +271,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     }
 
     @Override
-    public boolean act(Agent agent, Action action
-    ) {
+    public boolean act(Agent agent, Action action) {
         agent.sleep(30);
         if (agent instanceof MobileAgent) {
             boolean flag = (action != null);
