@@ -46,11 +46,13 @@ public class Node extends Agent {
     private HashMap<String, ArrayList<Integer>> nodeTimeouts;
     private ArrayList<Integer> nodeTimeoutsArrival;
 
-    private int INITIAL_TIMEOUT = 10;
+    private int INITIAL_TIMEOUT = 30;
     private int WINDOW_SIZE = 10;
     private HashMap<String, Object> networkdata;
     private HashMap<Object, ArrayList> pending;
     private HashMap<String, Integer> respAgentsBkp;
+    private HashMap<Integer, String> prevLoc; // Stores <agentId, prevLoc> 
+    private HashMap<Integer, Integer> followedAgentsCounter; // Stores <agentId, counter> 
 
     public HashMap<Object, ArrayList> getPending() {
         return pending;
@@ -78,7 +80,8 @@ public class Node extends Agent {
         responsibleAgentsArrival = new HashMap<>();
         nodeTimeoutsArrival = new ArrayList<>();
         lastAgentArrival = new HashMap<>();
-
+        prevLoc = new HashMap<>();
+        followedAgentsCounter = new HashMap<>();
     }
 
     public Node(AgentProgram _program, GraphElements.MyVertex ve, HashMap tout) {
@@ -98,6 +101,8 @@ public class Node extends Agent {
         responsibleAgentsArrival = new HashMap<>();
         nodeTimeoutsArrival = new ArrayList<>();
         lastAgentArrival = new HashMap<>();
+        prevLoc = new HashMap<>();
+        followedAgentsCounter = new HashMap<>();
     }
 
     public GraphElements.MyVertex getVertex() {
@@ -261,6 +266,14 @@ public class Node extends Agent {
         }
     }
 
+    public HashMap<Integer, String> getPrevLoc() {
+        return prevLoc;
+    }
+
+    public void setPrevLoc(HashMap<Integer, String> prevLoc) {
+        this.prevLoc = prevLoc;
+    }
+
     /**
      * @param agentId
      * @return the lastAgentArrival
@@ -355,6 +368,7 @@ public class Node extends Agent {
                         getNodeTimeouts().get(nodeId).add(INITIAL_TIMEOUT);
                     }
                     getNodeTimeouts().get(nodeId).add(diff);
+                    System.out.println("size:" + nodeId + "+ ");
                     //}
                     //System.out.println("node:" + getVertex().getName() + ", antes:" + getLastMessageArrival());
                     iterM.remove();
@@ -372,8 +386,9 @@ public class Node extends Agent {
     }
 
     public int estimateTimeout() {
+
         int maxMedianTimeout = Integer.MIN_VALUE;
-        //System.out.println("nodeTimeouts" + getNodeTimeouts());
+        System.out.println("nodeTimeouts" + getNodeTimeouts());
 
         if (getNodeTimeouts().isEmpty()) {
             return INITIAL_TIMEOUT;
@@ -386,6 +401,7 @@ public class Node extends Agent {
             }
             if (dtimeout.size() >= WINDOW_SIZE) {
                 dtimeout = new ArrayList<>(dtimeout.subList(dtimeout.size() - WINDOW_SIZE, dtimeout.size() - 1));
+
             }
             //if (dtimeout.size() > 1) {
             StatisticsNormalDist st = new StatisticsNormalDist(dtimeout, dtimeout.size());
@@ -404,8 +420,7 @@ public class Node extends Agent {
         StatisticsNormalDist st = new StatisticsNormalDist(dtimeout, dtimeout.size());
         return (int) st.getMedian();*/
         //} 
-
-        //return Collections.max(getTimeout());
+        //return Collections.max(getTimeout());*/
     }
 
     /**
@@ -493,7 +508,6 @@ public class Node extends Agent {
 
     public int estimateExpectedTime(String nodeId) {
         //System.out.println("nodeTimeouts" + getNodeTimeouts());
-
         if (!getNodeTimeouts().containsKey(nodeId)) {
             return INITIAL_TIMEOUT;
         }
@@ -508,6 +522,7 @@ public class Node extends Agent {
         //if (dtimeout.size() > 1) {
         StatisticsNormalDist st = new StatisticsNormalDist(dtimeout, dtimeout.size());
         return (int) st.getMedian();
+
     }
 
     public double getStdDevTimeout(String nodeName) {
@@ -662,4 +677,23 @@ public class Node extends Agent {
         return lastAgentArrival.get(agentId);
     }
 
+    public void increaseFollowedAgentsCounter(int agentId) {
+        if (!followedAgentsCounter.containsKey(agentId)) {
+            followedAgentsCounter.put(agentId, 1);
+        } else {
+            followedAgentsCounter.put(agentId, followedAgentsCounter.get(agentId) + 1);
+        }
+    }
+
+    public int getFollowedAgentsCounter(int agentId) {
+        return followedAgentsCounter.get(agentId);
+    }
+
+    public boolean containsFollowedAgentsCounter(int agentId) {
+        return followedAgentsCounter.containsKey(agentId);
+    }
+
+    public int deleteFollowedAgentsCounter(int agentId) {
+        return followedAgentsCounter.remove(agentId);
+    }
 }

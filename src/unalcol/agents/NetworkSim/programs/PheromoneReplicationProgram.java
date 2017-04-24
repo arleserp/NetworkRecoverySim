@@ -47,8 +47,10 @@ public class PheromoneReplicationProgram implements AgentProgram {
             act.setAttribute("location", vs.toArray()[pos]);
             act.setAttribute("pf", pf);
         } catch (Exception ex) {
-            System.out.println("Inform node that possibly a node is death: " + ex.getLocalizedMessage());
-            return new ActionParameters("informfailure");
+            System.out.println("agent fail because node is not running or was killed determining new movement.");
+            return new ActionParameters("die");
+            // System.out.println("Inform node that possibly a node is death: " + ex.getLocalizedMessage());
+            // return new ActionParameters("informfailure");
         }
         /* If termite has a message then react to this message */
         return act;
@@ -68,8 +70,8 @@ public class PheromoneReplicationProgram implements AgentProgram {
         double rand = (double) (Math.random() * sum);
         sum = 0;
         int mov = 0;
-        for (int k = 0; k < pheromone.length; k++) { 
-           sum += pheromone[k];
+        for (int k = 0; k < pheromone.length; k++) {
+            sum += pheromone[k];
             if (rand < sum) {
                 mov = k;
                 break;

@@ -5,24 +5,19 @@
  */
 package unalcol.agents.NetworkSim.util;
 
-import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.UndirectedSparseGraph;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
-import java.io.BufferedWriter;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -30,8 +25,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
@@ -43,7 +36,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import unalcol.agents.NetworkSim.GraphElements;
-import unalcol.agents.NetworkSim.SimulationParameters;
+import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailing;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication;
 
 /**
@@ -53,20 +46,28 @@ import unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication;
 public class DataReplicationNodeFailingObserver implements Observer {
 
     JFrame frame;
+    JFrame frame2;
     BasicVisualizationServer<GraphElements.MyVertex, String> vv = null;
     boolean added = false;
+    boolean isDrawing = false;
     public static boolean isUpdating;
     HashMap<Integer, Double> globalInfo = new HashMap();
     HashMap<Integer, Integer> agentsNumber = new HashMap<>();
     HashMap<Integer, Integer> nodesComplete = new HashMap<>();
     public static int lastagentsAlive = -1;
     public static int lastnodesAlive = -1;
-
+    private long lastAge = -1;
+    
     XYSeries agentsLive;
+    XYSeries nodesLive;
     XYSeriesCollection juegoDatos = new XYSeriesCollection();
 
     public DataReplicationNodeFailingObserver() {
         frame = new JFrame("Simple Graph View");
+        //frame.setSize(1000, 1000);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        frame2 = new JFrame("Agent and Node Number");
         //frame.setSize(1000, 1000);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //frame.getContentPane().add(vv);
@@ -75,18 +76,34 @@ public class DataReplicationNodeFailingObserver implements Observer {
         // frame.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
         isUpdating = false;
         agentsLive = new XYSeries("agentsLive");
+        nodesLive = new XYSeries("nodesLive");
         juegoDatos.addSeries(agentsLive);
+        juegoDatos.addSeries(nodesLive);
+
+        frame2.setLocation(350, 150);
+        frame2.setSize(450, 450);
+        frame2.show();
     }
 
-    @Override
-    public synchronized void update(Observable o, Object arg) {
-        //System.out.println("observer update");
-        if (o instanceof NetworkEnvironmentReplication) {
-            final NetworkEnvironmentReplication n = (NetworkEnvironmentReplication) o;
+    public class FrameGraphUpdater extends Thread {
 
-            if (Math.random() > 0.9) { //Receives to many notify if replication explodes.
+        Graph<GraphElements.MyVertex, String> g;
+        JFrame frame;
+        NetworkEnvironmentReplication n;
 
-                Graph<GraphElements.MyVertex, String> g = n.getTopology();
+        public FrameGraphUpdater(Graph<GraphElements.MyVertex, String> g, JFrame frame, NetworkEnvironmentReplication ne) {
+            this.g = g;
+            this.frame = frame;
+            this.n = ne;
+        }
+
+        public void run() {
+            if (isDrawing) {
+                return;
+            }
+
+            try {
+                isDrawing = true;
                 if (g.getVertexCount() == 0) {
                     System.out.println("no nodes alive.");
                 } else {
@@ -129,7 +146,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
                         @Override
                         public Paint transform(GraphElements.MyVertex i) {
-                            if (n.getLocationAgents().containsValue(i)) {
+                            if (((NetworkEnvironmentPheromoneReplicationNodeFailing)n).isOccuped(i)) {
                                 return Color.YELLOW;
                             }
                             if (n.getVisitedNodes().contains(i)) {
@@ -138,9 +155,9 @@ public class DataReplicationNodeFailingObserver implements Observer {
                             //if(i.getData().size() > 0){
                             //    System.out.println("i"+ i.getData().size());
                             //}
-                            if (i.getData().size() == n.getTopology().getVertices().size()) {
+                            /*if (i.getData().size() == n.getTopology().getVertices().size()) {
                                 return Color.GREEN;
-                            }
+                            }*/
                             return Color.RED;
                         }
                     };
@@ -159,7 +176,31 @@ public class DataReplicationNodeFailingObserver implements Observer {
                         frame.repaint();
                     }
                 }
+            } catch (NullPointerException ex) {
+                System.out.println("exeeeeeeeeeeeeeeeeeeeeeeeeeeeepyion" + ex);
+                isDrawing = false;
             }
+            isDrawing = false;
+        }
+    }
+
+    @Override
+    public synchronized void update(Observable o, Object arg) {
+        //System.out.println("observer update");
+        if (o instanceof NetworkEnvironmentReplication) {
+            final NetworkEnvironmentReplication n = (NetworkEnvironmentReplication) o;
+
+            //if (Math.random() > 0.5) { //Receives to many notify if replication explodes.
+            Graph<GraphElements.MyVertex, String> g = n.getTopology();
+/*
+            if(n.getAge() % 5 == 0 && n.getAge() != lastAge) {
+                if (!isDrawing) {
+                    (new FrameGraphUpdater(g, frame, n)).start();
+                }
+                lastAge = n.getAge();
+            }
+*/
+            //}
             //System.out.println("World age" + n.getAge() + ", info:" + n.getAmountGlobalInfo());
             if (!globalInfo.containsKey(n.getAge())) {
                 //System.out.println("n" + n.getAge() + ", al:" + n.getAgentsLive());
@@ -182,8 +223,8 @@ public class DataReplicationNodeFailingObserver implements Observer {
             if (areAllAgentsDead) {
                 System.out.println("are all death: " + areAllAgentsDead);
             }*/
-            int agentsAlive = n.getAgentsAlive();
-            int nodesAlive = n.getNodesAlive();
+            int agentsAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing)n).getAgentsAlive();
+            int nodesAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing)n).getNodesAlive();
             if (lastnodesAlive == -1 || nodesAlive != lastnodesAlive) {
                 System.out.println("Nodes alive: " + nodesAlive);
                 lastnodesAlive = nodesAlive;
@@ -194,6 +235,10 @@ public class DataReplicationNodeFailingObserver implements Observer {
                 System.out.println("Agents alive: " + agentsAlive);
                 lastagentsAlive = agentsAlive;
             }
+
+            agentsLive.add(n.getAge(), agentsAlive);
+            nodesLive.add(n.getAge(), nodesAlive);
+            frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
             /*  
             //if ((SimulationParameters.maxIter == -1 && n.nodesComplete()) || (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) || (!SimulationParameters.activateReplication.equals("replalgon") && areAllAgentsDead)) {
 //                //StatsTemperaturesMapImpl sti = new StatsTemperaturesMapImpl("experiment-p-" + ((World) obs).getAgents().size() + "- pf-" + pf + ".csv");
@@ -369,6 +414,24 @@ public class DataReplicationNodeFailingObserver implements Observer {
             Logger.getLogger(DataReplicationNodeFailingObserver.class
                     .getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public BufferedImage creaImagen() {
+        JFreeChart chart = ChartFactory.createXYLineChart(
+                "ssss", "Round number", "Agents",
+                juegoDatos, PlotOrientation.VERTICAL,
+                true, true, false);
+        /*
+         JFreeChart chart =
+         ChartFactory.createTimeSeriesChart("Sesiones en Adictos al Trabajo"
+         "Meses", "Sesiones", juegoDatos,
+         false,
+         false,
+         true // Show legend
+         );
+         */
+        BufferedImage image = chart.createBufferedImage(450, 450);
+        return image;
     }
 
 }

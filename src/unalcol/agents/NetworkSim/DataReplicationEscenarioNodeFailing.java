@@ -5,7 +5,16 @@
  */
 package unalcol.agents.NetworkSim;
 
+import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
+import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.SparseGraph;
+import edu.uci.ics.jung.graph.UndirectedSparseGraph;
+import edu.uci.ics.jung.visualization.BasicVisualizationServer;
+import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Paint;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -18,6 +27,10 @@ import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 import unalcol.agents.simulate.util.SimpleLanguage;
 import java.util.Vector;
+import javax.swing.JFrame;
+import org.apache.commons.collections15.Transformer;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailing;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication;
 import unalcol.agents.NetworkSim.environment.NetworkMessageBuffer;
@@ -53,6 +66,9 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
     private Observer graphVisualization;
     ArrayList<GraphElements.MyVertex> locations;
     int indexLoc;
+    boolean added = false;
+    JFrame frame;
+    private boolean isDrawing = false;
 
     /**
      * Creates a simulation without graphic interface
@@ -71,6 +87,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         System.out.println("Pf: " + pf);
         System.out.println("Movement: " + SimulationParameters.motionAlg);
         indexLoc = 0;
+        frame = new JFrame("Simple Graph View");
+        //frame.setSize(1000, 1000);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
     }
 
     /**
@@ -92,9 +112,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         String[] nodeActions = {"communicate", "die"};
         SimpleLanguage nodeLanguaje = new SimpleLanguage(nodePercepts, nodeActions);
         NodeFailingProgram np = new NodeFailingProgram(SimulationParameters.npf);
-       // NodeFailingProgram np = new NodeFailingProgram((float)Math.random()*SimulationParameters.npf);
+        // NodeFailingProgram np = new NodeFailingProgram((float)Math.random()*SimulationParameters.npf);
 
-       
         //report = new reportHealingProgram(population, probFailure, this);
         //greport = new GraphicReportHealingObserver(probFailure);
         //Create graph
@@ -145,11 +164,12 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
             a.setAttribute("infi", new ArrayList<String>());
             NetworkMessageBuffer.getInstance().createBuffer(a.getId());
             agents.add(a);
-            String[] msgnode = new String[4];
+            
+            /*String[] msgnode = new String[4];
             msgnode[0] = "arrived";
             msgnode[1] = String.valueOf(a.getId());
             msgnode[2] = String.valueOf(a.getIdFather());
-            NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
+            NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);*/
             //Initialize implies arrival message from nodes!
         }
 
@@ -162,6 +182,106 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         executions++;
     }
 
+    public class FrameGraphUpdater extends Thread {
+
+        Graph<GraphElements.MyVertex, String> g;
+        JFrame frame;
+        NetworkEnvironmentReplication n;
+
+        public FrameGraphUpdater(Graph<GraphElements.MyVertex, String> g, JFrame frame, NetworkEnvironmentReplication ne) {
+            this.g = g;
+            this.frame = frame;
+            this.n = ne;
+        }
+
+        public void run() {
+            if (isDrawing) {
+                return;
+            }
+            //System.out.println("n visited nodes size" + n.visitedNodes.size());
+            try {
+                //    isDrawing = true;
+                if (g.getVertexCount() == 0) {
+                    System.out.println("no nodes alive.");
+                    return;
+                } else {
+                    Layout<GraphElements.MyVertex, String> layout = null;
+                    /*
+                switch (SimulationParameters.graphMode) {
+                    case "scalefree":
+                        layout = new ISOMLayout<>(g);
+                        break;
+                    case "smallworld":
+                        layout = new CircleLayout<>(g);
+                        break;
+                    case "community":
+                        layout = new CircleLayout<>(g);
+                        break;
+                    case "kleinberg":
+                        layout = new CircleLayout<>(g);
+                        break;
+                    case "circle":
+                        layout = new ISOMLayout<>(g);
+                        break;
+                    case "line":
+                        layout = new ISOMLayout<>(g);
+                        break;
+                    case "lattice":
+                        layout = new ISOMLayout<>(g);
+                        break;
+                    default:
+                        layout = new ISOMLayout<>(g);
+                        break;
+                }*/
+                    layout = new ISOMLayout<>(g);
+                    //layout = new CircleLayout<>(g);
+
+                    BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
+                    vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
+
+                    // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
+                    // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
+                    Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
+                        @Override
+                        public Paint transform(GraphElements.MyVertex i) {
+                            if (((NetworkEnvironmentPheromoneReplicationNodeFailing)n).isOccuped(i)) {
+                                return Color.YELLOW;
+                            }
+                            
+                            if (i.getStatus() != null && i.getStatus().equals("visited")) {
+                                return Color.BLUE;
+                            }
+                            //if(i.getData().size() > 0){
+                            //    System.out.println("i"+ i.getData().size());
+                            //}
+                            /*if (i.getData().size() == n.getTopology().getVertices().size()) {
+                                return Color.GREEN;
+                            }*/
+                            return Color.RED;
+                        }
+                    };
+
+                    vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+                    //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
+                    //n.setVV(vv);
+                    vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
+                    if (!added) {
+                        frame.getContentPane().add(vv);
+                        added = true;
+                        frame.pack();
+                        frame.setVisible(true);
+                    } else {
+                        frame.repaint();
+                    }
+                }
+            } catch (NullPointerException ex) {
+                System.out.println("exeeeeeeeeeeeeeeeeeeeeeeeeeeeepyion" + ex);
+                isDrawing = false;
+            }
+            isDrawing = false;
+        }
+    }
+
     /**
      * Runs a simulation.
      *
@@ -170,8 +290,12 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
     public void run() {
         try {
             while (true) { //!world.isFinished()) {
-                Thread.sleep(30);
+                Thread.sleep(50);
 
+                if (!isDrawing) {
+                   (new FrameGraphUpdater(world.getTopology(), frame, world)).start();
+                }
+                //System.out.println("go");
                 //System.out.println("halo");
                 /* world.updateSandC();
             world.calculateGlobalInfo();
@@ -202,8 +326,11 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
             }
         } catch (InterruptedException e) {
             System.out.println("interrupted!");
+        } catch (NullPointerException e) {
+            System.out.println("interrupted!");
         }
         /* System.out.println("End WorldThread");*/
+
     }
 
     public void loadLocations() {

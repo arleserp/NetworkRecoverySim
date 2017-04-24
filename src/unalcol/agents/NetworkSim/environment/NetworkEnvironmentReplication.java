@@ -30,7 +30,7 @@ public class NetworkEnvironmentReplication extends Environment {
      */
     public int getTotalAgents() {
         totalAgents = 0;
-        Vector<Agent> agents1 = (Vector<Agent>)this.getAgents().clone();
+        Vector<Agent> agents1 = (Vector<Agent>) this.getAgents().clone();
         for (Agent a : agents1) {
             if (a instanceof MobileAgent) {
                 totalAgents++;
@@ -88,6 +88,7 @@ public class NetworkEnvironmentReplication extends Environment {
 
     public int getCompletionPercentage() {
         int completed = 0;
+        
         for (GraphElements.MyVertex v : topology.getVertices()) {
             if (v.getData().size() == topology.getVertices().size()) {
                 completed++;
@@ -117,7 +118,8 @@ public class NetworkEnvironmentReplication extends Environment {
         MobileAgent a = (MobileAgent) agent;
         ActionParameters ac = (ActionParameters) action;
         currentNode = a.getLocation();
-        visitedNodes.add(currentNode);
+        a.getLocation().setStatus("visited");
+        //visitedNodes.add(currentNode);
 
         getLocationAgents().put(a, a.getLocation());
         /**
@@ -211,7 +213,7 @@ public class NetworkEnvironmentReplication extends Environment {
 
             //System.out.println("sense - topology " + topology);
             //Load neighbors 
-            if (topology.containsVertex(a.getLocation())) {
+            if (a.status != Action.DIE && topology.containsVertex(a.getLocation())) {
                 p.setAttribute("neighbors", topology.getNeighbors(a.getLocation()));
                 //System.out.println("agent" + anAgent.getId() + "- neighbor: " +  getTopology().getNeighbors(anAgent.getLocation()));
                 //Load data in Agent
@@ -224,7 +226,7 @@ public class NetworkEnvironmentReplication extends Environment {
                 a.getLocation().saveAgentInfo(a.getData(), a.getId(), a.getRound(), age);
                 //System.out.println("agent info size:" + anAgent.getData().size());
             } else {
-                System.out.println("no vertex alive! wat?");
+                System.out.println("no vertex alive! wat?" + a.getId() + " is dead: " + (a.status == Action.DIE) +", loc" + a.getLocation());
                 p.setAttribute("nodedeath", a.getLocation());
             }
         }
@@ -589,6 +591,7 @@ public class NetworkEnvironmentReplication extends Environment {
         }
         return nodesAlive;
     }
+
 
     public int getAgentsAlive() {
         int agentsAlive = 0;
