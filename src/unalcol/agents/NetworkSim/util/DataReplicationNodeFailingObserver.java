@@ -46,7 +46,7 @@ import unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication;
 public class DataReplicationNodeFailingObserver implements Observer {
 
     JFrame frame;
-    JFrame frame2;
+
     BasicVisualizationServer<GraphElements.MyVertex, String> vv = null;
     boolean added = false;
     boolean isDrawing = false;
@@ -58,16 +58,14 @@ public class DataReplicationNodeFailingObserver implements Observer {
     public static int lastnodesAlive = -1;
     private long lastAge = -1;
     
-    XYSeries agentsLive;
-    XYSeries nodesLive;
-    XYSeriesCollection juegoDatos = new XYSeriesCollection();
+   
 
     public DataReplicationNodeFailingObserver() {
         frame = new JFrame("Simple Graph View");
         //frame.setSize(1000, 1000);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        frame2 = new JFrame("Agent and Node Number");
+        
         //frame.setSize(1000, 1000);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //frame.getContentPane().add(vv);
@@ -75,14 +73,6 @@ public class DataReplicationNodeFailingObserver implements Observer {
         //frame.setLocationRelativeTo(null);
         // frame.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
         isUpdating = false;
-        agentsLive = new XYSeries("agentsLive");
-        nodesLive = new XYSeries("nodesLive");
-        juegoDatos.addSeries(agentsLive);
-        juegoDatos.addSeries(nodesLive);
-
-        frame2.setLocation(350, 150);
-        frame2.setSize(450, 450);
-        frame2.show();
     }
 
     public class FrameGraphUpdater extends Thread {
@@ -204,9 +194,9 @@ public class DataReplicationNodeFailingObserver implements Observer {
             //System.out.println("World age" + n.getAge() + ", info:" + n.getAmountGlobalInfo());
             if (!globalInfo.containsKey(n.getAge())) {
                 //System.out.println("n" + n.getAge() + ", al:" + n.getAgentsLive());
-                synchronized (DataReplicationNodeFailingObserver.class) {
+               /* synchronized (DataReplicationNodeFailingObserver.class) {
                     agentsLive.add(n.getAge(), n.getAgentsLive());
-                }
+                }*/
 
                 globalInfo.put(n.getAge(), n.getAmountGlobalInfo());
             }
@@ -236,9 +226,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                 lastagentsAlive = agentsAlive;
             }
 
-            agentsLive.add(n.getAge(), agentsAlive);
-            nodesLive.add(n.getAge(), nodesAlive);
-            frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
+            
             /*  
             //if ((SimulationParameters.maxIter == -1 && n.nodesComplete()) || (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) || (!SimulationParameters.activateReplication.equals("replalgon") && areAllAgentsDead)) {
 //                //StatsTemperaturesMapImpl sti = new StatsTemperaturesMapImpl("experiment-p-" + ((World) obs).getAgents().size() + "- pf-" + pf + ".csv");
@@ -395,43 +383,5 @@ public class DataReplicationNodeFailingObserver implements Observer {
 
     }
 
-    public void saveImage(String filename) {
-        FileOutputStream output;
-        JFreeChart chart = ChartFactory.createXYLineChart(
-                "Agents Live", "round number", "agents",
-                juegoDatos, PlotOrientation.VERTICAL,
-                true, true, false);
-
-        try {
-            output = new FileOutputStream(filename + ".jpg");
-            ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, 400, 400, null);
-
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(DataReplicationNodeFailingObserver.class
-                    .getName()).log(Level.SEVERE, null, ex);
-
-        } catch (IOException ex) {
-            Logger.getLogger(DataReplicationNodeFailingObserver.class
-                    .getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    public BufferedImage creaImagen() {
-        JFreeChart chart = ChartFactory.createXYLineChart(
-                "ssss", "Round number", "Agents",
-                juegoDatos, PlotOrientation.VERTICAL,
-                true, true, false);
-        /*
-         JFreeChart chart =
-         ChartFactory.createTimeSeriesChart("Sesiones en Adictos al Trabajo"
-         "Meses", "Sesiones", juegoDatos,
-         false,
-         false,
-         true // Show legend
-         );
-         */
-        BufferedImage image = chart.createBufferedImage(450, 450);
-        return image;
-    }
-
+    
 }

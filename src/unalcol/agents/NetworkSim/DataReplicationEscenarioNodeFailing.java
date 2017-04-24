@@ -15,6 +15,10 @@ import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
+import java.awt.image.BufferedImage;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,8 +31,14 @@ import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 import unalcol.agents.simulate.util.SimpleLanguage;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import org.apache.commons.collections15.Transformer;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailing;
@@ -68,7 +78,11 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
     int indexLoc;
     boolean added = false;
     JFrame frame;
+    JFrame frame2;
     private boolean isDrawing = false;
+    XYSeries agentsLive;
+    XYSeries nodesLive;
+    XYSeriesCollection juegoDatos = new XYSeriesCollection();
 
     /**
      * Creates a simulation without graphic interface
@@ -90,7 +104,14 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         frame = new JFrame("Simple Graph View");
         //frame.setSize(1000, 1000);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+        frame2 = new JFrame("Agent and Node Number");
+        agentsLive = new XYSeries("agentsLive");
+        nodesLive = new XYSeries("nodesLive");
+        juegoDatos.addSeries(agentsLive);
+        juegoDatos.addSeries(nodesLive);
+        frame2.setLocation(350, 150);
+        frame2.setSize(450, 450);
+        frame2.show();
     }
 
     /**
@@ -164,7 +185,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
             a.setAttribute("infi", new ArrayList<String>());
             NetworkMessageBuffer.getInstance().createBuffer(a.getId());
             agents.add(a);
-            
+
             /*String[] msgnode = new String[4];
             msgnode[0] = "arrived";
             msgnode[1] = String.valueOf(a.getId());
@@ -201,12 +222,12 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
             //System.out.println("n visited nodes size" + n.visitedNodes.size());
             try {
                 //    isDrawing = true;
-                if (g.getVertexCount() == 0) {
-                    System.out.println("no nodes alive.");
-                    return;
-                } else {
-                    Layout<GraphElements.MyVertex, String> layout = null;
-                    /*
+                //if (g.getVertexCount() == 0) {
+                //    System.out.println("no nodes alive.");
+                //    return;
+                //} else {
+                Layout<GraphElements.MyVertex, String> layout = null;
+                /*
                 switch (SimulationParameters.graphMode) {
                     case "scalefree":
                         layout = new ISOMLayout<>(g);
@@ -233,49 +254,54 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                         layout = new ISOMLayout<>(g);
                         break;
                 }*/
-                    layout = new ISOMLayout<>(g);
-                    //layout = new CircleLayout<>(g);
+                layout = new ISOMLayout<>(g);
+                //layout = new CircleLayout<>(g);
 
-                    BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
-                    vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
+                BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
+                vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
 
-                    // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
-                    // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
-                    Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
-                        @Override
-                        public Paint transform(GraphElements.MyVertex i) {
-                            if (((NetworkEnvironmentPheromoneReplicationNodeFailing)n).isOccuped(i)) {
-                                return Color.YELLOW;
-                            }
-                            
-                            if (i.getStatus() != null && i.getStatus().equals("visited")) {
-                                return Color.BLUE;
-                            }
-                            //if(i.getData().size() > 0){
-                            //    System.out.println("i"+ i.getData().size());
-                            //}
-                            /*if (i.getData().size() == n.getTopology().getVertices().size()) {
+                // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
+                // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
+                Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
+                    @Override
+                    public Paint transform(GraphElements.MyVertex i) {
+                        if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
+                            return Color.YELLOW;
+                        }
+
+                        if (i.getStatus() != null && i.getStatus().equals("visited")) {
+                            return Color.BLUE;
+                        }
+                        //if(i.getData().size() > 0){
+                        //    System.out.println("i"+ i.getData().size());
+                        //}
+                        /*if (i.getData().size() == n.getTopology().getVertices().size()) {
                                 return Color.GREEN;
                             }*/
-                            return Color.RED;
-                        }
-                    };
-
-                    vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-                    //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
-                    //n.setVV(vv);
-                    vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
-                    if (!added) {
-                        frame.getContentPane().add(vv);
-                        added = true;
-                        frame.pack();
-                        frame.setVisible(true);
-                    } else {
-                        frame.repaint();
+                        return Color.RED;
                     }
+                };
+
+                vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+                //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
+                //n.setVV(vv);
+                vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
+                if (!added) {
+                    frame.getContentPane().add(vv);
+                    added = true;
+                    frame.pack();
+                    frame.setVisible(true);
+                } else {
+                    frame.repaint();
                 }
+                //}
+                int agentsAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getAgentsAlive();
+                int nodesAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getNodesAlive();
+                agentsLive.add(n.getAge(), agentsAlive);
+                nodesLive.add(n.getAge(), nodesAlive);
+                frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
             } catch (NullPointerException ex) {
-                System.out.println("exeeeeeeeeeeeeeeeeeeeeeeeeeeeepyion" + ex);
+                System.out.println("exception drawing graph" + ex.getLocalizedMessage());
                 isDrawing = false;
             }
             isDrawing = false;
@@ -293,7 +319,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 Thread.sleep(50);
 
                 if (!isDrawing) {
-                   (new FrameGraphUpdater(world.getTopology(), frame, world)).start();
+                    (new FrameGraphUpdater(world.getTopology(), frame, world)).start();
                 }
                 //System.out.println("go");
                 //System.out.println("halo");
@@ -352,6 +378,45 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
             Collection E = g.getVertices();
             return (GraphElements.MyVertex) E.toArray()[pos];
         }
+    }
+
+    public void saveImage(String filename) {
+        FileOutputStream output;
+        JFreeChart chart = ChartFactory.createXYLineChart(
+                "Agents Live", "round number", "agents",
+                juegoDatos, PlotOrientation.VERTICAL,
+                true, true, false);
+
+        try {
+            output = new FileOutputStream(filename + ".jpg");
+            ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, 400, 400, null);
+
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(DataReplicationNodeFailingObserver.class
+                    .getName()).log(Level.SEVERE, null, ex);
+
+        } catch (IOException ex) {
+            Logger.getLogger(DataReplicationNodeFailingObserver.class
+                    .getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public BufferedImage creaImagen() {
+        JFreeChart chart = ChartFactory.createXYLineChart(
+                "ssss", "Round number", "Agents",
+                juegoDatos, PlotOrientation.VERTICAL,
+                true, true, false);
+        /*
+         JFreeChart chart =
+         ChartFactory.createTimeSeriesChart("Sesiones en Adictos al Trabajo"
+         "Meses", "Sesiones", juegoDatos,
+         false,
+         false,
+         true // Show legend
+         );
+         */
+        BufferedImage image = chart.createBufferedImage(450, 450);
+        return image;
     }
 
 }

@@ -46,7 +46,7 @@ public class Node extends Agent {
     private HashMap<String, ArrayList<Integer>> nodeTimeouts;
     private ArrayList<Integer> nodeTimeoutsArrival;
 
-    private int INITIAL_TIMEOUT = 30;
+    private int INITIAL_TIMEOUT = 10;
     private int WINDOW_SIZE = 10;
     private HashMap<String, Object> networkdata;
     private HashMap<Object, ArrayList> pending;
@@ -367,8 +367,12 @@ public class Node extends Agent {
                         getNodeTimeouts().put(nodeId, new ArrayList());
                         getNodeTimeouts().get(nodeId).add(INITIAL_TIMEOUT);
                     }
+
+                    if (getNodeTimeouts().get(nodeId).size() >= WINDOW_SIZE) {
+                        nodeTimeouts.put(nodeId, new ArrayList<>(nodeTimeouts.get(nodeId).subList(nodeTimeouts.size() - WINDOW_SIZE, nodeTimeouts.get(nodeId).size() - 1)));
+                    }
                     getNodeTimeouts().get(nodeId).add(diff);
-                    System.out.println("size:" + nodeId + "+ ");
+                    System.out.println("calculatetimeout size getNodeTimeOuts():" + nodeId + "+" + getNodeTimeouts().get(nodeId).size());
                     //}
                     //System.out.println("node:" + getVertex().getName() + ", antes:" + getLastMessageArrival());
                     iterM.remove();
@@ -606,7 +610,13 @@ public class Node extends Agent {
             int k = Key.getKey();
             if (responsibleAgentsArrival.containsKey(k) && lastStartDeparting.containsKey(k)) {
                 int diff = Math.abs(responsibleAgentsArrival.get(k) - lastStartDeparting.get(k));
+
+                if (nodeTimeoutsArrival.size() >= WINDOW_SIZE) {
+                    nodeTimeoutsArrival = new ArrayList<>(nodeTimeoutsArrival.subList(nodeTimeoutsArrival.size() - WINDOW_SIZE, nodeTimeoutsArrival.size() - 1));
+                }
+
                 nodeTimeoutsArrival.add(diff);
+                System.out.println("nodeTimeoutsArrival.size=" + nodeTimeoutsArrival.size());
                 iter.remove();
                 lastStartDeparting.remove(k);
             }

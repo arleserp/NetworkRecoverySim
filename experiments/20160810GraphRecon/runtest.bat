@@ -1,1 +1,0 @@
-java  -Xmx4200m -classpath NetworkSimulator.jar unalcol.agents.NetworkSim.DataReplicationGraphBuilderMain load smallworld+v+100+beta+0.1+degree+2.graph 10 0 carriers smallworld+v+100+beta+0.1+degree+2.loc -1 
