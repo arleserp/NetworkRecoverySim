@@ -83,6 +83,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
     XYSeries agentsLive;
     XYSeries nodesLive;
     XYSeriesCollection juegoDatos = new XYSeriesCollection();
+    FrameGraphUpdater fgup = null;
 
     /**
      * Creates a simulation without graphic interface
@@ -216,18 +217,26 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         }
 
         public void run() {
-            if (isDrawing) {
-                return;
-            }
-            //System.out.println("n visited nodes size" + n.visitedNodes.size());
-            try {
-                //    isDrawing = true;
-                //if (g.getVertexCount() == 0) {
-                //    System.out.println("no nodes alive.");
-                //    return;
-                //} else {
-                Layout<GraphElements.MyVertex, String> layout = null;
-                /*
+            System.out.println("call runnn!!!");
+            while (true) {
+                try {
+                    //!world.isFinished()) {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(DataReplicationEscenarioNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                if (isDrawing) {
+                    return;
+                }
+                //System.out.println("n visited nodes size" + n.visitedNodes.size());
+                //try {
+                isDrawing = true;
+                if (g.getVertexCount() == 0) {
+                    System.out.println("no nodes alive.");
+                    return;
+                } else {
+                    Layout<GraphElements.MyVertex, String> layout = null;
+                    /*
                 switch (SimulationParameters.graphMode) {
                     case "scalefree":
                         layout = new ISOMLayout<>(g);
@@ -254,57 +263,65 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                         layout = new ISOMLayout<>(g);
                         break;
                 }*/
-                layout = new ISOMLayout<>(g);
-                //layout = new CircleLayout<>(g);
+                    layout = new ISOMLayout<>(g);
+                    //layout = new CircleLayout<>(g);
 
-                BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
-                vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
+                    BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
+                    vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
 
-                // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
-                // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
-                Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
-                    @Override
-                    public Paint transform(GraphElements.MyVertex i) {
-                        if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
-                            return Color.YELLOW;
-                        }
+                    // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
+                    // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
+                    Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
+                        @Override
+                        public Paint transform(GraphElements.MyVertex i) {
+                            if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
+                                return Color.YELLOW;
+                            }
 
-                        if (i.getStatus() != null && i.getStatus().equals("visited")) {
-                            return Color.BLUE;
-                        }
-                        //if(i.getData().size() > 0){
-                        //    System.out.println("i"+ i.getData().size());
-                        //}
-                        /*if (i.getData().size() == n.getTopology().getVertices().size()) {
+                            if (i.getStatus() != null && i.getStatus().equals("visited")) {
+                                return Color.BLUE;
+                            }
+                            //if(i.getData().size() > 0){
+                            //    System.out.println("i"+ i.getData().size());
+                            //}
+                            /*if (i.getData().size() == n.getTopology().getVertices().size()) {
                                 return Color.GREEN;
                             }*/
-                        return Color.RED;
-                    }
-                };
+                            return Color.RED;
+                        }
+                    };
 
-                vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-                //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
-                //n.setVV(vv);
-                vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
-                if (!added) {
-                    frame.getContentPane().add(vv);
-                    added = true;
-                    frame.pack();
-                    frame.setVisible(true);
-                } else {
-                    frame.repaint();
+                    vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+                    //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
+                    //n.setVV(vv);
+                    vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
+                    if (!added) {
+                        frame.getContentPane().add(vv);
+                        added = true;
+                        frame.pack();
+                        frame.setVisible(true);
+                    } else {
+                        frame.repaint();
+                    }
+                    //}
+
+                    int agentsAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getAgentsAlive();
+                    int nodesAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getNodesAlive();
+                    //System.out.println("n" + n.getAge() + "," + agentsAlive);
+                    //System.out.println("n" + n.getAge() + "," + nodesAlive);
+
+                    if (n != null) {
+                        agentsLive.add(n.getAge(), agentsAlive);
+                        nodesLive.add(n.getAge(), nodesAlive);
+                    }
+                    frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
+                    /*} catch (NullPointerException ex) {
+                System.out.println("exception drawing graph: " + ex.getLocalizedMessage());
+                isDrawing = false;
+            }*/
                 }
-                //}
-                int agentsAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getAgentsAlive();
-                int nodesAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getNodesAlive();
-                agentsLive.add(n.getAge(), agentsAlive);
-                nodesLive.add(n.getAge(), nodesAlive);
-                frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
-            } catch (NullPointerException ex) {
-                System.out.println("exception drawing graph" + ex.getLocalizedMessage());
                 isDrawing = false;
             }
-            isDrawing = false;
         }
     }
 
@@ -316,10 +333,11 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
     public void run() {
         try {
             while (true) { //!world.isFinished()) {
-                Thread.sleep(50);
+                Thread.sleep(100);
 
-                if (!isDrawing) {
-                    (new FrameGraphUpdater(world.getTopology(), frame, world)).start();
+                if (fgup == null) {
+                    fgup = new FrameGraphUpdater(world.getTopology(), frame, world);
+                    fgup.start();
                 }
                 //System.out.println("go");
                 //System.out.println("halo");

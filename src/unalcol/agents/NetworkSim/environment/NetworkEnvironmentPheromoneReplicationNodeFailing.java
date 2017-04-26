@@ -339,7 +339,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     @Override
     public boolean act(Agent agent, Action action) {
         if (agent instanceof MobileAgent) {
-            agent.sleep(30);
+            agent.sleep(10);
             boolean flag = (action != null);
             MobileAgent a = (MobileAgent) agent;
 
@@ -366,19 +366,18 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                 Node c = getNode(a.getLocation().getName());
 
                 if (c != null) {
-                    ArrayList respAg = new ArrayList();
+                   /* ArrayList respAg = new ArrayList();
                     ArrayList respAr = new ArrayList();
                     if (c.getResponsibleAgents() != null) {
-                        respAg = new ArrayList(c.getResponsibleAgents().values());
+                        
+                        respAg = new ArrayList(((HashMap<Integer,Integer>)c.getResponsibleAgents().clone()).values());
                     }
-
                     if (c.getResponsibleAgentsArrival() != null) {
                         respAr = new ArrayList(((HashMap) c.getResponsibleAgentsArrival().clone()).values());
                     }
                     respAg.removeAll(respAr);
-                    respAg.addAll(respAr);
-
-                    a.getRespAgentsBkp().put(a.getLocation().getName(), respAg.size());
+                    respAg.addAll(respAr);*/
+                    a.getRespAgentsBkp().put(a.getLocation().getName(), c.getResponsibleAgentsArrival().size());
                     a.getLocalNetwork().add(nodeNet);
                 }
                 //let only nhops as local information by agent
@@ -545,7 +544,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             return flag;
         }
         if (agent instanceof Node) {
-            agent.sleep(50);
+            agent.sleep(30);
             Node n = (Node) agent;
             //System.out.println("thread of node " + n.getVertex().getName() + "ph: " + n.getVertex().getPh());
             n.incRounds();
@@ -605,7 +604,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                 } else {
                                     //System.out.println("delete!!!!");
                                     incrementFalsePossitives();
-                                    deleteNextReplica(n);
+                                   // deleteNextReplica(n);
                                 }
                             }
                         }
@@ -738,7 +737,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
 
                 if (n.getLastAgentDeparting().containsKey(k) && Math.abs((n.getRounds() - n.getLastAgentArrive(k))) > (estimatedTimeoutArrival + 3 * stdDevTimeoutArrival)) { //this is not the expresion
                     AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
-
+                    System.out.println("create new agent arrival!!!!");
                     int newAgentID = agents.size();
                     MobileAgent a = new MobileAgent(program, newAgentID);
 

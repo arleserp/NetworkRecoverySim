@@ -48,9 +48,9 @@ public class PheromoneReplicationProgram implements AgentProgram {
             act.setAttribute("pf", pf);
         } catch (Exception ex) {
             System.out.println("agent fail because node is not running or was killed determining new movement.");
-            return new ActionParameters("die");
+            //return new ActionParameters("die");
             // System.out.println("Inform node that possibly a node is death: " + ex.getLocalizedMessage());
-            // return new ActionParameters("informfailure");
+            return new ActionParameters("informfailure");
         }
         /* If termite has a message then react to this message */
         return act;
@@ -88,14 +88,14 @@ public class PheromoneReplicationProgram implements AgentProgram {
         if (Math.random() <= q0) {
 
             for (int k = 0; k < vs.size(); k++) {
-                if (((GraphElements.MyVertex) vs.toArray()[k]).getPh() != -1) {
+                if (((GraphElements.MyVertex) vs.toArray()[k]) != null && ((GraphElements.MyVertex) vs.toArray()[k]).getPh() != -1) {
                     dirPos = k;
                     break;
                 }
             }
 
             for (int k = dirPos + 1; k < vs.size(); k++) {
-                if (((GraphElements.MyVertex) vs.toArray()[k]).getPh() != -1 && ((GraphElements.MyVertex) vs.toArray()[dirPos]).getPh() > ((GraphElements.MyVertex) vs.toArray()[k]).getPh()) {
+                if (((GraphElements.MyVertex) vs.toArray()[k]) != null && ((GraphElements.MyVertex) vs.toArray()[k]).getPh() != -1 && ((GraphElements.MyVertex) vs.toArray()[dirPos]).getPh() > ((GraphElements.MyVertex) vs.toArray()[k]).getPh()) {
                     dirPos = k;
                 }
             }
@@ -104,7 +104,7 @@ public class PheromoneReplicationProgram implements AgentProgram {
             float min = ((GraphElements.MyVertex) vs.toArray()[dirPos]).getPh();
             temp.add(dirPos);
             for (int k = 0; k < vs.size(); k++) {
-                if (((GraphElements.MyVertex) vs.toArray()[k]).getPh() == min) {
+                if (((GraphElements.MyVertex) vs.toArray()[k]) != null && ((GraphElements.MyVertex) vs.toArray()[k]).getPh() == min) {
                     temp.add(k);
                 }
             }
@@ -117,7 +117,11 @@ public class PheromoneReplicationProgram implements AgentProgram {
             //Idea is choose direction with the less amount of pheromone
             float[] phinv = new float[vs.size()];
             for (int i = 0; i < vs.size(); i++) {
-                phinv[i] = 1 - ((GraphElements.MyVertex) vs.toArray()[i]).getPh();
+                if (((GraphElements.MyVertex) vs.toArray()[i]) == null) {
+                    phinv[i] = 0;
+                } else {
+                    phinv[i] = 1 - ((GraphElements.MyVertex) vs.toArray()[i]).getPh();
+                }
             }
             dirPos = Roulette(phinv);
             //dirPos = LevyWalk(proximitySensor, termitesNeighbor);

@@ -181,7 +181,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
             final NetworkEnvironmentReplication n = (NetworkEnvironmentReplication) o;
 
             //if (Math.random() > 0.5) { //Receives to many notify if replication explodes.
-            Graph<GraphElements.MyVertex, String> g = n.getTopology();
+           // Graph<GraphElements.MyVertex, String> g = n.getTopology();
 /*
             if(n.getAge() % 5 == 0 && n.getAge() != lastAge) {
                 if (!isDrawing) {
