@@ -112,8 +112,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     }
 
     private void createNewAgents(Integer number, Node n) {
-        System.out.println("create new " + number + " agents in node" + n.getVertex().getName());
+        
         for (int i = 0; i < number; i++) {
+            System.out.println("create new " + number + " agents in node" + n.getVertex().getName());
             AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
             int newAgentID = agents.size();
             MobileAgent a = new MobileAgent(program, newAgentID);
@@ -136,11 +137,11 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             setTotalAgents(getTotalAgents() + 1);
             agentsAlive.add(a);
 
-            String[] msgnode = new String[4];
+            /*String[] msgnode = new String[4];
             msgnode[0] = "arrived";
             msgnode[1] = String.valueOf(a.getId());
             msgnode[2] = String.valueOf(a.getIdFather());
-            NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
+            NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);*/
             t.start();
         }
     }
@@ -726,8 +727,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         synchronized (NetworkEnvironmentPheromoneReplicationNodeFailing.class) {
             Iterator<Map.Entry<Integer, Integer>> iter = n.getResponsibleAgentsArrival().entrySet().iterator();
             //System.out.println(n.getVertex().getName() + " hashmap " + n.getResponsibleAgents());
-            int estimatedTimeoutArrival = 0;
-            int stdDevTimeoutArrival = 0;
+            double estimatedTimeoutArrival = 0;
+            double stdDevTimeoutArrival = 0;
             while (iter.hasNext()) {
                 //Key: agentId|roundNumber
                 Map.Entry<Integer, Integer> Key = iter.next();
@@ -736,9 +737,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                 stdDevTimeoutArrival = (int) n.getStdDevTimeoutArrival();
 
                 if (n.getLastAgentDeparting().containsKey(k) && Math.abs((n.getRounds() - n.getLastAgentArrive(k))) > (estimatedTimeoutArrival + 3 * stdDevTimeoutArrival)) { //this is not the expresion
-                    AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
+                   // AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
                     System.out.println("create new agent arrival!!!!");
-                    int newAgentID = agents.size();
+                    /*int newAgentID = agents.size();
                     MobileAgent a = new MobileAgent(program, newAgentID);
 
                     NetworkMessageBuffer.getInstance().createBuffer(newAgentID);
@@ -751,7 +752,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     } else {
                         a.setIdFather(n.getResponsibleAgents().get(k));
                     }*/
-                    a.setIdFather(-1);
+                    /*a.setIdFather(-1);
                     a.setRound(super.getAge());
                     this.agents.add(a);
 
@@ -770,7 +771,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
 
                     NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
                      */
-                    t.start();
+                    //t.start();
+                    createNewAgents(1, n);
                     iter.remove();
                 }
             }
@@ -803,8 +805,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     }*/
                     System.out.println("nodep: " + n.getVertex().getName() + ", estimatedTimeout: " + estimatedTimeout + ", lastAgentDep: " + n.getLastAgentDeparting(k) + ", node rounds: " + n.getRounds());
                     System.out.println("create new agent instance..." + n.getVertex().getName());
+                    createNewAgents(1, n);
                     //System.out.println("Get 0" + );
-                    AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
+/*                    AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
 
                     int newAgentID = agents.size();
                     MobileAgent a = new MobileAgent(program, newAgentID);
@@ -839,7 +842,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     msgnode[2] = String.valueOf(a.getIdFather());
                     msgnode[3] = String.valueOf(-1);
                     NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
-                    t.start();
+                    t.start();*/
                     //System.out.println("replica created:" + a.getId());
                     //System.out.println("add creation time" + (n.getRounds() - n.getLastAgentArrival(k)));
                     //n.addCreationTime(n.getRounds() - n.getLastAgentArrival(k));

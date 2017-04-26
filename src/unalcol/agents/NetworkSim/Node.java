@@ -642,7 +642,7 @@ public class Node extends Agent {
         this.lastStartDeparting = lastStartDeparting;
     }
 
-    public int estimateExpectedTimeArrival() {
+    public double estimateExpectedTimeArrival() {
         //System.out.println("nodeTimeouts" + getNodeTimeouts());
         if (nodeTimeoutsArrival.isEmpty()) {
             return INITIAL_TIMEOUT;
@@ -656,8 +656,9 @@ public class Node extends Agent {
             dtimeout = new ArrayList<>(dtimeout.subList(dtimeout.size() - WINDOW_SIZE, dtimeout.size()));
         }
         //if (dtimeout.size() > 1) {
-        StatisticsNormalDist st = new StatisticsNormalDist(dtimeout, dtimeout.size());
-        return (int) st.getMedian();
+        //StatisticsNormalDist st = new StatisticsNormalDist(dtimeout, dtimeout.size());
+        //return (int) st.getMedian();
+        return Collections.max(dtimeout).intValue();
     }
 
     public double getStdDevTimeoutArrival() {
@@ -673,7 +674,7 @@ public class Node extends Agent {
         }
         //if (dtimeout.size() > 1) {
         StatisticsNormalDist st = new StatisticsNormalDist(dtimeout, dtimeout.size());
-        return (int) st.getStdDevMedian();
+        return st.getStdDevMedian();
     }
 
     /**
