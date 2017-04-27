@@ -47,7 +47,7 @@ public class Node extends Agent {
     private ArrayList<Integer> nodeTimeoutsArrival;
 
     private int INITIAL_TIMEOUT = 10;
-    private int WINDOW_SIZE = 10;
+    private int WINDOW_SIZE = 50;
     private HashMap<String, Object> networkdata;
     private HashMap<Object, ArrayList> pending;
     private HashMap<String, Integer> respAgentsBkp;
@@ -615,7 +615,11 @@ public class Node extends Agent {
                     nodeTimeoutsArrival = new ArrayList<>(nodeTimeoutsArrival.subList(nodeTimeoutsArrival.size() - WINDOW_SIZE, nodeTimeoutsArrival.size()));
                 }
 
-                nodeTimeoutsArrival.add(diff);
+                if (diff > 0) {
+                    nodeTimeoutsArrival.add(diff);
+                }/*else{
+                    System.out.println("diff is zero");
+                }*/
                 //System.out.println("nodeTimeoutsArrival.size=" + nodeTimeoutsArrival.size());
                 iter.remove();
                 lastStartDeparting.remove(k);
@@ -656,14 +660,14 @@ public class Node extends Agent {
             dtimeout = new ArrayList<>(dtimeout.subList(dtimeout.size() - WINDOW_SIZE, dtimeout.size()));
         }
         //if (dtimeout.size() > 1) {
-        //StatisticsNormalDist st = new StatisticsNormalDist(dtimeout, dtimeout.size());
-        //return (int) st.getMedian();
-        return Collections.max(dtimeout).intValue();
+        StatisticsNormalDist st = new StatisticsNormalDist(dtimeout, dtimeout.size());
+        return st.getMedian();
+        //return Collections.max(dtimeout);
     }
 
     public double getStdDevTimeoutArrival() {
         if (nodeTimeoutsArrival.isEmpty()) {
-            return 0;
+            return 1;
         }
         ArrayList<Double> dtimeout = new ArrayList();
         for (Integer d : nodeTimeoutsArrival) {

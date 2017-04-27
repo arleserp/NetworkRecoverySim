@@ -226,7 +226,7 @@ public class NetworkEnvironmentReplication extends Environment {
                 a.getLocation().saveAgentInfo(a.getData(), a.getId(), a.getRound(), age);
                 //System.out.println("agent info size:" + anAgent.getData().size());
             } else {
-                System.out.println("no vertex alive! wat?" + a.getId() + " is dead: " + (a.status == Action.DIE) +", loc" + a.getLocation());
+                System.out.println("Agent is removed from node that failed before:" + a.getId() + " status is dead: " + (a.status == Action.DIE) +", loc" + a.getLocation());
                 p.setAttribute("nodedeath", a.getLocation());
             }
         }
@@ -404,6 +404,7 @@ public class NetworkEnvironmentReplication extends Environment {
 
     public ArrayList<Integer> getAgentNeighbors(MobileAgent x) {
         ArrayList n = new ArrayList();
+        System.out.println("getLoc sizeeeeeeeeeee:" + getLocationAgents().size());
         for (int i = 0; i < getLocationAgents().size(); i++) {
             if (i != x.getId() && x.getLocation() != null && x.getLocation().equals(getLocationAgents().get(i))) {
                 n.add(i);

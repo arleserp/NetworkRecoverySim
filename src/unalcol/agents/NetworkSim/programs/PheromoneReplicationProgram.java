@@ -7,6 +7,7 @@ package unalcol.agents.NetworkSim.programs;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import unalcol.agents.Action;
 import unalcol.agents.AgentProgram;
 import unalcol.agents.NetworkSim.ActionParameters;
@@ -38,16 +39,26 @@ public class PheromoneReplicationProgram implements AgentProgram {
         }
 
         int pos;
+        ArrayList<GraphElements.MyVertex> vs = null;
         //if (Math.random() < pf) {
         //    return new ActionParameters("die");
         //}
+        //System.out.println("perception " + p.getAttribute("neighbors"));
         try {
-            Collection<GraphElements.MyVertex> vs = (Collection<GraphElements.MyVertex>) p.getAttribute("neighbors");
+            Collection<GraphElements.MyVertex> c =  (Collection<GraphElements.MyVertex>) p.getAttribute("neighbors");
+            Iterator<GraphElements.MyVertex> it = c.iterator();
+            vs = new ArrayList<>();
+            while(it.hasNext()){
+                GraphElements.MyVertex v = it.next();
+                if(v != null){
+                    vs.add(v);
+                }
+            }
             pos = (int) carry(vs);
             act.setAttribute("location", vs.toArray()[pos]);
             act.setAttribute("pf", pf);
         } catch (Exception ex) {
-            System.out.println("agent fail because node is not running or was killed determining new movement.");
+            System.out.println("this cannot happen!!! agent fail because node is not running or was killed determining new movement." + vs);
             //return new ActionParameters("die");
             // System.out.println("Inform node that possibly a node is death: " + ex.getLocalizedMessage());
             return new ActionParameters("informfailure");

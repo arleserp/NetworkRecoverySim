@@ -218,23 +218,13 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
 
         public void run() {
             System.out.println("call runnn!!!");
-            while (true) {
+
+            isDrawing = true;
+            if (g.getVertexCount() == 0) {
+                System.out.println("no nodes alive.");
+            } else {
                 try {
-                    //!world.isFinished()) {
-                    Thread.sleep(100);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(DataReplicationEscenarioNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                if (isDrawing) {
-                    return;
-                }
-                //System.out.println("n visited nodes size" + n.visitedNodes.size());
-                //try {
-                isDrawing = true;
-                if (g.getVertexCount() == 0) {
-                    System.out.println("no nodes alive.");
-                    return;
-                } else {
+
                     Layout<GraphElements.MyVertex, String> layout = null;
                     /*
                 switch (SimulationParameters.graphMode) {
@@ -268,16 +258,16 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
 
                     BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
                     vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
-
-                    // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
-                    // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
+                    //vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+                    //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
+                    //n.setVV(vv);
                     Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
                         @Override
                         public Paint transform(GraphElements.MyVertex i) {
-                            if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
+                           /* if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
                                 return Color.YELLOW;
                             }
-
+ */                           
                             if (i.getStatus() != null && i.getStatus().equals("visited")) {
                                 return Color.BLUE;
                             }
@@ -289,11 +279,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                             }*/
                             return Color.RED;
                         }
-                    };
 
-                    vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-                    //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
-                    //n.setVV(vv);
+                    };
                     vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
                     if (!added) {
                         frame.getContentPane().add(vv);
@@ -303,24 +290,39 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                     } else {
                         frame.repaint();
                     }
-                    //}
+                    while (true) {
 
-                    int agentsAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getAgentsAlive();
-                    int nodesAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getNodesAlive();
-                    //System.out.println("n" + n.getAge() + "," + agentsAlive);
-                    //System.out.println("n" + n.getAge() + "," + nodesAlive);
+                        try {
+                            //!world.isFinished()) {
+                            Thread.sleep(100);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(DataReplicationEscenarioNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
+                        }
 
-                    if (n != null) {
-                        agentsLive.add(n.getAge(), agentsAlive);
-                        nodesLive.add(n.getAge(), nodesAlive);
+                        //System.out.println("n visited nodes size" + n.visitedNodes.size());
+                        // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
+                        // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
+                        vv.repaint();
+                        //}
+                        int agentsAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getAgentsAlive();
+                        int nodesAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getNodesAlive();
+                        //System.out.println("n" + n.getAge() + "," + agentsAlive);
+                        //System.out.println("n" + n.getAge() + "," + nodesAlive);
+                        if (g.getVertexCount() == 0) {
+                            System.out.println("no nodes alive.");
+                        } else {
+                            if (n != null) {
+                                agentsLive.add(n.getAge(), agentsAlive);
+                                nodesLive.add(n.getAge(), nodesAlive);
+                            }
+                            frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
+                        }
                     }
-                    frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
-                    /*} catch (NullPointerException ex) {
-                System.out.println("exception drawing graph: " + ex.getLocalizedMessage());
-                isDrawing = false;
-            }*/
+                } catch (NullPointerException ex) {
+                    System.out.println("exception drawing graph: " + ex.getLocalizedMessage());
+                    isDrawing = false;
+                    fgup = null;
                 }
-                isDrawing = false;
             }
         }
     }
@@ -333,9 +335,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
     public void run() {
         try {
             while (true) { //!world.isFinished()) {
-                Thread.sleep(100);
+                Thread.sleep(60);
 
                 if (fgup == null) {
+
                     fgup = new FrameGraphUpdater(world.getTopology(), frame, world);
                     fgup.start();
                 }
