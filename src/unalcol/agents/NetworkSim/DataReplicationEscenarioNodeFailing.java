@@ -264,10 +264,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                     Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
                         @Override
                         public Paint transform(GraphElements.MyVertex i) {
-                           /* if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
+                            /*if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
                                 return Color.YELLOW;
                             }
- */                           
+                            */
                             if (i.getStatus() != null && i.getStatus().equals("visited")) {
                                 return Color.BLUE;
                             }
@@ -302,7 +302,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                         //System.out.println("n visited nodes size" + n.visitedNodes.size());
                         // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
                         // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
-                        vv.repaint();
+                        //vv.repaint();
                         //}
                         int agentsAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getAgentsAlive();
                         int nodesAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getNodesAlive();

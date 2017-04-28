@@ -147,17 +147,16 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     }
 
     void createNewNode(Node n, String d) {
-        System.out.println("creating new node " + d);
+        System.out.print("creating new node " + d);
         if (findVertex(d) != null) { //can ping node and discover
-            System.out.println("already created." + d);
+            System.out.println("Node " + d + " is alive canceling creation...");
         } else {
             GraphCreator.VertexFactory v = new GraphCreator.VertexFactory();
             //GraphCreator.EdgeFactory e = new GraphCreator.EdgeFactory();
             //System.out.println(n.getVertex().getName() + " is creating " + d + ":");
             GraphElements.MyVertex vv = v.create();
-            
             vv.setName(d);
-            vv.setPh(0);
+            //vv.setPh(0);
             topology.addVertex(vv);
             topology.addEdge("e" + vv.getName() + n.getVertex().getName(), vv, n.getVertex());
             //NodeFailingProgram np = new NodeFailingProgram(SimulationParameters.npf);
@@ -168,25 +167,25 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             nod = new Node(np, vv);
             nod.setVertex(vv);
             nod.setArchitecture(this);
-            
+
             this.agents.add(nod);
             nod.live();
             Thread t = new Thread(nod);
             nod.setThread(t);
-
-            if (n.getRespAgentsBkp().containsKey(d)) {
-                int i = n.getRespAgentsBkp().get(d);
-                //System.out.println("creating " + i + " agents");
-                createNewAgents(i, nod, -1);
-            }
-
-            //createNewAgents(10, nod); //we cannot create agents yet! maybe after network is connected.
             nodes.add(nod);
             t.start();
+            
             //System.out.println("adding data to node" + nod.getVertex().getName() + ":" + n.getNetworkdata());
             nod.setNetworkdata(new HashMap(n.getNetworkdata()));
             //System.out.println("adding data to node" + nod.getVertex().getName() + ":" + n.getRespAgentsBkp());
             nod.setRespAgentsBkp(new HashMap(n.getRespAgentsBkp()));
+            nod.getRespAgentsBkp().remove(d);
+            if (n.getRespAgentsBkp().containsKey(d)) {
+                int i = n.getRespAgentsBkp().get(d);
+                System.out.println("in node" + d + " creating " + i + " agents...");
+                createNewAgents(i, nod, -1);
+            }
+            //createNewAgents(10, nod); //we cannot create agents yet! maybe after network is connected.
 
             setChanged();
             notifyObservers();
@@ -213,7 +212,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         System.out.println("Method Kill Agent:" + a.getId());
         a.die();
         increaseAgentsDie();
-        getLocationAgents().put(a, null);
+        //getLocationAgents().put(a, null);
         a.setLocation(null);
         agentsAlive.remove(a);
         setChanged();
@@ -330,7 +329,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     @Override
     public boolean act(Agent agent, Action action) {
         if (agent instanceof MobileAgent) {
-            agent.sleep(10);
+            agent.sleep(30);
             boolean flag = (action != null);
             MobileAgent a = (MobileAgent) agent;
 
@@ -344,7 +343,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             //New: informfailure
             if (language.getActionIndex(act) == 2) {
                 //System.out.println("Agent fail before notify freeresp");
-
                 killAgent(a);
                 //can report a failure because node loss neigbours.
             } else {
@@ -356,8 +354,11 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     nodeNet.put(a.getLocation().getName(), getTopologyNames(a.getLocation()));
 
                     //Add resposible agents v
+                    // long startTime = System.nanoTime();
                     Node c = getNode(a.getLocation().getName());
-
+                    // long endTime = System.nanoTime();
+                    // long duration = (endTime-startTime)/1000;
+                    //System.out.println(a.getId() + "duration getNode"  + duration);
                     //if (c != null) {
                     /* ArrayList respAg = new ArrayList();
                     ArrayList respAr = new ArrayList();
@@ -370,7 +371,10 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     }
                     respAg.removeAll(respAr);
                     respAg.addAll(respAr);*/
-                    a.getRespAgentsBkp().put(a.getLocation().getName(), c.getResponsibleAgentsArrival().size());
+                    //a.getRespAgentsBkp().put(a.getLocation().getName(), c.getResponsibleAgentsArrival().size());
+                    HashMap<String, Integer> agentsinNodeNet = new HashMap<>();
+                    agentsinNodeNet.put(a.getLocation().getName(), c.getAgentCount());
+                    a.getLocalAgentsInNetwork().add(agentsinNodeNet);
                     a.getLocalNetwork().add(nodeNet);
                     //}
                     //let only nhops as local information by agent
@@ -379,18 +383,22 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                         a.setLocalNetwork(nl);
                     }
 
+                    if (a.getLocalAgentsInNetwork().size() > SimulationParameters.nhops) {
+                        List aln = new ArrayList(a.getLocalAgentsInNetwork().subList(a.getLocalAgentsInNetwork().size() - SimulationParameters.nhops, a.getLocalAgentsInNetwork().size()));
+                        a.setLocalAgentsInNetwork(aln);
+                    }
                     //Sh Send neighbour data to node ex in HashMap format: {p51={p21, p22, p23}, p22={p1, p2}}
                     String[] msgnet = new String[3];
                     msgnet[0] = "networkdata";
                     msgnet[1] = StringSerializer.serialize(a.getLocalNetwork());
-                    msgnet[2] = StringSerializer.serialize(a.getRespAgentsBkp());
+                    msgnet[2] = StringSerializer.serialize(a.getLocalAgentsInNetwork());
 
                     if (a.getLocation() != null) {
                         NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnet);
                     }
                 }
 
-                getLocationAgents().put(a, a.getLocation());
+                //getLocationAgents().put(a, a.getLocation());
                 ActionParameters ac = (ActionParameters) action;
 
                 synchronized (a.getLocation().getData()) {
@@ -499,7 +507,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                 NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgarrived);
                             }
 
-                            getLocationAgents().put(a, a.getLocation());
+                            // getLocationAgents().put(a, a.getLocation());
                             a.setPheromone((float) (a.getPheromone() + 0.01f * (0.5f - a.getPheromone())));
                             a.getLocation().setPh(a.getLocation().getPh() + 0.01f * (a.getPheromone() - a.getLocation().getPh()));
                             a.setRound(a.getRound() + 1);
@@ -535,7 +543,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             return flag;
         }
         if (agent instanceof Node) {
-            agent.sleep(10);
+            agent.sleep(30);
             Node n = (Node) agent;
             //System.out.println("thread of node " + n.getVertex().getName() + "ph: " + n.getVertex().getPh());
             n.incRounds();
@@ -557,11 +565,11 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                             //Send message arrived to node arrived|id|getPrevLocation
                             if (inbox[0].equals("arrived")) {
                                 int agentId = Integer.valueOf(inbox[1]);
-                                n.setLastAgentArrive(agentId, n.getRounds());
-                                n.incMsgRecv();
-                                n.getResponsibleAgentsArrival().put(agentId, n.getRounds());
-                                //n.getResponsibleAgentsLocation().put(agentId, inbox[3]);
-                                n.calculateTimeoutArrival();
+                                //n.setLastAgentArrive(agentId, n.getRounds());
+                                //n.incMsgRecv();
+                                //n.getResponsibleAgentsArrival().put(agentId, n.getRounds());
+                                //n.calculateTimeoutArrival();
+                                n.incrementAgentCount();
                             }
                             //msgnode: "departing"|agentId|FatherId|newDest
                             if (inbox[0].equals("departing")) {
@@ -572,14 +580,15 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                 n.getResponsibleAgents().put(agentId, -1);
                                 n.getResponsibleAgentsLocation().put(agentId, inbox[3]);
                                 n.calculateTimeout();
-                                n.calculateTimeoutArrival();
-                                if (n.getResponsibleAgentsArrival().containsKey(agentId)) {
-                                    n.getResponsibleAgentsArrival().remove(agentId);
-                                } else {
-                                    //System.out.println("delete!!!!");
-                                    incrementFalsePossitives();
-                                    //deleteNextReplica(n);
-                                }
+                                //n.calculateTimeoutArrival();
+
+                                //if (n.getResponsibleAgentsArrival().containsKey(agentId)) {
+                                //    n.getResponsibleAgentsArrival().remove(agentId);
+                                //}else {
+                                //System.out.println("delete!!!!");
+                                //   incrementFalsePossitives();
+                                //deleteNextReplica(n);
+                                //}
                                 //evaluateAgentCreationArrival(n);
                             }
                             if (inbox[0].equals("freeresp")) {
@@ -596,19 +605,26 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                     incrementFalsePossitives();
                                     // deleteNextReplica(n);
                                 }
+                                n.decrementAgentCount();
                             }
 
                             if (inbox[0].equals("networkdata")) {
                                 //completes and updates data
-                                HashMap<String, Integer> agentBkp = (HashMap) StringSerializer.deserialize(inbox[2]);
-                                //Maybe update this?
-                                for (String key : agentBkp.keySet()) {
-                                    n.getRespAgentsBkp().put(key, agentBkp.get(key));
+                                ArrayList<HashMap<String, Integer>> agentList = (ArrayList<HashMap<String, Integer>>) StringSerializer.deserialize(inbox[2]);
+                                Iterator<HashMap<String, Integer>> itr = agentList.iterator();
+
+                                while (itr.hasNext()) {
+                                    HashMap<String, Integer> agentBkp = itr.next();
+                                    //Maybe update this?
+                                    for (String key : agentBkp.keySet()) {
+                                        n.getRespAgentsBkp().put(key, agentBkp.get(key));
+                                        //System.out.println("responsible agents backup size:" + n.getRespAgentsBkp().size());
+                                    }
                                 }
                                 //System.out.println("res" + n.getRespAgentsBkp());
                                 ArrayList<HashMap> agentLoc = (ArrayList) StringSerializer.deserialize(inbox[1]);
                                 //System.out.print(n.getVertex().getName() + " n antes" + n.getNetworkdata());
-                                for (HashMap< String, Object> agentData : agentLoc) {
+                                for (HashMap< String, ArrayList> agentData : agentLoc) {
                                     //Compare node data with agent data
                                     n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), agentData));
                                 }
@@ -627,10 +643,11 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     if (SimulationParameters.activateReplication.equals("replalgon")) {
                         n.calculateTimeout();
                         evaluateAgentCreation(n);
-                        n.calculateTimeoutArrival();
-                        evaluateAgentCreationArrival(n);
+                        // n.calculateTimeoutArrival();
+                        //evaluateAgentCreationArrival(n);
                     }
                     break;
+
                 case 1: //what happens if a node dies?
                     KillNode(n);
                     break;
@@ -641,7 +658,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             if (n.status != Action.DIE) {
                 //System.out.println("node name" + n.getVertex().getName());
                 //2. Compare topology data with cache given by agents.
-                List<String> topologyData = new ArrayList(this.getTopologyNames(n.getVertex())); // Get topology of the network
+                ArrayList<String> topologyData = new ArrayList(this.getTopologyNames(n.getVertex())); // Get topology of the network
                 if (n.getNetworkdata().containsKey(n.getVertex().getName())) {
                     List<String> nd = new ArrayList((Collection) n.getNetworkdata().get(n.getVertex().getName())); //Store data given by agents
 

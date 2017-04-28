@@ -5,6 +5,7 @@
  */
 package unalcol.agents.NetworkSim;
 
+import com.sun.javafx.scene.control.skin.VirtualFlow;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,9 +32,11 @@ public class MobileAgent extends Agent implements Serializable {
     private int idFather;
     private GraphElements.MyVertex prevLocation;
     private List<HashMap> localNetwork;
+    private List<HashMap<String, Integer>> localAgentsInNetwork;
+    //private List<HashMap> agents;
+
     private HashMap<String, Integer> respAgentsBkp;
-    
-    
+
     public MobileAgent(AgentProgram _program, int ida) {
         super(_program);
         localNetwork = new ArrayList<>();
@@ -43,14 +46,16 @@ public class MobileAgent extends Agent implements Serializable {
         pheromone = 1.0f;
         idFather = -1;
         respAgentsBkp = new HashMap<>();
+        localAgentsInNetwork = new ArrayList<>();
     }
 
-    public MobileAgent(){
+    public MobileAgent() {
         //Default algorithm
         super(null, null);
         this.localNetwork = new ArrayList<>();
+        localAgentsInNetwork = new ArrayList<>();
     }
-    
+
     public void setAttribute(String key, Object value) {
         properties.put(key, value);
     }
@@ -254,7 +259,19 @@ public class MobileAgent extends Agent implements Serializable {
     public void setRespAgentsBkp(HashMap respAgentsBkp) {
         this.respAgentsBkp = respAgentsBkp;
     }
-    
-    
+
+    /**
+     * @return the localAgentsInNetwork
+     */
+    public List<HashMap<String, Integer>> getLocalAgentsInNetwork() {
+        return localAgentsInNetwork;
+    }
+
+    /**
+     * @param localAgentsInNetwork the localAgentsInNetwork to set
+     */
+    public void setLocalAgentsInNetwork(List<HashMap<String, Integer>> localAgentsInNetwork) {
+        this.localAgentsInNetwork = localAgentsInNetwork;
+    }
 
 }

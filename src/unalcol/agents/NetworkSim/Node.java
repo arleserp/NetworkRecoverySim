@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.print.attribute.HashAttributeSet;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
@@ -48,11 +49,24 @@ public class Node extends Agent {
 
     private int INITIAL_TIMEOUT = 10;
     private int WINDOW_SIZE = 50;
-    private HashMap<String, Object> networkdata;
+    private HashMap<String, ArrayList> networkdata;
     private HashMap<Object, ArrayList> pending;
     private HashMap<String, Integer> respAgentsBkp;
     private HashMap<Integer, String> prevLoc; // Stores <agentId, prevLoc> 
     private HashMap<Integer, Integer> followedAgentsCounter; // Stores <agentId, counter> 
+    AtomicInteger c = new AtomicInteger(0);
+    
+     public void incrementAgentCount() {
+        c.incrementAndGet();
+    }
+
+    public void decrementAgentCount() {
+        c.decrementAndGet();
+    }
+
+    public int getAgentCount() {
+        return c.get();
+    }
 
     public HashMap<Object, ArrayList> getPending() {
         return pending;
@@ -548,14 +562,14 @@ public class Node extends Agent {
     /**
      * @return the networkdata
      */
-    public HashMap<String, Object> getNetworkdata() {
+    public HashMap<String, ArrayList> getNetworkdata() {
         return networkdata;
     }
 
     /**
      * @param networkdata the networkdata to set
      */
-    public void setNetworkdata(HashMap<String, Object> networkdata) {
+    public void setNetworkdata(HashMap<String, ArrayList> networkdata) {
         this.networkdata = networkdata;
     }
 
