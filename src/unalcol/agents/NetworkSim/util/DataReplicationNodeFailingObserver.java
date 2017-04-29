@@ -192,23 +192,23 @@ public class DataReplicationNodeFailingObserver implements Observer {
 */
             //}
             //System.out.println("World age" + n.getAge() + ", info:" + n.getAmountGlobalInfo());
-            if (!globalInfo.containsKey(n.getAge())) {
+  /*          if (!globalInfo.containsKey(n.getAge())) {
                 //System.out.println("n" + n.getAge() + ", al:" + n.getAgentsLive());
                /* synchronized (DataReplicationNodeFailingObserver.class) {
                     agentsLive.add(n.getAge(), n.getAgentsLive());
                 }*/
 
-                globalInfo.put(n.getAge(), n.getAmountGlobalInfo());
-            }
+//                globalInfo.put(n.getAge(), n.getAmountGlobalInfo());
+    //        }
 
             if (!agentsNumber.containsKey(n.getAge())) {
                 agentsNumber.put(n.getAge(), n.getAgentsLive());
             }
-
+/*
             if (!nodesComplete.containsKey(n.getAge())) {
                 nodesComplete.put(n.getAge(), n.getCompletionPercentage());
             }
-
+*/
             /*boolean areAllAgentsDead = n.areAllAgentsDead();
             if (areAllAgentsDead) {
                 System.out.println("are all death: " + areAllAgentsDead);

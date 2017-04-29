@@ -197,7 +197,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
 
         graphVisualization = new DataReplicationNodeFailingObserver();
         world = new NetworkEnvironmentPheromoneReplicationNodeFailing(agents, agentsLanguage, nodeLanguaje, g);
-        ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).setNodes(nodes);
+        ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).addNodes(nodes);
         world.addObserver(graphVisualization);
         world.not();
         world.run();
@@ -264,10 +264,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                     Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
                         @Override
                         public Paint transform(GraphElements.MyVertex i) {
-                            /*if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
+                            if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
                                 return Color.YELLOW;
                             }
-                            */
+
                             if (i.getStatus() != null && i.getStatus().equals("visited")) {
                                 return Color.BLUE;
                             }
@@ -315,6 +315,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                                 agentsLive.add(n.getAge(), agentsAlive);
                                 nodesLive.add(n.getAge(), nodesAlive);
                             }
+                            //System.out.println("entra" + n.getAge());
                             frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
                         }
                     }
@@ -333,32 +334,37 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
      */
     @Override
     public void run() {
-        try {
-            while (true) { //!world.isFinished()) {
-                Thread.sleep(60);
+        //try {
+        while (true) {
+            try {
+                //!world.isFinished()) {
+                Thread.sleep(50);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(DataReplicationEscenarioNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
+            }
 
-                if (fgup == null) {
+            if (fgup == null) {
 
-                    fgup = new FrameGraphUpdater(world.getTopology(), frame, world);
-                    fgup.start();
-                }
-                //System.out.println("go");
-                //System.out.println("halo");
-                /* world.updateSandC();
+                fgup = new FrameGraphUpdater(world.getTopology(), frame, world);
+                fgup.start();
+            }
+            //System.out.println("go");
+            //System.out.println("halo");
+            /* world.updateSandC();
             world.calculateGlobalInfo();
 
             if (world.getAge() % 2 == 0 || world.getAgentsDie() == world.getAgents().size() || world.getRoundGetInfo() != -1) {
                 world.nObservers();
             }
-                 */
-                if (world instanceof NetworkEnvironmentPheromoneReplicationNodeFailing && SimulationParameters.motionAlg.equals("carriers")) {
-                    ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).evaporatePheromone();
-                }
-                if (world instanceof NetworkEnvironmentPheromoneReplicationNodeFailing && SimulationParameters.motionAlg.equals("carriersrep")) {
-                    ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).evaporatePheromone();
-                }
-                ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).updateWorldAge();
-                /*
+             */
+            /*if (world instanceof NetworkEnvironmentPheromoneReplicationNodeFailing && SimulationParameters.motionAlg.equals("carriers")) {
+                ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).evaporatePheromone();
+            }
+            if (world instanceof NetworkEnvironmentPheromoneReplicationNodeFailing && SimulationParameters.motionAlg.equals("carriersrep")) {
+                ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).evaporatePheromone();
+            }*/
+            ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).updateWorldAge();
+            /*
             if (world instanceof WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl) {
                 ((WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl) world).evaporatePheromone();
             }
@@ -370,13 +376,13 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
             if (world instanceof WorldLwphCLwEvapImpl) {
                 ((WorldLwphCLwEvapImpl) world).evaporatePheromone();
             }*/
-            }
-        } catch (InterruptedException e) {
+        }
+        /*}catch (InterruptedException e) {
             System.out.println("interrupted!");
         } catch (NullPointerException e) {
             System.out.println("interrupted!");
-        }
-        /* System.out.println("End WorldThread");*/
+        }*/
+ /* System.out.println("End WorldThread");*/
 
     }
 

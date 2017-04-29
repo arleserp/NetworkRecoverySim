@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import unalcol.agents.NetworkSim.ActionParameters;
 import unalcol.agents.NetworkSim.GraphElements;
 import unalcol.agents.NetworkSim.MobileAgent;
@@ -48,7 +49,7 @@ public class NetworkEnvironmentReplication extends Environment {
     public int[][] structure = null;
     public SimpleLanguage language = null;
     Date date;
-    public Graph<GraphElements.MyVertex, String> topology;
+    public final Graph<GraphElements.MyVertex, String> topology;
     GraphElements.MyVertex currentNode = null;
     String currentEdge = null;
     String lastactionlog;
@@ -60,7 +61,7 @@ public class NetworkEnvironmentReplication extends Environment {
     private int roundComplete = -1;
     private int idBest = -1;
     private boolean finished = false;
-    private static int age = 0;
+    private AtomicInteger age = new AtomicInteger(0);
     public static int agentsDie = 0;
     private static int totalAgents = 0;
 
@@ -88,7 +89,7 @@ public class NetworkEnvironmentReplication extends Environment {
 
     public int getCompletionPercentage() {
         int completed = 0;
-        
+
         for (GraphElements.MyVertex v : topology.getVertices()) {
             if (v.getData().size() == topology.getVertices().size()) {
                 completed++;
@@ -223,10 +224,10 @@ public class NetworkEnvironmentReplication extends Environment {
                 a.getData().addAll(a.getLocation().getData());
 
                 //Stores agent time, agent time and agent id
-                a.getLocation().saveAgentInfo(a.getData(), a.getId(), a.getRound(), age);
+                a.getLocation().saveAgentInfo(a.getData(), a.getId(), a.getRound(), getAge());
                 //System.out.println("agent info size:" + anAgent.getData().size());
             } else {
-                System.out.println("Agent is removed from node that failed before:" + a.getId() + " status is dead: " + (a.status == Action.DIE) +", loc" + a.getLocation());
+                System.out.println("Agent is removed from node that failed before:" + a.getId() + " status is dead: " + (a.status == Action.DIE) + ", loc" + a.getLocation());
                 p.setAttribute("nodedeath", a.getLocation());
             }
         }
@@ -363,9 +364,9 @@ public class NetworkEnvironmentReplication extends Environment {
     /**
      * @param topology the topology to set
      */
-    public void setTopology(Graph<GraphElements.MyVertex, String> topology) {
+    /*public void setTopology(Graph<GraphElements.MyVertex, String> topology) {
         this.topology = topology;
-    }
+    }*/
 
     /**
      * @return the visitedNodes
@@ -477,15 +478,15 @@ public class NetworkEnvironmentReplication extends Environment {
     
      */
     public Double getAmountGlobalInfo() {
-        Double amountGlobalInfo = 0.0;
-
-        synchronized (NetworkEnvironmentReplication.class) {
-            List<GraphElements.MyVertex> vertex_t = new ArrayList<>(topology.getVertices());
-            for (GraphElements.MyVertex v : vertex_t) {
+       synchronized (NetworkEnvironmentReplication.class) {
+            Double amountGlobalInfo = 0.0;
+            Iterator<GraphElements.MyVertex> itr = topology.getVertices().iterator();
+            //List<GraphElements.MyVertex> vertex_t = new ArrayList<>();
+            while (itr.hasNext()) {
+                GraphElements.MyVertex v = itr.next();
                 ArrayList<Object> vertex_info = new ArrayList<>(v.getData());
                 //System.out.println("copy" + copy);
                 Iterator<Object> it = vertex_info.iterator();
-
                 while (it.hasNext()) {
                     Object x = it.next();
                     if (x == null) {
@@ -506,13 +507,12 @@ public class NetworkEnvironmentReplication extends Environment {
 
                 }
             }
+            return amountGlobalInfo / topology.getVertexCount();
         }
-
-        return amountGlobalInfo / topology.getVertexCount();
     }
 
     public synchronized void updateWorldAge() {
-        age++;
+        age.incrementAndGet();
         /*int average = 0;
         int agentslive = 0;
         for (int k = 0; k < this.getAgents().size(); k++) {
@@ -535,16 +535,16 @@ public class NetworkEnvironmentReplication extends Environment {
      */
     public int getAge() {
         //System.out.println("age:" + age);
-        return age;
+        return age.get();
     }
 
     /**
      * @param age the age to set
      */
-    public void setAge(int age) {
+  /*  public void setAge(int age) {
         this.age = age;
     }
-
+*/
     /**
      * @return the nodesAgents
      */
@@ -592,7 +592,6 @@ public class NetworkEnvironmentReplication extends Environment {
         }
         return nodesAlive;
     }
-
 
     public int getAgentsAlive() {
         int agentsAlive = 0;

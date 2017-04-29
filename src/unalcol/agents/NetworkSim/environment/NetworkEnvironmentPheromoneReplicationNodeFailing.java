@@ -11,10 +11,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import unalcol.agents.NetworkSim.ActionParameters;
@@ -35,8 +37,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     private static SimpleLanguage nodeLanguage;
     private static int agentMovements = 0;
     private static int ACKAmount = 0;
-    private static List<Node> nodes = Collections.synchronizedList(new ArrayList());
-    ;
+    private static final List<Node> nodes = Collections.synchronizedList(new ArrayList());
+    //private static ConcurrentHashMap<String, GraphElements.MyVertex> mapVertex;
+
     public List<MobileAgent> agentsAlive = Collections.synchronizedList(new ArrayList());
 
     public static List<Node> getNodes() {
@@ -86,16 +89,23 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                 agentsAlive.add((MobileAgent) a);
             }
         }
+        //mapVertex =  new ConcurrentHashMap<>();
     }
 
     GraphElements.MyVertex findVertex(String nodename) {
-        GraphElements.MyVertex v = null;
-        for (GraphElements.MyVertex vv : topology.getVertices()) {
-            if (vv.getName().equals(nodename)) {
-                return vv;
+        synchronized (NetworkEnvironmentPheromoneReplicationNodeFailing.class) {
+            GraphElements.MyVertex v = null;
+            synchronized (nodes) {
+                Iterator<Node> itr = nodes.iterator();
+                while (itr.hasNext()) {
+                    Node n = itr.next();
+                    if (n.getVertex().getName().equals(nodename)) {
+                        return n.getVertex();
+                    }
+                }
             }
+            return v;
         }
-        return v;
     }
 
     private void connect(GraphElements.MyVertex vertex, String nodetoConnect) {
@@ -107,8 +117,12 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         }
     }
 
-    public void setNodes(List<Node> nds) {
-        nodes = nds;
+    public void addNodes(List<Node> nds) {
+        synchronized (nodes) {
+            for (Node n : nds) {
+                nodes.add(n);
+            }
+        }
     }
 
     private void createNewAgents(Integer number, Node n, int fatherId) {
@@ -172,9 +186,10 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             nod.live();
             Thread t = new Thread(nod);
             nod.setThread(t);
+            //nodes.add(nod);
             nodes.add(nod);
             t.start();
-            
+
             //System.out.println("adding data to node" + nod.getVertex().getName() + ":" + n.getNetworkdata());
             nod.setNetworkdata(new HashMap(n.getNetworkdata()));
             //System.out.println("adding data to node" + nod.getVertex().getName() + ":" + n.getRespAgentsBkp());
@@ -224,6 +239,23 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         }
     }
 
+    public boolean removeVertex(GraphElements.MyVertex vertex) {
+        synchronized (topology) {
+            if (!topology.containsVertex(vertex)) {
+                return false;
+            }
+            // copy to avoid concurrent modification in removeEdge
+            /*Set<String> incident = new HashSet<>(topology.getInEdges(vertex));
+            incident.addAll(topology.getOutEdges(vertex));
+
+            for (String edge : incident) {
+                topology.removeEdge(edge);
+            }*/
+            topology.removeVertex(vertex);
+            return true;
+        }
+    }
+
     private void KillNode(Node n) {
         System.out.println("Node " + n.getVertex().getName() + " has failed." + " resp agents:" + n.getResponsibleAgentsArrival().size());
         //System.out.println("killed: " + killAgentsInlocation(n.getVertex().getName()));
@@ -231,7 +263,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         //System.out.println("node fail?");
 
         if (nodes.remove(n)) {
-            //System.out.println("removed!" + n.getVertex().getName());
+            System.out.println("removed!" + n.getVertex().getName());
         }
         /*System.out.println("visited nodes before" + visitedNodes);
                     if (visitedNodes.remove(n.getVertex())) {
@@ -239,7 +271,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                         System.out.println("visited nodes after " + visitedNodes);
                     }*/
         n.die();
-        topology.removeVertex(n.getVertex());
+        removeVertex(n.getVertex());
         setChanged();
         notifyObservers();
         try {
@@ -267,27 +299,33 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     }
 
     List<String> getTopologyNames(GraphElements.MyVertex node) {
-        List<String> names = new ArrayList();
-        if (topology.containsVertex(node)) {
-            for (GraphElements.MyVertex v : topology.getNeighbors(node)) {
-                names.add(v.getName());
+        synchronized (topology) {
+            List<String> names = new ArrayList();
+            if (topology.containsVertex(node)) {
+                Iterator<GraphElements.MyVertex> itr = topology.getNeighbors(node).iterator();
+                while (itr.hasNext()) {
+                    names.add(itr.next().getName());
+                }
             }
+            return names;
         }
-        return names;
     }
 
     Node getNode(String name) {
         //System.out.print("getNode" + name + ":");
         //ArrayList<Node> copy = new ArrayList(nodes);
         //System.out.println("getNode nodes size " + nodes.size());
-        for (Node nod : nodes) {
-            //if (nod.status != Action.DIE && nod.getVertex().getName().equals(name) && topology.containsVertex(nod.getVertex())) {
-            //      System.out.println("found");
-            return nod;
-            //}
+        synchronized (nodes) {
+            for (Node nod : nodes) {
+                //if (nod.status != Action.DIE && nod.getVertex().getName().equals(name) && topology.containsVertex(nod.getVertex())) {
+                //      System.out.println("found");
+                return nod;
+                //}
+            }
         }
         //System.out.println("return nul");
         return null;
+
     }
 
     public class CustomComparatorNode implements Comparator<String> {
@@ -329,7 +367,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     @Override
     public boolean act(Agent agent, Action action) {
         if (agent instanceof MobileAgent) {
-            agent.sleep(30);
+            agent.sleep(50);
             boolean flag = (action != null);
             MobileAgent a = (MobileAgent) agent;
 
@@ -543,7 +581,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             return flag;
         }
         if (agent instanceof Node) {
-            agent.sleep(30);
+            agent.sleep(50);
             Node n = (Node) agent;
             //System.out.println("thread of node " + n.getVertex().getName() + "ph: " + n.getVertex().getPh());
             n.incRounds();
@@ -715,18 +753,23 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
 
                     n.getNetworkdata().put(n.getVertex().getName(), topologyData);
                 }
+                //evaporate pheromone
+                n.getVertex().setPh((n.getVertex().getPh() - n.getVertex().getPh() * 0.001f));
             }
         }
         return false;
     }
 
     public void evaporatePheromone() {
-        ArrayList<GraphElements.MyVertex> evaporateClone = new ArrayList(topology.getVertices());
-        for (GraphElements.MyVertex v : evaporateClone) {
-            //System.out.println(v.toString() + "before:" + v.getPh());
-            v.setPh(v.getPh() - v.getPh() * 0.001f);
-            //System.out.println(v.toString() + "after:" + v.getPh());
-
+        synchronized (NetworkEnvironmentPheromoneReplicationNodeFailing.class) {
+            Iterator<Node> itr = nodes.iterator();
+            //ArrayList<GraphElements.MyVertex> evaporateClone = new ArrayList(topology.getVertices());
+            while (itr.hasNext()) {
+                //System.out.println(v.toString() + "before:" + v.getPh());
+                GraphElements.MyVertex v = itr.next().getVertex();
+                v.setPh(v.getPh() - v.getPh() * 0.001f);
+                //System.out.println(v.toString() + "after:" + v.getPh());
+            }
         }
     }
 
