@@ -6,17 +6,14 @@
 package unalcol.agents.NetworkSim;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.print.attribute.HashAttributeSet;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
-import unalcol.agents.NetworkSim.util.BoxPlotACKAmount.CustomComparator;
 import unalcol.agents.NetworkSim.util.StatisticsNormalDist;
 
 /**
@@ -55,6 +52,7 @@ public class Node extends Agent {
     private HashMap<Integer, String> prevLoc; // Stores <agentId, prevLoc> 
     private HashMap<Integer, Integer> followedAgentsCounter; // Stores <agentId, counter> 
     AtomicInteger c = new AtomicInteger(0);
+    private Queue<HashMap> agentCounter = new ConcurrentLinkedQueue<>();
     
      public void incrementAgentCount() {
         c.incrementAndGet();
@@ -724,5 +722,19 @@ public class Node extends Agent {
 
     public int deleteFollowedAgentsCounter(int agentId) {
         return followedAgentsCounter.remove(agentId);
+    }
+
+    /**
+     * @return the agentCounter
+     */
+    public Queue<HashMap> getAgentCounter() {
+        return agentCounter;
+    }
+
+    /**
+     * @param agentCounter the agentCounter to set
+     */
+    public void setAgentCounter(Queue<HashMap> agentCounter) {
+        this.agentCounter = agentCounter;
     }
 }

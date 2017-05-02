@@ -315,7 +315,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                                 agentsLive.add(n.getAge(), agentsAlive);
                                 nodesLive.add(n.getAge(), nodesAlive);
                             }
-                            //System.out.println("entra" + n.getAge());
+                            System.out.println("entra:" + n.getAge());
                             frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
                         }
                     }

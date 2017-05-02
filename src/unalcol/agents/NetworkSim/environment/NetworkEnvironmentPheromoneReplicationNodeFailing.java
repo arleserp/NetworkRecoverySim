@@ -603,10 +603,12 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                             //Send message arrived to node arrived|id|getPrevLocation
                             if (inbox[0].equals("arrived")) {
                                 int agentId = Integer.valueOf(inbox[1]);
+                                int father = Integer.valueOf(inbox[2]);
                                 //n.setLastAgentArrive(agentId, n.getRounds());
                                 //n.incMsgRecv();
                                 //n.getResponsibleAgentsArrival().put(agentId, n.getRounds());
                                 //n.calculateTimeoutArrival();
+                                //n.getAgentCounter().add()
                                 n.incrementAgentCount();
                             }
                             //msgnode: "departing"|agentId|FatherId|newDest
@@ -680,7 +682,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     }
                     if (SimulationParameters.activateReplication.equals("replalgon")) {
                         n.calculateTimeout();
-                        evaluateAgentCreation(n);
+                        //evaluateAgentCreation(n);
                         // n.calculateTimeoutArrival();
                         //evaluateAgentCreationArrival(n);
                     }
