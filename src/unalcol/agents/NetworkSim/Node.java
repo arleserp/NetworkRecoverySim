@@ -52,7 +52,6 @@ public class Node extends Agent {
     private HashMap<Integer, String> prevLoc; // Stores <agentId, prevLoc> 
     private HashMap<Integer, Integer> followedAgentsCounter; // Stores <agentId, counter> 
     AtomicInteger c = new AtomicInteger(0);
-    private Queue<HashMap> agentCounter = new ConcurrentLinkedQueue<>();
     
      public void incrementAgentCount() {
         c.incrementAndGet();
@@ -65,7 +64,7 @@ public class Node extends Agent {
     public int getAgentCount() {
         return c.get();
     }
-
+    
     public HashMap<Object, ArrayList> getPending() {
         return pending;
     }
@@ -722,19 +721,5 @@ public class Node extends Agent {
 
     public int deleteFollowedAgentsCounter(int agentId) {
         return followedAgentsCounter.remove(agentId);
-    }
-
-    /**
-     * @return the agentCounter
-     */
-    public Queue<HashMap> getAgentCounter() {
-        return agentCounter;
-    }
-
-    /**
-     * @param agentCounter the agentCounter to set
-     */
-    public void setAgentCounter(Queue<HashMap> agentCounter) {
-        this.agentCounter = agentCounter;
     }
 }

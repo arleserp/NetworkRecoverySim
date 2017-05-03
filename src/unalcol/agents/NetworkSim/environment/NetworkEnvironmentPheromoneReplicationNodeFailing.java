@@ -198,6 +198,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             if (n.getRespAgentsBkp().containsKey(d)) {
                 int i = n.getRespAgentsBkp().get(d);
                 System.out.println("in node" + d + " creating " + i + " agents...");
+                //rule to create new agents???
                 createNewAgents(i, nod, -1);
             }
             //createNewAgents(10, nod); //we cannot create agents yet! maybe after network is connected.
@@ -345,23 +346,72 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         }
     }
 
+    public class CustomComparatorNodeN implements Comparator<Node> {
+
+        String neig;
+
+        public CustomComparatorNodeN(String n) {
+            neig = n;
+        }
+
+        @Override
+        public int compare(Node f1, Node f2) {
+            int n1, n2;
+            if (!f1.getNetworkdata().containsKey(neig)) {
+                n1 = 0;
+            } else {
+                n1 = f1.getNetworkdata().get(neig).size();
+            }
+            if (!f2.getNetworkdata().containsKey(neig)) {
+                n2 = 0;
+            } else {
+                n2 = f2.getNetworkdata().get(neig).size();
+            }
+            if (n1 == n2) {
+                return 0;
+            } else if (n1 > n2) {
+                return 1;
+            }
+            return -1;
+        }
+
+    }
+
     public String getMinimumId(List<String> neigdiff) {
-        // System.out.print("getMinimum id called, ");
-        /*if(neigdiff.isEmpty()){
-            return 
-        }*/
         List<String> nodesAlive = new ArrayList();
         for (String s : neigdiff) {
             if (getNode(s) != null) {
                 nodesAlive.add(s);
             }
         }
-        //if (nodesAlive.isEmpty()) {
-        //System.out.println("nodes alive size " + nodesAlive.size());
         String min = Collections.min(nodesAlive, new CustomComparatorNode());
-        //}
-        //System.out.println(" min " + min);
         return min;
+    }
+
+    public String getMoreInfoId(List<String> neigdiff, String neig) {
+        List<Node> nodesAlive = new ArrayList();
+        for (String s : neigdiff) {
+            Node x = getNode(s);
+            if (x != null) {
+                nodesAlive.add(x);
+            }
+        }
+        Node maxN = Collections.max(nodesAlive, new CustomComparatorNodeN(neig));
+        return maxN.getVertex().getName();
+    }
+
+    public ArrayList<MobileAgent> getRepeatedAgents(MobileAgent x) {
+        ArrayList<MobileAgent> todelete = new ArrayList<>();
+        synchronized (NetworkEnvironmentReplication.class) {
+            for (MobileAgent a : agentsAlive) {
+                if ((a.getId() != x.getId() && a.getIdFather() == x.getId()) && x.getLocation() != null && x.getLocation().equals(a.getLocation())) {
+                    if (a.getId() > x.getId()) {
+                        todelete.add(a);
+                    }
+                }
+            }
+        }
+        return todelete;
     }
 
     @Override
@@ -447,11 +497,26 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                         }
                     }
                 }
+                /*
+                ArrayList<MobileAgent> killed = new ArrayList(getRepeatedAgents(a));
+                if (!killed.isEmpty()) {
+                    System.out.println(a.getId() + ": killed " + killed.size() + " agents!");
+                }
+
+                for (MobileAgent id : killed) {
+                    String[] message = new String[2]; //msg: [from|msg]
+                    message[0] = String.valueOf(a.getId());
+                    message[1] = "kill";
+                    NetworkMessageBuffer.getInstance().putMessage(id.getId(), message);
+                    //killAgent(id);
+                }
+                 */
                 // Communication among agents 
                 //detects other agents in network
                 //TOFIX: optimize this please bvy now is disabled!
-                /*ArrayList<Integer> agentNeighbors = getAgentNeighbors(a);
+                //ArrayList<Integer> agentNeighbors = getAgentNeighbors(a);
 
+                /*
                 //serialize messages 
                 String[] message = new String[2]; //msg: [from|msg]
                 message[0] = String.valueOf(a.getId());
@@ -462,17 +527,21 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     NetworkMessageBuffer.getInstance().putMessage(idAgent, message);
                     a.incMsgSend();
                 }''
-                
+                 */
                 String[] inbox = NetworkMessageBuffer.getInstance().getMessage(a.getId());
-
                 int old_size = a.getData().size();
                 int new_size = 0;
 
                 //inbox: id | infi 
                 if (inbox != null) {
                     a.incMsgRecv();
-                    ArrayList senderInf = (ArrayList) ObjectSerializer.deserialize(inbox[1]);
-
+                    if (inbox[1].equals("kill")) {
+                        System.out.println("I was stopped by " + inbox[0]);
+                        killAgent(a);
+                        return false;
+                    }
+                }
+                /*
                     // Join ArrayLists
                     a.getData().removeAll(senderInf);
                     a.getData().addAll(senderInf);
@@ -630,6 +699,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                 //deleteNextReplica(n);
                                 //}
                                 //evaluateAgentCreationArrival(n);
+                                n.decrementAgentCount();
                             }
                             if (inbox[0].equals("freeresp")) {
                                 incrementACKAmount();
@@ -645,7 +715,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                     incrementFalsePossitives();
                                     // deleteNextReplica(n);
                                 }
-                                n.decrementAgentCount();
+
                             }
 
                             if (inbox[0].equals("networkdata")) {
@@ -727,6 +797,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                 // System.out.println(n.getVertex().getName() + "-d:" + d + ", data:" + n.getNetworkdata());
                                 //System.out.println("ne:" + neigdiff + ", " + n.getVertex().getName());
                                 min = getMinimumId(neigdiff);
+                                // min = getMoreInfoId(neigdiff, d);
                                 //I'm minimum, I create node
                                 //System.out.println("min" + min + " vs " + n.getVertex().getName());
                                 if (min.equals(n.getVertex().getName())) {
