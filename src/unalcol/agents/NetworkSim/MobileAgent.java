@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 
@@ -33,6 +34,7 @@ public class MobileAgent extends Agent implements Serializable {
     private GraphElements.MyVertex prevLocation;
     private List<HashMap> localNetwork;
     private List<HashMap<String, Integer>> localAgentsInNetwork;
+    private List<HashMap<String, ConcurrentHashMap<Integer, Integer>>> localAgentsInNetworkHmap;
     //private List<HashMap> agents;
 
     private HashMap<String, Integer> respAgentsBkp;
@@ -47,6 +49,7 @@ public class MobileAgent extends Agent implements Serializable {
         idFather = -1;
         respAgentsBkp = new HashMap<>();
         localAgentsInNetwork = new ArrayList<>();
+        localAgentsInNetworkHmap = new ArrayList<>();
     }
 
     public MobileAgent() {
@@ -54,6 +57,7 @@ public class MobileAgent extends Agent implements Serializable {
         super(null, null);
         this.localNetwork = new ArrayList<>();
         localAgentsInNetwork = new ArrayList<>();
+        localAgentsInNetworkHmap = new ArrayList<>();
     }
 
     public void setAttribute(String key, Object value) {
@@ -272,6 +276,20 @@ public class MobileAgent extends Agent implements Serializable {
      */
     public void setLocalAgentsInNetwork(List<HashMap<String, Integer>> localAgentsInNetwork) {
         this.localAgentsInNetwork = localAgentsInNetwork;
+    }
+
+    /**
+     * @return the localAgentsInNetworkHmap
+     */
+    public List<HashMap<String, ConcurrentHashMap<Integer, Integer>>> getLocalAgentsInNetworkHmap() {
+        return localAgentsInNetworkHmap;
+    }
+
+    /**
+     * @param localAgentsInNetworkHmap the localAgentsInNetworkHmap to set
+     */
+    public void setLocalAgentsInNetworkHmap(List<HashMap<String, ConcurrentHashMap<Integer, Integer>>> localAgentsInNetworkHmap) {
+        this.localAgentsInNetworkHmap = localAgentsInNetworkHmap;
     }
 
 }

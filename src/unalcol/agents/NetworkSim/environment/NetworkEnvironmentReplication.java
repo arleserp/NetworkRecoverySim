@@ -211,7 +211,6 @@ public class NetworkEnvironmentReplication extends Environment {
 
         if (agent instanceof MobileAgent) {
             MobileAgent a = (MobileAgent) agent;
-
             //System.out.println("sense - topology " + topology);
             //Load neighbors 
             if (a.status != Action.DIE && topology.containsVertex(a.getLocation())) {

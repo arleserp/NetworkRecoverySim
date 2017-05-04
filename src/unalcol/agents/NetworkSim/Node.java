@@ -6,11 +6,12 @@
 package unalcol.agents.NetworkSim;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
@@ -23,6 +24,7 @@ import unalcol.agents.NetworkSim.util.StatisticsNormalDist;
 public class Node extends Agent {
 
     private GraphElements.MyVertex v;
+    private final ConcurrentHashMap<Integer, Integer> agentsInNode;
     private ArrayList<Agent> currentAgents;
     private HashMap<Integer, Integer> responsibleAgents;
     private HashMap<Integer, Integer> responsibleAgentsArrival;
@@ -50,10 +52,11 @@ public class Node extends Agent {
     private HashMap<Object, ArrayList> pending;
     private HashMap<String, Integer> respAgentsBkp;
     private HashMap<Integer, String> prevLoc; // Stores <agentId, prevLoc> 
-    private HashMap<Integer, Integer> followedAgentsCounter; // Stores <agentId, counter> 
+    private HashMap<Integer, Integer> followedAgentsCounter; // Stores <agentId, counter>
+    private HashMap<String, ConcurrentHashMap<Integer, Integer>> agentsInNeighbors;
     AtomicInteger c = new AtomicInteger(0);
-    
-     public void incrementAgentCount() {
+
+    public void incrementAgentCount() {
         c.incrementAndGet();
     }
 
@@ -64,7 +67,7 @@ public class Node extends Agent {
     public int getAgentCount() {
         return c.get();
     }
-    
+
     public HashMap<Object, ArrayList> getPending() {
         return pending;
     }
@@ -93,6 +96,8 @@ public class Node extends Agent {
         lastAgentArrival = new HashMap<>();
         prevLoc = new HashMap<>();
         followedAgentsCounter = new HashMap<>();
+        agentsInNode = new ConcurrentHashMap<>();
+        agentsInNeighbors = new HashMap<>();
     }
 
     public Node(AgentProgram _program, GraphElements.MyVertex ve, HashMap tout) {
@@ -100,7 +105,7 @@ public class Node extends Agent {
         this.pending = new HashMap();
         this.networkdata = new HashMap<>();
         this.v = ve;
-        currentAgents = new ArrayList<>();
+        agentsInNode = new ConcurrentHashMap<>();
         responsibleAgents = new HashMap<>();
         responsibleAgentsLocation = new HashMap<>();
         lastAgentDeparting = new HashMap<>();
@@ -114,6 +119,7 @@ public class Node extends Agent {
         lastAgentArrival = new HashMap<>();
         prevLoc = new HashMap<>();
         followedAgentsCounter = new HashMap<>();
+        agentsInNeighbors = new HashMap<>();
     }
 
     public GraphElements.MyVertex getVertex() {
@@ -122,6 +128,16 @@ public class Node extends Agent {
 
     public void addAgent(Agent a) {
         getCurrentAgents().add(a);
+    }
+
+    public void addAgentInNode(int agId, int fId) {
+        if (!agentsInNode.contains(agId)) {
+            getAgentsInNode().put(agId, fId);
+        }
+    }
+
+    public void deleteAgentInNode(int agId) {
+        getAgentsInNode().remove(agId);
     }
 
     public void deleteAgent(Agent a) {
@@ -149,7 +165,7 @@ public class Node extends Agent {
     }
 
     /**
-     * @return the currentAgents
+     * @return the agentsInNode
      */
     public ArrayList<Agent> getCurrentAgents() {
         return currentAgents;
@@ -721,5 +737,50 @@ public class Node extends Agent {
 
     public int deleteFollowedAgentsCounter(int agentId) {
         return followedAgentsCounter.remove(agentId);
+    }
+
+    /**
+     * @return the agentsInNode
+     */
+    public ConcurrentHashMap<Integer, Integer> getAgentsInNode() {
+        return agentsInNode;
+    }
+
+    public ArrayList<Integer> getDuplicatedAgents() {
+        ArrayList<Integer> duplicatedAgents = new ArrayList<>();
+        Iterator<Integer> it = agentsInNode.keySet().iterator();
+        //System.out.print("Agents in node: " + agentsInNode + ", duplicated agents:");
+        while (it.hasNext()) {
+            int agent = it.next();
+            int father = agentsInNode.get(agent);
+            if (father != -1) {
+                if (agentsInNode.containsKey(father)) {
+                    duplicatedAgents.add(agent);
+                    System.out.print("," + agent);
+                }
+            }
+        }
+        if (!duplicatedAgents.isEmpty()) {
+            System.out.println("Agents in node: " + agentsInNode + ", duplicated agents:");
+            System.out.println("yayayayay");
+            for (Integer r : duplicatedAgents) {
+                agentsInNode.remove(r);
+            }
+        }
+        return duplicatedAgents;
+    }
+
+    /**
+     * @return the agentsInNeighbors
+     */
+    public HashMap<String, ConcurrentHashMap<Integer, Integer>> getAgentsInNeighbors() {
+        return agentsInNeighbors;
+    }
+
+    /**
+     * @param agentsInNeighbors the agentsInNeighbors to set
+     */
+    public void setAgentsInNeighbors(HashMap<String, ConcurrentHashMap<Integer, Integer>> agentsInNeighbors) {
+        this.agentsInNeighbors = agentsInNeighbors;
     }
 }

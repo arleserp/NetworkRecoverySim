@@ -43,23 +43,25 @@ public class NetworkNodeMessageBuffer {
         mbuffer.remove(pid);
     }
 
-    public void putMessage(String pid, String[] msg) {
-        /*if (msg[0].equals("departing") || msg[0].equals("arrived") || msg[0].equals("freeresp")) {
+    public boolean putMessage(String pid, String[] msg) {
+        //if (msg[0].equals("departing") || msg[0].equals("arrived") || msg[0].equals("freeresp")) {
+       /* if (msg[0].equals("arrived")) {
             System.out.print("new message to: " + pid + " ");
             for (String x : msg) {
                 System.out.print(" " + x);
             }
             System.out.println("");
         }*/
-        if (!mbuffer.containsKey(pid)) {
-            System.out.println("Destination does not exist:" + pid);
-            return;
-        }
         if (pid == null) {
-            System.out.println("Destination is null");
-            return;
+            System.out.println("Warning!!! Destination is null");
+            return false;
+        }
+        if (!mbuffer.containsKey(pid)) {
+            System.out.println("Warning!!!! Destination does not exist:" + pid + " msg:" + msg[0] + "from" + msg[1]);
+            return false;
         }
         mbuffer.get(pid).add(msg);
+        return true;
     }
 
     // Called by Consumer

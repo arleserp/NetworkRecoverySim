@@ -50,7 +50,7 @@ public class PheromoneReplicationProgram implements AgentProgram {
             vs = new ArrayList<>();
             while(it.hasNext()){
                 GraphElements.MyVertex v = it.next();
-                if(v != null){
+                if(v != null && !v.getStatus().equals("failed")){
                     vs.add(v);
                 }
             }
@@ -58,7 +58,7 @@ public class PheromoneReplicationProgram implements AgentProgram {
             act.setAttribute("location", vs.toArray()[pos]);
             act.setAttribute("pf", pf);
         } catch (Exception ex) {
-            System.out.println("this cannot happen!!! agent fail because node is not running or was killed determining new movement." + vs);
+           // System.out.println("this cannot happen!!! agent fail because node is not running or was killed determining new movement." + vs);
             //return new ActionParameters("die");
             // System.out.println("Inform node that possibly a node is death: " + ex.getLocalizedMessage());
             return new ActionParameters("informfailure");

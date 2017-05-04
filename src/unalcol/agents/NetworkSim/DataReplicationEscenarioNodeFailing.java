@@ -5,13 +5,14 @@
  */
 package unalcol.agents.NetworkSim;
 
-import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
+import edu.uci.ics.jung.algorithms.layout.KKLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.algorithms.layout.RadialTreeLayout;
+import edu.uci.ics.jung.algorithms.layout.RadiusGraphElementAccessor;
+import edu.uci.ics.jung.graph.Forest;
 import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.SparseGraph;
-import edu.uci.ics.jung.graph.UndirectedSparseGraph;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
-import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
@@ -34,8 +35,10 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import org.apache.commons.collections15.Transformer;
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
@@ -112,7 +115,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         juegoDatos.addSeries(nodesLive);
         frame2.setLocation(350, 150);
         frame2.setSize(450, 450);
-        frame2.show();
+        //frame2.show();
     }
 
     /**
@@ -157,6 +160,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         HashMap<String, HashMap> nodeTimeout = (HashMap) ObjectSerializer.loadDeserializedObject(fileTimeout);
 
         for (GraphElements.MyVertex v : g.getVertices()) {
+            v.setStatus("alive");
             Node n = null;
             if (nodeTimeout != null && nodeTimeout.containsKey(v.getName())) {
                 n = new Node(np, v, nodeTimeout.get(v.getName()));
@@ -187,11 +191,11 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
             NetworkMessageBuffer.getInstance().createBuffer(a.getId());
             agents.add(a);
 
-            /*String[] msgnode = new String[4];
+            String[] msgnode = new String[3];
             msgnode[0] = "arrived";
             msgnode[1] = String.valueOf(a.getId());
             msgnode[2] = String.valueOf(a.getIdFather());
-            NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);*/
+            NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
             //Initialize implies arrival message from nodes!
         }
 
@@ -225,6 +229,19 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
             } else {
                 try {
 
+                    JFreeChart chart = ChartFactory.createXYLineChart(
+                            "ssss", "Round number", "Agents",
+                            juegoDatos, PlotOrientation.VERTICAL,
+                            true, true, false);
+                    ChartPanel chpanel = new ChartPanel(chart);
+                    
+                    JPanel jPanel = new JPanel();
+                    jPanel.setLayout(new BorderLayout());
+                    jPanel.add(chpanel, BorderLayout.NORTH);
+                    frame2.add(jPanel);
+                    frame2.pack();
+                    frame2.setVisible(true);
+                    
                     Layout<GraphElements.MyVertex, String> layout = null;
                     /*
                 switch (SimulationParameters.graphMode) {
@@ -253,7 +270,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                         layout = new ISOMLayout<>(g);
                         break;
                 }*/
-                    layout = new ISOMLayout<>(g);
+                    layout = new KKLayout<>(g);
                     //layout = new CircleLayout<>(g);
 
                     BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
@@ -271,6 +288,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                             if (i.getStatus() != null && i.getStatus().equals("visited")) {
                                 return Color.BLUE;
                             }
+
                             //if(i.getData().size() > 0){
                             //    System.out.println("i"+ i.getData().size());
                             //}
@@ -294,7 +312,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
 
                         try {
                             //!world.isFinished()) {
-                            Thread.sleep(100);
+                            Thread.sleep(30);
                         } catch (InterruptedException ex) {
                             Logger.getLogger(DataReplicationEscenarioNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
                         }
@@ -302,22 +320,21 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                         //System.out.println("n visited nodes size" + n.visitedNodes.size());
                         // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
                         // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
-                        //vv.repaint();
+                        vv.repaint();
                         //}
                         int agentsAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getAgentsAlive();
                         int nodesAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getNodesAlive();
                         //System.out.println("n" + n.getAge() + "," + agentsAlive);
                         //System.out.println("n" + n.getAge() + "," + nodesAlive);
-                        if (g.getVertexCount() == 0) {
+                        if (nodesAlive == 0) {
                             System.out.println("no nodes alive.");
-                        } else {
-                            if (n != null) {
-                                agentsLive.add(n.getAge(), agentsAlive);
-                                nodesLive.add(n.getAge(), nodesAlive);
-                            }
-                            System.out.println("entra:" + n.getAge());
-                            frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
-                        }
+                            break;
+                        } else if (n != null) {
+                            agentsLive.add(n.getAge(), agentsAlive);
+                            nodesLive.add(n.getAge(), nodesAlive);
+                        } // System.out.println("entra:" + n.getAge());
+                        frame2.repaint();
+                        //frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
                     }
                 } catch (NullPointerException ex) {
                     System.out.println("exception drawing graph: " + ex.getLocalizedMessage());
@@ -357,7 +374,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 world.nObservers();
             }
              */
-            /*if (world instanceof NetworkEnvironmentPheromoneReplicationNodeFailing && SimulationParameters.motionAlg.equals("carriers")) {
+ /*if (world instanceof NetworkEnvironmentPheromoneReplicationNodeFailing && SimulationParameters.motionAlg.equals("carriers")) {
                 ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).evaporatePheromone();
             }
             if (world instanceof NetworkEnvironmentPheromoneReplicationNodeFailing && SimulationParameters.motionAlg.equals("carriersrep")) {
