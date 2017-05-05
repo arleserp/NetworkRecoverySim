@@ -89,8 +89,8 @@ class StatisticsProviderReplication {
         StatisticsNormalDist stsend = new StatisticsNormalDist(msgout, msgout.size());
         StatisticsNormalDist strecv = new StatisticsNormalDist(msgin, msgin.size());
         //StatisticsNormalDist explT = new StatisticsNormalDist(explTerrain, explTerrain.size());
-        Statistics.put("nvertex", w.topology.getVertexCount());
-        Statistics.put("nedges", w.topology.getEdgeCount());
+        Statistics.put("nvertex", w.getTopology().getVertexCount());
+        Statistics.put("nedges", w.getTopology().getEdgeCount());
         Statistics.put("mean", stnd.getMean());
         Statistics.put("stddev", stnd.getStdDev());
         Statistics.put("right", w.nodesComplete()); //Changed to obtain if information is replicated in nodes

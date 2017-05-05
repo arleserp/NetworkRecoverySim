@@ -230,48 +230,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     }
 
     private void redrawNetwork() {
-        Layout<GraphElements.MyVertex, String> layout = null;
-
-        layout = new ISOMLayout<>(world.getTopology());
-
-        BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
-        vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
-        //vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-        //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
-        //n.setVV(vv);
-        Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
-            @Override
-            public Paint transform(GraphElements.MyVertex i) {
-               /* if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
-                    return Color.YELLOW;
-                }*/
-
-                if (i.getStatus() != null && i.getStatus().equals("failed")) {
-                    return Color.BLACK;
-                }
-
-                if (i.getStatus() != null && i.getStatus().equals("visited")) {
-                    return Color.BLUE;
-                }
-
-                //if(i.getData().size() > 0){
-                //    System.out.println("i"+ i.getData().size());
-                //}
-                /*if (i.getData().size() == n.getTopology().getVertices().size()) {
-                                return Color.GREEN;
-                            }*/
-                return Color.RED;
-            }
-        };
-        vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
-        if (!added) {
-            networkPanel.add(vv);
-            added = true;
-            frame.pack();
-            frame.setVisible(true);
-        } else {
-            frame.repaint();
-        }
+        FrameGraphUpdaterOnce fgup2 = new FrameGraphUpdaterOnce(world.getTopology(), frame, world);
+        fgup2.start();
     }
 
     public class FrameGraphUpdater extends Thread {
@@ -343,7 +303,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
 
                     BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
                     vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
-                    vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+                    //vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
                     //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
                     //n.setVV(vv);
                     Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
@@ -417,6 +377,76 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         }
     }
 
+    public class FrameGraphUpdaterOnce extends Thread {
+
+        Graph<GraphElements.MyVertex, String> g;
+        JFrame frame;
+        NetworkEnvironmentReplication n;
+
+        public FrameGraphUpdaterOnce(Graph<GraphElements.MyVertex, String> g, JFrame frame, NetworkEnvironmentReplication ne) {
+            this.g = g;
+            this.frame = frame;
+            this.n = ne;
+        }
+
+        public void run() {
+            System.out.println("call runnn!!!");
+
+            isDrawing = true;
+            if (g.getVertexCount() == 0) {
+                System.out.println("no nodes alive.");
+            } else {
+                try {
+                    Layout<GraphElements.MyVertex, String> layout = null;
+
+                    layout = new ISOMLayout<>(world.getTopology());
+
+                    BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
+                    vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
+                    //vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+                    //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
+                    //n.setVV(vv);
+                    Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
+                        @Override
+                        public Paint transform(GraphElements.MyVertex i) {
+                            /* if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
+                    return Color.YELLOW;
+                }*/
+
+                            if (i.getStatus() != null && i.getStatus().equals("failed")) {
+                                return Color.BLACK;
+                            }
+
+                            if (i.getStatus() != null && i.getStatus().equals("visited")) {
+                                return Color.BLUE;
+                            }
+
+                            //if(i.getData().size() > 0){
+                            //    System.out.println("i"+ i.getData().size());
+                            //}
+                            /*if (i.getData().size() == n.getTopology().getVertices().size()) {
+                                return Color.GREEN;
+                            }*/
+                            return Color.RED;
+                        }
+                    };
+                    vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
+                    if (!added) {
+                        networkPanel.add(vv);
+                        added = true;
+                        frame.pack();
+                        frame.setVisible(true);
+                    } else {
+                        frame.repaint();
+                    }
+                } catch (NullPointerException ex) {
+                    System.out.println("exception drawing graph: " + ex.getLocalizedMessage());
+                    isDrawing = false;
+                }
+            }
+        }
+    }
+
     /**
      * Runs a simulation.
      *
@@ -428,8 +458,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
             try {
                 //!world.isFinished()) {
                 Thread.sleep(50);
+
             } catch (InterruptedException ex) {
-                Logger.getLogger(DataReplicationEscenarioNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(DataReplicationEscenarioNodeFailing.class
+                        .getName()).log(Level.SEVERE, null, ex);
             }
 
             if (fgup == null) {

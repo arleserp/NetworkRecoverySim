@@ -49,7 +49,7 @@ public class NetworkEnvironmentReplication extends Environment {
     public int[][] structure = null;
     public SimpleLanguage language = null;
     Date date;
-    public final Graph<GraphElements.MyVertex, String> topology;
+    private final Graph<GraphElements.MyVertex, String> topology;
     GraphElements.MyVertex currentNode = null;
     String currentEdge = null;
     String lastactionlog;
@@ -90,8 +90,8 @@ public class NetworkEnvironmentReplication extends Environment {
     public int getCompletionPercentage() {
         int completed = 0;
 
-        for (GraphElements.MyVertex v : topology.getVertices()) {
-            if (v.getData().size() == topology.getVertices().size()) {
+        for (GraphElements.MyVertex v : getTopology().getVertices()) {
+            if (v.getData().size() == getTopology().getVertices().size()) {
                 completed++;
             }
         }
@@ -100,18 +100,18 @@ public class NetworkEnvironmentReplication extends Environment {
 
     public boolean nodesComplete() {
         int completed = 0;
-        for (GraphElements.MyVertex v : topology.getVertices()) {
-            if (v.getData().size() == topology.getVertices().size()) {
+        for (GraphElements.MyVertex v : getTopology().getVertices()) {
+            if (v.getData().size() == getTopology().getVertices().size()) {
                 completed++;
             }
         }
 
-        if (percentageSuccess != (float) completed / (float) topology.getVertices().size() * 100) {
-            percentageSuccess = (float) completed / (float) topology.getVertices().size() * 100;
+        if (percentageSuccess != (float) completed / (float) getTopology().getVertices().size() * 100) {
+            percentageSuccess = (float) completed / (float) getTopology().getVertices().size() * 100;
             System.out.println(percentageSuccess + "%");
         }
 
-        return completed == topology.getVertices().size();
+        return completed == getTopology().getVertices().size();
     }
 
     public boolean act(Agent agent, Action action) {
@@ -171,7 +171,7 @@ public class NetworkEnvironmentReplication extends Environment {
                     a.setLocation(v);
                     a.setRound(a.getRound() + 1);
                     boolean complete = false;
-                    if (a.getData().size() == topology.getVertexCount()) {
+                    if (a.getData().size() == getTopology().getVertexCount()) {
                         complete = true;
                     }
 
@@ -213,8 +213,8 @@ public class NetworkEnvironmentReplication extends Environment {
             MobileAgent a = (MobileAgent) agent;
             //System.out.println("sense - topology " + topology);
             //Load neighbors 
-            if (a.status != Action.DIE && topology.containsVertex(a.getLocation())) {
-                p.setAttribute("neighbors", topology.getNeighbors(a.getLocation()));
+            if (a.status != Action.DIE && getTopology().containsVertex(a.getLocation())) {
+                p.setAttribute("neighbors", getTopology().getNeighbors(a.getLocation()));
                 //System.out.println("agent" + anAgent.getId() + "- neighbor: " +  getTopology().getNeighbors(anAgent.getLocation()));
                 //Load data in Agent
                 //clone ArrayList
@@ -357,7 +357,9 @@ public class NetworkEnvironmentReplication extends Environment {
      * @return the topology
      */
     public Graph<GraphElements.MyVertex, String> getTopology() {
-        return topology;
+        synchronized (NetworkEnvironmentReplication.class) {
+            return topology;
+        }
     }
 
     /**
@@ -366,7 +368,6 @@ public class NetworkEnvironmentReplication extends Environment {
     /*public void setTopology(Graph<GraphElements.MyVertex, String> topology) {
         this.topology = topology;
     }*/
-
     /**
      * @return the visitedNodes
      */
@@ -477,9 +478,9 @@ public class NetworkEnvironmentReplication extends Environment {
     
      */
     public Double getAmountGlobalInfo() {
-       synchronized (NetworkEnvironmentReplication.class) {
+        synchronized (NetworkEnvironmentReplication.class) {
             Double amountGlobalInfo = 0.0;
-            Iterator<GraphElements.MyVertex> itr = topology.getVertices().iterator();
+            Iterator<GraphElements.MyVertex> itr = getTopology().getVertices().iterator();
             //List<GraphElements.MyVertex> vertex_t = new ArrayList<>();
             while (itr.hasNext()) {
                 GraphElements.MyVertex v = itr.next();
@@ -506,7 +507,7 @@ public class NetworkEnvironmentReplication extends Environment {
 
                 }
             }
-            return amountGlobalInfo / topology.getVertexCount();
+            return amountGlobalInfo / getTopology().getVertexCount();
         }
     }
 
@@ -540,10 +541,10 @@ public class NetworkEnvironmentReplication extends Environment {
     /**
      * @param age the age to set
      */
-  /*  public void setAge(int age) {
+    /*  public void setAge(int age) {
         this.age = age;
     }
-*/
+     */
     /**
      * @return the nodesAgents
      */

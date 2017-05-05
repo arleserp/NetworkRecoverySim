@@ -131,7 +131,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     case 0: // move
                         //System.out.println("a despues" + a.getLocation());
                         boolean complete = false;
-                        if (a.getData().size() == topology.getVertexCount()) {
+                        if (a.getData().size() == getTopology().getVertexCount()) {
                             complete = true;
                         }
 
@@ -282,7 +282,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
     }
 
     public void evaporatePheromone() {
-        for (GraphElements.MyVertex v : topology.getVertices()) {
+        for (GraphElements.MyVertex v : getTopology().getVertices()) {
             //System.out.println(v.toString() + "before:" + v.getPh());
             v.setPh(v.getPh() - v.getPh() * 0.001f);
             //System.out.println(v.toString() + "after:" + v.getPh());

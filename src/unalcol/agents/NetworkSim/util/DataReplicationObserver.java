@@ -187,7 +187,7 @@ public class DataReplicationObserver implements Observer {
                     isUpdating = true;
                     n.stop();
                     StatisticsProviderReplication sti;
-                    String filename = "exp+ps+" + SimulationParameters.popSize + "+pf+" + SimulationParameters.pf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + n.topology.getEdges().size() + "+v+" + n.topology.getVertices().size() + "+" + SimulationParameters.graphMode;
+                    String filename = "exp+ps+" + SimulationParameters.popSize + "+pf+" + SimulationParameters.pf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + n.getTopology().getEdges().size() + "+v+" + n.getTopology().getVertices().size() + "+" + SimulationParameters.graphMode;
 
                     if (SimulationParameters.graphMode.equals("smallworld")) {
                         filename += "+beta+" + SimulationParameters.beta;
