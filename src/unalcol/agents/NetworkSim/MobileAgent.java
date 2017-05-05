@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import unalcol.agents.Action;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 
@@ -129,7 +130,10 @@ public class MobileAgent extends Agent implements Serializable {
     /**
      * @return the location
      */
-    public GraphElements.MyVertex getLocation() {
+    public GraphElements.MyVertex getLocation() throws NullPointerException {
+        if (location == null) {
+            throw new NullPointerException("Agent has not a valid location: " + this.getId() + " location is null is alive: " + (this.status == Action.DIE));
+        }
         return location;
     }
 

@@ -9,10 +9,13 @@ import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
+import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -31,6 +34,8 @@ import unalcol.agents.simulate.util.SimpleLanguage;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import org.apache.commons.collections15.Transformer;
@@ -57,7 +62,7 @@ import unalcol.agents.NetworkSim.util.StringSerializer;
  *
  * @author arles.rodriguez
  */
-public class DataReplicationEscenarioNodeFailing implements Runnable {
+public class DataReplicationEscenarioNodeFailing implements Runnable, ActionListener {
 
     private NetworkEnvironmentReplication world;
     public boolean renderAnts = true;
@@ -84,6 +89,9 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
     XYSeries nodesLive;
     XYSeriesCollection juegoDatos = new XYSeriesCollection();
     FrameGraphUpdater fgup = null;
+    private final JPanel networkPanel;
+    private final JPanel bPanel;
+    private final JButton redraw;
 
     /**
      * Creates a simulation without graphic interface
@@ -112,6 +120,14 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         juegoDatos.addSeries(nodesLive);
         frame2.setLocation(350, 150);
         frame2.setSize(450, 450);
+        frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
+        bPanel = new JPanel();
+        redraw = new JButton("Redraw Network");
+        bPanel.add(redraw);
+        networkPanel = new JPanel();
+        frame.add(networkPanel);
+        frame.add(bPanel);
+        redraw.addActionListener(this);
         //frame2.show();
     }
 
@@ -205,6 +221,59 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         executions++;
     }
 
+    @Override
+    public void actionPerformed(ActionEvent ae) {
+        final JButton source = (JButton) ae.getSource();
+        if (source.equals(redraw)) {
+            redrawNetwork();
+        }
+    }
+
+    private void redrawNetwork() {
+        Layout<GraphElements.MyVertex, String> layout = null;
+
+        layout = new ISOMLayout<>(world.getTopology());
+
+        BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
+        vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
+        //vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+        //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
+        //n.setVV(vv);
+        Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
+            @Override
+            public Paint transform(GraphElements.MyVertex i) {
+               /* if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
+                    return Color.YELLOW;
+                }*/
+
+                if (i.getStatus() != null && i.getStatus().equals("failed")) {
+                    return Color.BLACK;
+                }
+
+                if (i.getStatus() != null && i.getStatus().equals("visited")) {
+                    return Color.BLUE;
+                }
+
+                //if(i.getData().size() > 0){
+                //    System.out.println("i"+ i.getData().size());
+                //}
+                /*if (i.getData().size() == n.getTopology().getVertices().size()) {
+                                return Color.GREEN;
+                            }*/
+                return Color.RED;
+            }
+        };
+        vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
+        if (!added) {
+            networkPanel.add(vv);
+            added = true;
+            frame.pack();
+            frame.setVisible(true);
+        } else {
+            frame.repaint();
+        }
+    }
+
     public class FrameGraphUpdater extends Thread {
 
         Graph<GraphElements.MyVertex, String> g;
@@ -227,7 +296,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 try {
 
                     JFreeChart chart = ChartFactory.createXYLineChart(
-                            "ssss", "Round number", "Agents",
+                            "Nodes and Agent Number vs Round", "Round number", "Agents-Nodes",
                             juegoDatos, PlotOrientation.VERTICAL,
                             true, true, false);
                     ChartPanel chpanel = new ChartPanel(chart);
@@ -274,7 +343,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
 
                     BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
                     vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
-                    //vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+                    vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
                     //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
                     //n.setVV(vv);
                     Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
@@ -284,9 +353,9 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                                 return Color.YELLOW;
                             }*/
 
-                            /*if (i.getStatus() != null && i.getStatus().equals("failed")) {
+                            if (i.getStatus() != null && i.getStatus().equals("failed")) {
                                 return Color.BLACK;
-                            }*/
+                            }
 
                             if (i.getStatus() != null && i.getStatus().equals("visited")) {
                                 return Color.BLUE;
@@ -304,7 +373,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                     };
                     vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
                     if (!added) {
-                        frame.getContentPane().add(vv);
+                        networkPanel.add(vv);
                         added = true;
                         frame.pack();
                         frame.setVisible(true);
@@ -323,7 +392,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                         //System.out.println("n visited nodes size" + n.visitedNodes.size());
                         // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
                         // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
-                       // vv.repaint();
+                        //vv.repaint();
                         //}
                         int agentsAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getAgentsAlive();
                         int nodesAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getNodesAlive();
@@ -364,7 +433,6 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
             }
 
             if (fgup == null) {
-
                 fgup = new FrameGraphUpdater(world.getTopology(), frame, world);
                 fgup.start();
             }
@@ -384,6 +452,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).evaporatePheromone();
             }*/
             ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).updateWorldAge();
+            ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).validateNodesAlive();
             /*
             if (world instanceof WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl) {
                 ((WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl) world).evaporatePheromone();
