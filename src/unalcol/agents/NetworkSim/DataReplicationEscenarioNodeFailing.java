@@ -5,11 +5,8 @@
  */
 package unalcol.agents.NetworkSim;
 
-import edu.uci.ics.jung.algorithms.layout.KKLayout;
+import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.algorithms.layout.RadialTreeLayout;
-import edu.uci.ics.jung.algorithms.layout.RadiusGraphElementAccessor;
-import edu.uci.ics.jung.graph.Forest;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import java.awt.BorderLayout;
@@ -234,14 +231,14 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                             juegoDatos, PlotOrientation.VERTICAL,
                             true, true, false);
                     ChartPanel chpanel = new ChartPanel(chart);
-                    
+
                     JPanel jPanel = new JPanel();
                     jPanel.setLayout(new BorderLayout());
                     jPanel.add(chpanel, BorderLayout.NORTH);
                     frame2.add(jPanel);
                     frame2.pack();
                     frame2.setVisible(true);
-                    
+
                     Layout<GraphElements.MyVertex, String> layout = null;
                     /*
                 switch (SimulationParameters.graphMode) {
@@ -270,8 +267,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                         layout = new ISOMLayout<>(g);
                         break;
                 }*/
-                    layout = new KKLayout<>(g);
+                    //layout = new KKLayout<>(g);
                     //layout = new CircleLayout<>(g);
+
+                    layout = new ISOMLayout<>(g);
 
                     BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
                     vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
@@ -281,9 +280,13 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                     Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
                         @Override
                         public Paint transform(GraphElements.MyVertex i) {
-                            if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
+                            /*if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
                                 return Color.YELLOW;
-                            }
+                            }*/
+
+                            /*if (i.getStatus() != null && i.getStatus().equals("failed")) {
+                                return Color.BLACK;
+                            }*/
 
                             if (i.getStatus() != null && i.getStatus().equals("visited")) {
                                 return Color.BLUE;
@@ -320,7 +323,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                         //System.out.println("n visited nodes size" + n.visitedNodes.size());
                         // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
                         // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
-                        vv.repaint();
+                       // vv.repaint();
                         //}
                         int agentsAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getAgentsAlive();
                         int nodesAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getNodesAlive();

@@ -98,7 +98,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                 Iterator<Node> itr = nodes.iterator();
                 while (itr.hasNext()) {
                     Node n = itr.next();
-                    if (n.getVertex().getName().equals(nodename)) {
+                    if (n.getVertex().getName().equals(nodename) && !n.getVertex().getStatus().equals("failed")) {
                         return n.getVertex();
                     }
                 }
@@ -110,11 +110,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     private void connect(GraphElements.MyVertex vertex, String nodetoConnect) {
         GraphElements.MyVertex nodeTo = findVertex(nodetoConnect);
         if (nodeTo != null) {
-            if (topology.isNeighbor(vertex, vertex)) {
-                System.out.println("connection already exist!");
-            } else {
-                topology.addEdge("e" + vertex.getName() + nodeTo.getName(), vertex, nodeTo);
-            }
+            topology.removeEdge("e" + vertex.getName() + nodeTo.getName());
+            topology.addEdge("e" + vertex.getName() + nodeTo.getName(), vertex, nodeTo);
         } else {
             System.out.println("node to connect is null:" + nodetoConnect);
         }
@@ -168,8 +165,15 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
 
     void createNewNode(Node n, String d) {
         System.out.print("creating new node " + d);
-        if (findVertex(d) != null) { //can ping node and discover
-            System.out.println("Node " + d + " is alive canceling creation...");
+        GraphElements.MyVertex dvertex = findVertex(d);
+        if (dvertex != null) { //can ping node and discover
+            System.out.println("Node " + d + " is alive connecting instead create...");
+            if (!topology.isNeighbor(dvertex, n.getVertex())) {
+                if (topology.containsEdge("e" + dvertex.getName() + n.getVertex().getName())) {
+                    topology.removeEdge("e" + dvertex.getName() + n.getVertex().getName());
+                }
+                topology.addEdge("e" + dvertex.getName() + n.getVertex().getName(), dvertex, n.getVertex());
+            }
         } else {
             GraphCreator.VertexFactory v = new GraphCreator.VertexFactory();
             //GraphCreator.EdgeFactory e = new GraphCreator.EdgeFactory();
@@ -177,11 +181,12 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             GraphElements.MyVertex vv = v.create();
             vv.setName(d);
             vv.setStatus("alive");
-           // vv.setPh(0.5F);
+            // vv.setPh(0.5F);
             topology.addVertex(vv);
-            if (!topology.isNeighbor(vv, n.getVertex())) {
-                topology.addEdge("e" + vv.getName() + n.getVertex().getName(), vv, n.getVertex());
+            if (topology.containsEdge("e" + vv.getName() + n.getVertex().getName())) {
+                topology.removeEdge("e" + vv.getName() + n.getVertex().getName());
             }
+            topology.addEdge("e" + vv.getName() + n.getVertex().getName(), vv, n.getVertex());
             //NodeFailingProgram np = new NodeFailingProgram(SimulationParameters.npf);
             NodeFailingProgram np = new NodeFailingProgram((float) SimulationParameters.npf);
             NetworkNodeMessageBuffer.getInstance().createBuffer(d);
@@ -259,16 +264,16 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
 
     public boolean removeVertex(GraphElements.MyVertex vertex) {
         synchronized (topology) {
-            if (!topology.containsVertex(vertex)) {
-                return false;
-            }
             //copy to avoid concurrent modification in removeEdge
             //Set<String> incident = new HashSet<>(topology.getInEdges(vertex));
             //incident.addAll(topology.getOutEdges(vertex));
             //for (String edge : incident) {
             //    topology.removeEdge(edge);
             //}
-            topology.removeVertex(vertex);
+            if(!topology.removeVertex(vertex)){
+                System.out.println("cannot remove vertex " + vertex);
+            }
+            
             return true;
         }
     }
@@ -300,9 +305,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             System.out.println("node n" + n.getVertex().getName() + " is removing" + i.getId());
             killAgent(i);
         }
-
         n.getVertex().setName(n.getVertex().getName() + " failed");
-
         if (nodes.remove(n)) {
             System.out.println("removed: " + n.getVertex().getName());
         }
@@ -669,9 +672,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                 //agent.sleep(50);
                                 // getLocationAgents().put(a, a.getLocation());
                                 a.setPheromone((float) (a.getPheromone() + 0.01f * (0.5f - a.getPheromone())));
-                               // System.out.println("a" + a.getId() + " pheromone " + a.getPheromone());
+                                // System.out.println("a" + a.getId() + " pheromone " + a.getPheromone());
                                 a.getLocation().setPh(a.getLocation().getPh() + 0.01f * (a.getPheromone() - a.getLocation().getPh()));
-                                
+
                                 a.setRound(a.getRound() + 1);
                                 incrementAgentMovements();
 
