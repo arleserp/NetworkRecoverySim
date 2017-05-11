@@ -9,7 +9,6 @@ import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
-import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -22,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -53,6 +53,7 @@ import unalcol.agents.NetworkSim.environment.NetworkNodeMessageBuffer;
 import unalcol.agents.NetworkSim.environment.ObjectSerializer;
 import unalcol.agents.NetworkSim.programs.NodeFailingProgram;
 import unalcol.agents.NetworkSim.util.DataReplicationNodeFailingObserver;
+import unalcol.agents.NetworkSim.util.GraphComparator;
 import unalcol.agents.NetworkSim.util.GraphStats;
 //import unalcol.agents.NetworkSim.util.GraphStatistics;
 import unalcol.agents.NetworkSim.util.StringSerializer;
@@ -87,11 +88,13 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     private boolean isDrawing = false;
     XYSeries agentsLive;
     XYSeries nodesLive;
+    XYSeries cosineSim;
     XYSeriesCollection juegoDatos = new XYSeriesCollection();
     FrameGraphUpdater fgup = null;
     private final JPanel networkPanel;
     private final JPanel bPanel;
     private final JButton redraw;
+    Graph<GraphElements.MyVertex, String> initialNetwork;
 
     /**
      * Creates a simulation without graphic interface
@@ -116,8 +119,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         frame2 = new JFrame("Agent and Node Number");
         agentsLive = new XYSeries("agentsLive");
         nodesLive = new XYSeries("nodesLive");
+        cosineSim = new XYSeries("Cosine Sim");
         juegoDatos.addSeries(agentsLive);
         juegoDatos.addSeries(nodesLive);
+        juegoDatos.addSeries(cosineSim);
         frame2.setLocation(350, 150);
         frame2.setSize(450, 450);
         frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
@@ -129,6 +134,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         frame.add(bPanel);
         redraw.addActionListener(this);
         //frame2.show();
+        frame.setSize(650, 650);
+        frame.setVisible(true);
     }
 
     /**
@@ -156,6 +163,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         //greport = new GraphicReportHealingObserver(probFailure);
         //Create graph
         Graph<GraphElements.MyVertex, String> g = graphSimpleFactory.createGraph(SimulationParameters.graphMode);
+        String aCopy = StringSerializer.serialize(g);
+        initialNetwork = (Graph<GraphElements.MyVertex, String>) StringSerializer.deserialize(aCopy);
 
         //maybe to fix: alldata must have getter
         System.out.println("All data" + SimulationParameters.globalData);
@@ -268,83 +277,11 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                     frame2.pack();
                     frame2.setVisible(true);
 
-                    Layout<GraphElements.MyVertex, String> layout = null;
-                    /*
-                switch (SimulationParameters.graphMode) {
-                    case "scalefree":
-                        layout = new ISOMLayout<>(g);
-                        break;
-                    case "smallworld":
-                        layout = new CircleLayout<>(g);
-                        break;
-                    case "community":
-                        layout = new CircleLayout<>(g);
-                        break;
-                    case "kleinberg":
-                        layout = new CircleLayout<>(g);
-                        break;
-                    case "circle":
-                        layout = new ISOMLayout<>(g);
-                        break;
-                    case "line":
-                        layout = new ISOMLayout<>(g);
-                        break;
-                    case "lattice":
-                        layout = new ISOMLayout<>(g);
-                        break;
-                    default:
-                        layout = new ISOMLayout<>(g);
-                        break;
-                }*/
-                    //layout = new KKLayout<>(g);
-                    //layout = new CircleLayout<>(g);
-
-                    layout = new ISOMLayout<>(g);
-
-                    BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
-                    vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
-                    //vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-                    //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
-                    //n.setVV(vv);
-                    Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
-                        @Override
-                        public Paint transform(GraphElements.MyVertex i) {
-                            /*if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
-                                return Color.YELLOW;
-                            }*/
-
-                            if (i.getStatus() != null && i.getStatus().equals("failed")) {
-                                return Color.BLACK;
-                            }
-
-                            if (i.getStatus() != null && i.getStatus().equals("visited")) {
-                                return Color.BLUE;
-                            }
-
-                            //if(i.getData().size() > 0){
-                            //    System.out.println("i"+ i.getData().size());
-                            //}
-                            /*if (i.getData().size() == n.getTopology().getVertices().size()) {
-                                return Color.GREEN;
-                            }*/
-                            return Color.RED;
-                        }
-
-                    };
-                    vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
-                    if (!added) {
-                        networkPanel.add(vv);
-                        added = true;
-                        frame.pack();
-                        frame.setVisible(true);
-                    } else {
-                        frame.repaint();
-                    }
                     while (true) {
 
                         try {
                             //!world.isFinished()) {
-                            Thread.sleep(30);
+                            Thread.sleep(500);
                         } catch (InterruptedException ex) {
                             Logger.getLogger(DataReplicationEscenarioNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
                         }
@@ -364,12 +301,21 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                         } else if (n != null) {
                             agentsLive.add(n.getAge(), agentsAlive);
                             nodesLive.add(n.getAge(), nodesAlive);
+                            GraphComparator gcmp = new GraphComparator();
+                            // System.out.println("similarity" + gcmp.calculateSimilarity(initialNetwork, g));
+                            cosineSim.add(n.getAge(), gcmp.calculateSimilarity(initialNetwork, g));
+                            
+
                         } // System.out.println("entra:" + n.getAge());
                         frame2.repaint();
                         //frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
                     }
                 } catch (NullPointerException ex) {
                     System.out.println("exception drawing graph: " + ex.getLocalizedMessage());
+                    isDrawing = false;
+                    fgup = null;
+                } catch (ConcurrentModificationException ex) {
+                    System.out.println("exception calculating similarity graph: " + ex.getLocalizedMessage());
                     isDrawing = false;
                     fgup = null;
                 }
@@ -396,6 +342,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
             if (g.getVertexCount() == 0) {
                 System.out.println("no nodes alive.");
             } else {
+                //GraphComparator gcmp = new GraphComparator();
+                //nodesLive.add(n.getAge(), gcmp.calculateSimilarity(initialNetwork, g));
                 try {
                     Layout<GraphElements.MyVertex, String> layout = null;
 

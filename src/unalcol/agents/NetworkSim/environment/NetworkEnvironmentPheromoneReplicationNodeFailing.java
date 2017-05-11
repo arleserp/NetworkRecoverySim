@@ -285,7 +285,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     }
 
     public boolean removeVertex(GraphElements.MyVertex vertex) {
-        synchronized (NetworkEnvironmentPheromoneReplicationNodeFailing.class) {
+        synchronized (this) {
             //copy to avoid concurrent modification in removeEdge
             //Set<String> incident = new HashSet<>(topology.getInEdges(vertex));
             //incident.addAll(topology.getOutEdges(vertex));
@@ -295,7 +295,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             if (!getTopology().removeVertex(vertex)) {
                 System.out.println("cannot remove vertex " + vertex);
             }
-
             return true;
         }
     }
@@ -902,7 +901,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     }
                     if (SimulationParameters.activateReplication.equals("replalgon")) {
                         n.calculateTimeout();
-                        //evaluateAgentCreation(n);
+                        evaluateAgentCreation(n);
                         // n.calculateTimeoutArrival();
                         //evaluateAgentCreationArrival(n);
                     }
