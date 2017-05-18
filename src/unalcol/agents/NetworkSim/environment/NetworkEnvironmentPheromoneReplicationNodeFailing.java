@@ -14,11 +14,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Observer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.collections15.list.SynchronizedList;
 import unalcol.agents.NetworkSim.ActionParameters;
 import unalcol.agents.NetworkSim.GraphCreator;
 import unalcol.agents.NetworkSim.GraphElements;
@@ -174,8 +173,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         System.out.print("creating new node " + d);
         GraphElements.MyVertex dvertex = findVertex(d);
         if (dvertex != null) { //can ping node and discover
-            System.out.println("Node " + d + " is alive connecting instead create...");
-            if (!getTopology().isNeighbor(dvertex, n.getVertex())) {
+            System.out.println("Node " + d + " is alive connecting instead create...[" + dvertex + "," + n.getVertex() + "]");
+            if (getTopology().containsVertex(dvertex) && getTopology().containsVertex(n.getVertex()) && !getTopology().isNeighbor(dvertex, n.getVertex())) {
                 // if (topology.containsEdge("e" + dvertex.getName() + n.getVertex().getName())) {
                 //      topology.removeEdge("e" + dvertex.getName() + n.getVertex().getName());
                 // }
@@ -194,7 +193,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             vv.setName(d);
             vv.setStatus("alive");
             // vv.setPh(0.5F);
-            getTopology().addVertex(vv);
+            synchronized (TopologySingleton.getInstance()) {
+                getTopology().addVertex(vv);
+            }
             //if (topology.containsEdge("e" + vv.getName() + n.getVertex().getName())) {
             //     topology.removeEdge("e" + vv.getName() + n.getVertex().getName());
             //}
@@ -267,7 +268,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         return false;
     }
 
-    private void killAgent(MobileAgent a) {
+    private void killAgent(MobileAgent a, boolean isMyself) {
         increaseAgentsDie();
         agentsAlive.remove(a);
         a.die();
@@ -275,17 +276,19 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         setChanged();
         notifyObservers();
         //System.out.println(" agents alive after removal " + agentsAlive.size());
-        try {
-            a.die();
-            a.getThread().join();
-            //a.setLocation(null);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(NetworkEnvironmentPheromoneReplicationNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
+        if (!isMyself) {
+            try {
+                a.die();
+                a.getThread().join();
+                //a.setLocation(null);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(NetworkEnvironmentPheromoneReplicationNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
     public boolean removeVertex(GraphElements.MyVertex vertex) {
-        synchronized (this) {
+        synchronized (TopologySingleton.getInstance()) {
             //copy to avoid concurrent modification in removeEdge
             //Set<String> incident = new HashSet<>(topology.getInEdges(vertex));
             //incident.addAll(topology.getOutEdges(vertex));
@@ -316,7 +319,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     private void KillNode(Node n) {
         System.out.println("Node " + n.getVertex().getName() + " has failed." + " resp agents:" + n.getAgentCount());
         //System.out.println("killed: " + killAgentsInlocation(n.getVertex().getName()));
-
         NetworkNodeMessageBuffer.getInstance().deleteBuffer(n.getVertex().getName());
         //System.out.println("node fail?");
         //Send kill signal to agents
@@ -325,30 +327,27 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             MobileAgent i = getMobileAgent(it.next());
             if (i != null) {
                 System.out.println("node n" + n.getVertex().getName() + " is removing" + i.getId());
-                killAgent(i);
+                killAgent(i, false);
             }
         }
-        n.getVertex().setName(n.getVertex().getName() + " failed");
+        //n.getVertex().setName(n.getVertex().getName() + " failed");
 
-        if (nodes.remove(n)) {
-            System.out.println("removed: " + n.getVertex().getName());
+        synchronized (TopologySingleton.getInstance()) {
+            if (nodes.remove(n)) {
+                System.out.println("removed: " + n.getVertex().getName());
+            }
+            removeVertex(n.getVertex());
         }
-        removeVertex(n.getVertex());
         n.getVertex().setStatus("failed");
+        n.die();
         setChanged();
         notifyObservers();
-        try {
-            n.die();
-            n.getThread().join();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(NetworkEnvironmentPheromoneReplicationNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     private void removeAgent(int id) {
         MobileAgent a = getMobileAgent(id);
         if (a != null) {
-            killAgent(a);
+            killAgent(a, false);
         }
     }
 
@@ -396,16 +395,19 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     }
 
     List<String> getTopologyNames(GraphElements.MyVertex node) {
-        synchronized (NetworkEnvironmentPheromoneReplicationNodeFailing.class) {
-            List<String> names = new ArrayList();
-            if (getTopology().containsVertex(node)) {
-                Iterator<GraphElements.MyVertex> itr = getTopology().getNeighbors(node).iterator();
+
+        List<String> names = new ArrayList();
+        if (getTopology().containsVertex(node)) {
+            synchronized (TopologySingleton.getInstance()) {
+                List<GraphElements.MyVertex> list = new ArrayList<>(getTopology().getNeighbors(node));
+                Iterator<GraphElements.MyVertex> itr = list.iterator();
                 while (itr.hasNext()) {
                     names.add(itr.next().getName());
                 }
             }
-            return names;
         }
+        return names;
+
     }
 
     Node getNode(String name) {
@@ -538,7 +540,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                 }
             } catch (NullPointerException ex) {
                 System.out.println("Killing agent" + a.getId());
-                killAgent(a);
+                killAgent(a, true);
             }
         }
         return p;
@@ -573,7 +575,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                         }
                         if (a.getLocation().getStatus().equals("failed")) {
                             System.out.println("Kill a id: " + a.getId() + " location failed " + a.getLocation());
-                            killAgent(a);
+                            killAgent(a, true);
                             return false;
                         }
                         Node c = getNode(a.getLocation().getName());
@@ -684,8 +686,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                     return false;
                                 } else //Send a message to current node before moving to new destination v
                                 //msgnode: "departing"|agentId|FatherId|newDest
-                                {
-                                    if (SimulationParameters.activateReplication.equals("replalgon")) {
+                                 if (SimulationParameters.activateReplication.equals("replalgon")) {
                                         String[] msgnode = new String[4];
                                         msgnode[0] = "departing";
                                         msgnode[1] = String.valueOf(a.getId());
@@ -693,11 +694,10 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                         msgnode[3] = v.getName();
                                         NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
                                     }
-                                }
                                 //Agent Fail when moving
                                 if (Math.random() < pf) {
                                     //System.out.println("Agent " + a.getId() + "has failed");
-                                    killAgent(a);
+                                    killAgent(a, true);
                                     return false;
                                 }
                                 if (!SimulationParameters.nodeDelay.equals("NODELAY")) {
@@ -725,7 +725,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                         msgarrived[2] = String.valueOf(a.getIdFather());
                                         if (NetworkNodeMessageBuffer.getInstance().putMessage(v.getName(), msgarrived) == false) {
                                             System.out.println("Agent" + a.getId() + " cannot move to node " + v.getName());
-                                            killAgent(a);
+                                            killAgent(a, true);
                                             return false;
                                         }
 
@@ -758,7 +758,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                 break;
 
                             case 1: //die
-                                killAgent(a);
+                                killAgent(a, true);
                                 return false;
                             default:
                                 msg = "[Unknown action " + act
@@ -775,7 +775,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                 return flag;
             } catch (NullPointerException ex) {
                 System.out.println("Killing agent" + a.getId());
-                killAgent(a);
+                killAgent(a, true);
                 return false;
             }
         }

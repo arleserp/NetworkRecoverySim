@@ -301,9 +301,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                         } else if (n != null) {
                             agentsLive.add(n.getAge(), agentsAlive);
                             nodesLive.add(n.getAge(), nodesAlive);
-                            GraphComparator gcmp = new GraphComparator();
+                            //call comparator here!
+//                            GraphComparator gcmp = new GraphComparator();
                             // System.out.println("similarity" + gcmp.calculateSimilarity(initialNetwork, g));
-                            cosineSim.add(n.getAge(), gcmp.calculateSimilarity(initialNetwork, g));
+//                            cosineSim.add(n.getAge(), gcmp.calculateSimilarity(initialNetwork, g));
                             
 
                         } // System.out.println("entra:" + n.getAge());
@@ -324,7 +325,6 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     }
 
     public class FrameGraphUpdaterOnce extends Thread {
-
         Graph<GraphElements.MyVertex, String> g;
         JFrame frame;
         NetworkEnvironmentReplication n;
@@ -337,7 +337,6 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
 
         public void run() {
             System.out.println("call runnn!!!");
-
             isDrawing = true;
             if (g.getVertexCount() == 0) {
                 System.out.println("no nodes alive.");

@@ -49,7 +49,8 @@ public class NetworkEnvironmentReplication extends Environment {
     public int[][] structure = null;
     public SimpleLanguage language = null;
     Date date;
-    private final Graph<GraphElements.MyVertex, String> topology;
+    //private final Graph<GraphElements.MyVertex, String> topology;
+    //TopologySingleton topology;
     GraphElements.MyVertex currentNode = null;
     String currentEdge = null;
     String lastactionlog;
@@ -276,7 +277,7 @@ public class NetworkEnvironmentReplication extends Environment {
 
         language = _language;
         date = new Date();
-        topology = gr;
+        TopologySingleton.getInstance().init(gr);
         locationAgents = new HashMap<>();
     }
 
@@ -357,9 +358,7 @@ public class NetworkEnvironmentReplication extends Environment {
      * @return the topology
      */
     public Graph<GraphElements.MyVertex, String> getTopology() {
-        synchronized (NetworkEnvironmentReplication.class) {
-            return topology;
-        }
+        return TopologySingleton.getInstance().getTopology();
     }
 
     /**
