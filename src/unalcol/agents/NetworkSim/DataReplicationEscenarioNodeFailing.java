@@ -136,6 +136,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         //frame2.show();
         frame.setSize(650, 650);
         frame.setVisible(true);
+        frame2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     /**
@@ -356,9 +357,9 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                     Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
                         @Override
                         public Paint transform(GraphElements.MyVertex i) {
-                            /* if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
-                    return Color.YELLOW;
-                }*/
+                            if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
+                                return Color.YELLOW;
+                            }
 
                             if (i.getStatus() != null && i.getStatus().equals("failed")) {
                                 return Color.BLACK;

@@ -6,6 +6,7 @@
 package unalcol.agents.NetworkSim;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -46,8 +47,8 @@ public class Node extends Agent {
     private HashMap<String, ArrayList<Integer>> nodeTimeouts;
     private ArrayList<Integer> nodeTimeoutsArrival;
 
-    private int INITIAL_TIMEOUT = 10;
-    private int WINDOW_SIZE = 50;
+    private int INITIAL_TIMEOUT = 30;//50
+    private int WINDOW_SIZE = 10;//5
     private HashMap<String, ArrayList> networkdata;
     private HashMap<Object, ArrayList> pending;
     private HashMap<String, Integer> respAgentsBkp;
@@ -748,6 +749,7 @@ public class Node extends Agent {
 
     public ArrayList<Integer> getDuplicatedAgents() {
         ArrayList<Integer> duplicatedAgents = new ArrayList<>();
+
         Iterator<Integer> it = agentsInNode.keySet().iterator();
         //System.out.print("Agents in node: " + agentsInNode + ", duplicated agents:");
         while (it.hasNext()) {
@@ -760,6 +762,18 @@ public class Node extends Agent {
                 }
             }
         }
+
+        Object[] keys = agentsInNode.keySet().toArray();
+        Arrays.sort(keys);
+        for (int i = 0; i < keys.length - 1; i++) {
+            if ((Integer)agentsInNode.get(keys[i]) != -1 && ((Integer)agentsInNode.get(keys[i]) == (Integer) agentsInNode.get(keys[i + 1]))) {
+                if (!duplicatedAgents.contains((int) keys[i + 1])) {
+                    duplicatedAgents.add((int) keys[i + 1]);
+                    System.out.print("," + keys[i + 1]);
+                }
+            }
+        }
+
         if (!duplicatedAgents.isEmpty()) {
             System.out.println("Agents in node: " + agentsInNode + ", duplicated agents:");
             System.out.println("yayayayay");
