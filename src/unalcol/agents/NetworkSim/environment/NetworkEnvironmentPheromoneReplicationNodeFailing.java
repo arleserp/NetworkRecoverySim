@@ -580,7 +580,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     notifyObservers();
                     return false;
                 } else {
-
                     if (a.status == Action.DIE) {
                         System.out.println("death before send freeresp:" + a.getId());
                         return false;
@@ -588,17 +587,17 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
 
                     currentNode = a.getLocation();
                     if (SimulationParameters.activateReplication.equals("replalgon")) {
-                        if (a.status == Action.DIE) {
+                        /*if (a.status == Action.DIE) {
                             System.out.println("death before getNode" + a.getId());
                             return false;
-                        }
+                        }*/
 
                         // Here is when agents die and failure is not detected!
-                        if (a.getLocation().getStatus().equals("failed")) {
+                        /*if (a.getLocation().getStatus().equals("failed")) {
                             System.out.println("Kill a id: " + a.getId() + " location failed " + a.getLocation());
                             killAgent(a, true);
                             return false;
-                        }
+                        }*/
 
                         Node c = getNode(a.getLocation().getName());
                         HashMap<String, Object> nodeNet = new HashMap<>();
@@ -708,15 +707,13 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                     return false;
                                 } else //Send a message to current node before moving to new destination v
                                 //msgnode: "departing"|agentId|FatherId|newDest
-                                {
-                                    if (SimulationParameters.activateReplication.equals("replalgon")) {
+                                 if (SimulationParameters.activateReplication.equals("replalgon")) {
                                         String[] msgnode = new String[4];
                                         msgnode[0] = "departing";
                                         msgnode[1] = String.valueOf(a.getId());
                                         msgnode[2] = String.valueOf(a.getIdFather());
                                         msgnode[3] = v.getName();
                                         NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
-                                    }
                                 }
                                 //Agent Fail when moving
                                 if (Math.random() < pf) {
@@ -931,6 +928,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     }
                     break;
                 case 1: //what happens if a node dies?
+                    System.out.println("node " + n.getVertex().getName() +  " n followed agents:" + n.getResponsibleAgents());
                     KillNode(n);
                     /*if (n.getRounds() > 100) {
                         KillNode(n);

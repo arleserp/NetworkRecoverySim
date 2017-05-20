@@ -306,7 +306,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
 //                            GraphComparator gcmp = new GraphComparator();
                             // System.out.println("similarity" + gcmp.calculateSimilarity(initialNetwork, g));
 //                            cosineSim.add(n.getAge(), gcmp.calculateSimilarity(initialNetwork, g));
-                            
+                            GraphComparator gnm = new GraphComparator();                            
+                            cosineSim.add(n.getAge(), gnm.calculateSimilarity(initialNetwork, g));
 
                         } // System.out.println("entra:" + n.getAge());
                         frame2.repaint();
