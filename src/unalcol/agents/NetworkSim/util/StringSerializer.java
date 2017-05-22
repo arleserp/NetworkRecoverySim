@@ -10,8 +10,6 @@ package unalcol.agents.NetworkSim.util;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -34,20 +32,30 @@ import java.util.logging.Logger;
  */
 public class StringSerializer {
 
+    public static ObjectOutputStream oos = null;
+
     public static String serialize(Object h) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = null;
+
         String s = null;
         try {
             oos = new ObjectOutputStream(baos);
             oos.writeObject(h);
             s = baos.toString("ISO-8859-1");
             oos.reset();
-            oos.close();
-            oos=null;
-            baos=null;            
+            // oos.close();
+            //oos=null;
+            // baos=null;            
         } catch (IOException ex) {
             Logger.getLogger(StringSerializer.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            if (oos != null) {
+                try {
+                    oos.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(StringSerializer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
         return s;
     }
@@ -67,7 +75,7 @@ public class StringSerializer {
         return h;
     }
 
-      public static void saveSerializedObject(String filename, Object g) {
+    public static void saveSerializedObject(String filename, Object g) {
         try {
             OutputStream file = new FileOutputStream(filename);
             OutputStream buffer = new BufferedOutputStream(file);
@@ -103,5 +111,5 @@ public class StringSerializer {
         //System.out.println("h" + h.toString());
         return h;
     }
-    
+
 }
