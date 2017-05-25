@@ -168,7 +168,8 @@ public class DataCollectionEscenario implements Runnable {
     }
 
     public void loadLocations() {
-        locations = (ArrayList<GraphElements.MyVertex>) StringSerializer.loadDeserializeObject(SimulationParameters.filenameLoc);
+        StringSerializer s = new StringSerializer();
+        locations = (ArrayList<GraphElements.MyVertex>) s.loadDeserializeObject(SimulationParameters.filenameLoc);
     }
 
     private GraphElements.MyVertex getLocation(Graph<GraphElements.MyVertex, String> g) {

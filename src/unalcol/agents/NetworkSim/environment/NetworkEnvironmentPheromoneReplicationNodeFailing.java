@@ -637,9 +637,10 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                         String[] msgnet = new String[5];
                         msgnet[0] = "networkdata";
                         msgnet[1] = String.valueOf(a.getId());
-                        msgnet[2] = StringSerializer.serialize(a.getLocalAgentsInNetwork());
-                        msgnet[3] = StringSerializer.serialize(a.getLocalNetwork());
-                        msgnet[4] = StringSerializer.serialize(a.getLocalAgentsInNetworkHmap());
+                        StringSerializer s = new StringSerializer();
+                        msgnet[2] = s.serialize(a.getLocalAgentsInNetwork());
+                        msgnet[3] = s.serialize(a.getLocalNetwork());
+                        msgnet[4] = s.serialize(a.getLocalAgentsInNetworkHmap());
                         if (a.status == Action.DIE) {
                             System.out.println("death before network data" + a.getId());
                             return false;
@@ -878,7 +879,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
 
                             if (inbox[0].equals("networkdata")) {
                                 //completes and updates data
-                                ArrayList<HashMap<String, Integer>> agentList = (ArrayList<HashMap<String, Integer>>) StringSerializer.deserialize(inbox[2]);
+                                StringSerializer s = new StringSerializer();
+                                ArrayList<HashMap<String, Integer>> agentList = (ArrayList<HashMap<String, Integer>>) s.deserialize(inbox[2]);
                                 Iterator<HashMap<String, Integer>> itr = agentList.iterator();
 
                                 while (itr.hasNext()) {
@@ -889,7 +891,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                         //System.out.println("node " + n.getVertex().getName() + ", Responsible Agents Info:" + n.getRespAgentsBkp());
                                     }
                                 }
-                                ArrayList<HashMap<String, ConcurrentHashMap<Integer, Integer>>> agentInNeigborsList = (ArrayList<HashMap<String, ConcurrentHashMap<Integer, Integer>>>) StringSerializer.deserialize(inbox[4]);
+                                StringSerializer sx = new StringSerializer();
+                                ArrayList<HashMap<String, ConcurrentHashMap<Integer, Integer>>> agentInNeigborsList = (ArrayList<HashMap<String, ConcurrentHashMap<Integer, Integer>>>) s.deserialize(inbox[4]);
                                 Iterator<HashMap<String, ConcurrentHashMap<Integer, Integer>>> itr2 = agentInNeigborsList.iterator();
 
                                 while (itr2.hasNext()) {
@@ -902,7 +905,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                 }
 
                                 //System.out.println("res" + n.getRespAgentsBkp());
-                                ArrayList<HashMap> agentLoc = (ArrayList) StringSerializer.deserialize(inbox[3]);
+                                StringSerializer ss = new StringSerializer();
+                                ArrayList<HashMap> agentLoc = (ArrayList) ss.deserialize(inbox[3]);
                                 //System.out.print(n.getVertex().getName() + " n antes" + n.getNetworkdata());
                                 for (HashMap< String, ArrayList> agentData : agentLoc) {
                                     //Compare node data with agent data

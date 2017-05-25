@@ -164,8 +164,9 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         //greport = new GraphicReportHealingObserver(probFailure);
         //Create graph
         Graph<GraphElements.MyVertex, String> g = graphSimpleFactory.createGraph(SimulationParameters.graphMode);
-        String aCopy = StringSerializer.serialize(g);
-        initialNetwork = (Graph<GraphElements.MyVertex, String>) StringSerializer.deserialize(aCopy);
+        StringSerializer s = new StringSerializer();
+        String aCopy = s.serialize(g);
+        initialNetwork = (Graph<GraphElements.MyVertex, String>) s.deserialize(aCopy);
 
         //maybe to fix: alldata must have getter
         System.out.println("All data" + SimulationParameters.globalData);
@@ -457,7 +458,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     }
 
     public void loadLocations() {
-        locations = (ArrayList<GraphElements.MyVertex>) StringSerializer.loadDeserializeObject(SimulationParameters.filenameLoc);
+        StringSerializer s = new StringSerializer();
+        locations = (ArrayList<GraphElements.MyVertex>) s.loadDeserializeObject(SimulationParameters.filenameLoc);
     }
 
     private GraphElements.MyVertex getLocation(Graph<GraphElements.MyVertex, String> g) {

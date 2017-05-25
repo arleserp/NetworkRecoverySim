@@ -87,9 +87,8 @@ public class DataReplicationGraphBuilderScenario implements Runnable {
         //report = new reportHealingProgram(population, probFailure, this);
         //greport = new GraphicReportHealingObserver(probFailure);
         //Create graph
-
         Graph<GraphElements.MyVertex, String> g = graphSimpleFactory.createGraph(SimulationParameters.graphMode);
-        
+
         //maybe to fix: alldata must have getter
         System.out.println("All data" + SimulationParameters.globalData);
         System.out.println("All data size" + SimulationParameters.globalData.size());
@@ -171,7 +170,8 @@ public class DataReplicationGraphBuilderScenario implements Runnable {
     }
 
     public void loadLocations() {
-        locations = (ArrayList<GraphElements.MyVertex>) StringSerializer.loadDeserializeObject(SimulationParameters.filenameLoc);
+        StringSerializer s = new StringSerializer();
+        locations = (ArrayList<GraphElements.MyVertex>) s.loadDeserializeObject(SimulationParameters.filenameLoc);
     }
 
     private GraphElements.MyVertex getLocation(Graph<GraphElements.MyVertex, String> g) {

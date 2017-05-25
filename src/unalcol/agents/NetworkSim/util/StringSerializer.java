@@ -32,9 +32,9 @@ import java.util.logging.Logger;
  */
 public class StringSerializer {
 
-    public static ObjectOutputStream oos = null;
+    public ObjectOutputStream oos = null;
 
-    public static String serialize(Object h) {
+    public String serialize(Object h) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         String s = null;
@@ -60,7 +60,7 @@ public class StringSerializer {
         return s;
     }
 
-    public static Object deserialize(String s) {
+    public Object deserialize(String s) {
         Object h = null;
         try {
             ObjectInputStream ois;
@@ -75,7 +75,7 @@ public class StringSerializer {
         return h;
     }
 
-    public static void saveSerializedObject(String filename, Object g) {
+    public void saveSerializedObject(String filename, Object g) {
         try {
             OutputStream file = new FileOutputStream(filename);
             OutputStream buffer = new BufferedOutputStream(file);
@@ -92,7 +92,7 @@ public class StringSerializer {
         }
     }
 
-    public static Object loadDeserializeObject(String filename) {
+    public Object loadDeserializeObject(String filename) {
         InputStream file;
         Object h = null;
         System.out.println("file" + filename);

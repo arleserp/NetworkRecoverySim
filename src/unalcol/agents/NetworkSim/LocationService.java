@@ -85,7 +85,8 @@ public class LocationService {
                     for (int k = 0; k < numAgentes; k++) {
                         locations.add(getLocation(g));
                     }
-                    StringSerializer.saveSerializedObject(output, locations);
+                    StringSerializer s = new StringSerializer();
+                    s.saveSerializedObject(output, locations);
                 }
             }
 
