@@ -93,7 +93,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         int size = gr.getVertexCount();
         adyacenceMatrix = new int[size][size];
         //mapVertex =  new ConcurrentHashMap<>();T
-        ArrayList<GraphElements.MyVertex> av = new ArrayList<>(getTopology().getVertices());
+        ArrayList<GraphElements.MyVertex> av = new ArrayList<>(gr.getVertices());
         Collections.sort(av, new CustomComparator());
         Iterator<GraphElements.MyVertex> it = av.iterator();
         //HashMap<String, GraphElements.MyVertex> namesB = new HashMap<>();
@@ -105,13 +105,24 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             locationtoVertexName.put(i, va.getName());
             i++;
         }
-       /* for (int i = 0; i < adyacenceMatrix.length; i++) {
-            for (int j = 0; j < adyacenceMatrix.length; j++) {
-                adyacenceMatrix[i][j] = 0;
-                adyacenceMatrix[i][j] = 0;
+        System.out.println("ba" + nametoAdyLocation);
+        for (int k = 0; k < adyacenceMatrix.length; k++) {
+            for (int l = 0; l < adyacenceMatrix.length; l++) {
+                adyacenceMatrix[k][l] = 0;
+                adyacenceMatrix[k][l] = 0;
             }
-        }*/
-        
+        }
+
+        it = gr.getVertices().iterator();
+        while (it.hasNext()) {
+            GraphElements.MyVertex va = it.next();
+            ArrayList<GraphElements.MyVertex> na = new ArrayList<>(gr.getNeighbors(va));
+            Iterator<GraphElements.MyVertex> itn = na.iterator();
+            while (itn.hasNext()) {
+                adyacenceMatrix[nametoAdyLocation.get(va.getName())][nametoAdyLocation.get(itn.next().getName())] = 1;
+            }
+        }
+
     }
 
     GraphElements.MyVertex findVertex(String nodename) {
@@ -142,6 +153,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
 
                 }
             }
+            adyacenceMatrix[nametoAdyLocation.get(vertex.getName())][nametoAdyLocation.get(nodetoConnect)] = 1;
+            adyacenceMatrix[nametoAdyLocation.get(nodetoConnect)][nametoAdyLocation.get(vertex.getName())] = 1;
         } else {
             System.out.println("node to connect is null:" + nodetoConnect);
         }
@@ -192,22 +205,28 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         }
     }
 
+    void addConnection(GraphElements.MyVertex dvertex, Node n) {
+        if (getTopology().containsVertex(dvertex) && getTopology().containsVertex(n.getVertex()) && !getTopology().isNeighbor(dvertex, n.getVertex())) {
+            // if (topology.containsEdge("e" + dvertex.getName() + n.getVertex().getName())) {
+            //      topology.removeEdge("e" + dvertex.getName() + n.getVertex().getName());
+            // }
+            if (getTopology().containsEdge("e" + dvertex + n.getVertex().getName())) {
+                System.out.println("creating extra name while cleaning vertex");
+                getTopology().addEdge("eb" + dvertex.getName() + n.getVertex().getName(), n.getVertex(), n.getVertex());
+            } else {
+                getTopology().addEdge("e" + dvertex.getName() + n.getVertex().getName(), dvertex, n.getVertex());
+            }
+        }
+        adyacenceMatrix[nametoAdyLocation.get(n.getVertex().getName())][nametoAdyLocation.get(dvertex.getName())] = 1;
+        adyacenceMatrix[nametoAdyLocation.get(dvertex.getName())][nametoAdyLocation.get(n.getVertex().getName())] = 1;
+    }
+
     void createNewNode(Node n, String d) {
         System.out.print("creating new node " + d);
         GraphElements.MyVertex dvertex = findVertex(d);
         if (dvertex != null) { //can ping node and discover
             System.out.println("Node " + d + " is alive connecting instead create...[" + dvertex + "," + n.getVertex() + "]");
-            if (getTopology().containsVertex(dvertex) && getTopology().containsVertex(n.getVertex()) && !getTopology().isNeighbor(dvertex, n.getVertex())) {
-                // if (topology.containsEdge("e" + dvertex.getName() + n.getVertex().getName())) {
-                //      topology.removeEdge("e" + dvertex.getName() + n.getVertex().getName());
-                // }
-                if (getTopology().containsEdge("e" + dvertex + n.getVertex().getName())) {
-                    System.out.println("creating extra name while cleaning vertex");
-                    getTopology().addEdge("eb" + dvertex.getName() + n.getVertex().getName(), n.getVertex(), n.getVertex());
-                } else {
-                    getTopology().addEdge("e" + dvertex.getName() + n.getVertex().getName(), dvertex, n.getVertex());
-                }
-            }
+            addConnection(dvertex, n);
         } else {
             GraphCreator.VertexFactory v = new GraphCreator.VertexFactory();
             //GraphCreator.EdgeFactory e = new GraphCreator.EdgeFactory();
@@ -222,16 +241,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             //if (topology.containsEdge("e" + vv.getName() + n.getVertex().getName())) {
             //     topology.removeEdge("e" + vv.getName() + n.getVertex().getName());
             //}
-
-            if (!getTopology().isNeighbor(vv, n.getVertex())) {
-                if (getTopology().containsEdge("e" + vv.getName() + n.getVertex().getName())) {
-                    //System.out.println("creating extra name while cleaning vertex");
-
-                    getTopology().addEdge("eb" + vv.getName() + n.getVertex().getName(), vv, n.getVertex());
-                } else {
-                    getTopology().addEdge("e" + vv.getName() + n.getVertex().getName(), vv, n.getVertex());
-                }
-            }
+            addConnection(vv, n);
             //NodeFailingProgram np = new NodeFailingProgram(SimulationParameters.npf);
             NodeFailingProgram np = new NodeFailingProgram((float) SimulationParameters.npf);
             NetworkNodeMessageBuffer.getInstance().createBuffer(d);
@@ -323,6 +333,12 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             //for (String edge : incident) {
             //    topology.removeEdge(edge);
             //}
+            for (int i = 0; i < adyacenceMatrix.length; i++) {
+
+                //System.out.println("name" + nametoAdyLocation.get(vertex.getName()) + "v:" + vertex);
+                adyacenceMatrix[nametoAdyLocation.get(vertex.getName())][i] = 0;
+                adyacenceMatrix[i][nametoAdyLocation.get(vertex.getName())] = 0;
+            }
             if (!getTopology().removeVertex(vertex)) {
                 System.out.println("cannot remove vertex " + vertex);
             }
@@ -358,7 +374,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                 killAgent(i, false);
             }
         }
-        n.getVertex().setName(n.getVertex().getName() + " failed");
+        //not sure if this is necessary
+        // n.getVertex().setName(n.getVertex().getName() + " failed");
 
         synchronized (TopologySingleton.getInstance()) {
             if (nodes.remove(n)) {
@@ -423,7 +440,13 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     }
 
     List<String> getTopologyNames(GraphElements.MyVertex node) {
-
+        List<String> names = new ArrayList();
+        for (int i = 0; i < adyacenceMatrix.length; i++) {
+            if (adyacenceMatrix[nametoAdyLocation.get(node.getName())][i] == 1) {
+                names.add(locationtoVertexName.get(i));
+            }
+        }
+        /*
         List<String> names = new ArrayList();
         if (getTopology().containsVertex(node)) {
             synchronized (TopologySingleton.getInstance()) {
@@ -433,9 +456,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     names.add(itr.next().getName());
                 }
             }
-        }
+        }*/
         return names;
-
     }
 
     Node getNode(String name) {
@@ -731,7 +753,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                     return false;
                                 } else //Send a message to current node before moving to new destination v
                                 //msgnode: "departing"|agentId|FatherId|newDest
-                                 if (SimulationParameters.activateReplication.equals("replalgon")) {
+                                {
+                                    if (SimulationParameters.activateReplication.equals("replalgon")) {
                                         String[] msgnode = new String[4];
                                         msgnode[0] = "departing";
                                         msgnode[1] = String.valueOf(a.getId());
@@ -739,6 +762,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                         msgnode[3] = v.getName();
                                         NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
                                     }
+                                }
                                 //Agent Fail when moving
                                 if (Math.random() < pf) {
                                     //System.out.println("Agent " + a.getId() + "has failed");

@@ -88,7 +88,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     private boolean isDrawing = false;
     XYSeries agentsLive;
     XYSeries nodesLive;
-    XYSeries cosineSim;
+    XYSeries neighborMatchingSim;
     XYSeriesCollection juegoDatos = new XYSeriesCollection();
     FrameGraphUpdater fgup = null;
     private final JPanel networkPanel;
@@ -119,10 +119,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         frame2 = new JFrame("Agent and Node Number");
         agentsLive = new XYSeries("agentsLive");
         nodesLive = new XYSeries("nodesLive");
-        cosineSim = new XYSeries("Cosine Sim");
+        neighborMatchingSim = new XYSeries("Neighbour Sim");
         juegoDatos.addSeries(agentsLive);
         juegoDatos.addSeries(nodesLive);
-        juegoDatos.addSeries(cosineSim);
+        juegoDatos.addSeries(neighborMatchingSim);
         frame2.setLocation(350, 150);
         frame2.setSize(450, 450);
         frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
@@ -308,7 +308,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                             // System.out.println("similarity" + gcmp.calculateSimilarity(initialNetwork, g));
 //                            cosineSim.add(n.getAge(), gcmp.calculateSimilarity(initialNetwork, g));
                             GraphComparator gnm = new GraphComparator();                            
-                            cosineSim.add(n.getAge(), gnm.calculateSimilarity(initialNetwork, g));
+                            neighborMatchingSim.add(n.getAge(), gnm.calculateSimilarity(initialNetwork, g));
 
                         } // System.out.println("entra:" + n.getAge());
                         frame2.repaint();
