@@ -39,6 +39,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     private static final List<Node> nodes = Collections.synchronizedList(new ArrayList());
     //private static ConcurrentHashMap<String, GraphElements.MyVertex> mapVertex;
     public List<MobileAgent> agentsAlive = Collections.synchronizedList(new ArrayList());
+    int[][] adyacenceMatrix;
+    HashMap<String, Integer> nametoAdyLocation = new HashMap<>();
+    HashMap<Integer, String> locationtoVertexName = new HashMap<>();
 
     public static List<Node> getNodes() {
         return nodes;
@@ -87,7 +90,28 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                 agentsAlive.add((MobileAgent) a);
             }
         }
-        //mapVertex =  new ConcurrentHashMap<>();
+        int size = gr.getVertexCount();
+        adyacenceMatrix = new int[size][size];
+        //mapVertex =  new ConcurrentHashMap<>();T
+        ArrayList<GraphElements.MyVertex> av = new ArrayList<>(getTopology().getVertices());
+        Collections.sort(av, new CustomComparator());
+        Iterator<GraphElements.MyVertex> it = av.iterator();
+        //HashMap<String, GraphElements.MyVertex> namesB = new HashMap<>();
+
+        int i = 0;
+        while (it.hasNext()) {
+            GraphElements.MyVertex va = it.next();
+            nametoAdyLocation.put(va.getName(), i);
+            locationtoVertexName.put(i, va.getName());
+            i++;
+        }
+       /* for (int i = 0; i < adyacenceMatrix.length; i++) {
+            for (int j = 0; j < adyacenceMatrix.length; j++) {
+                adyacenceMatrix[i][j] = 0;
+                adyacenceMatrix[i][j] = 0;
+            }
+        }*/
+        
     }
 
     GraphElements.MyVertex findVertex(String nodename) {
@@ -598,7 +622,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                             killAgent(a, true);
                             return false;
                         }*/
-
                         Node c = getNode(a.getLocation().getName());
                         HashMap<String, Object> nodeNet = new HashMap<>();
                         nodeNet.put(a.getLocation().getName(), getTopologyNames(a.getLocation()));
@@ -715,7 +738,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                         msgnode[2] = String.valueOf(a.getIdFather());
                                         msgnode[3] = v.getName();
                                         NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
-                                }
+                                    }
                                 //Agent Fail when moving
                                 if (Math.random() < pf) {
                                     //System.out.println("Agent " + a.getId() + "has failed");
@@ -932,7 +955,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     }
                     break;
                 case 1: //what happens if a node dies?
-                    System.out.println("node " + n.getVertex().getName() +  " n followed agents:" + n.getResponsibleAgents());
+                    System.out.println("node " + n.getVertex().getName() + " n followed agents:" + n.getResponsibleAgents());
                     KillNode(n);
                     /*if (n.getRounds() > 100) {
                         KillNode(n);

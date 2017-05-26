@@ -73,7 +73,7 @@ public class GraphComparator {
         ArrayList<GraphElements.MyVertex> av = new ArrayList<>(copyA.getVertices());
         Collections.sort(av, new CustomComparator());
 
-        Iterator<GraphElements.MyVertex> it = copyA.getVertices().iterator();
+        Iterator<GraphElements.MyVertex> it = av.iterator();
         HashMap<String, Integer> names = new HashMap<>();
         HashMap<String, GraphElements.MyVertex> namesB = new HashMap<>();
 
