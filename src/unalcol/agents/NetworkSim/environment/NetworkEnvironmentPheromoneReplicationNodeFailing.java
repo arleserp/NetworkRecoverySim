@@ -589,7 +589,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
 
                 }
             } catch (NullPointerException ex) {
-                System.out.println("Killing agent" + a.getId());
+                System.out.println("Killing agent sensing null node: " + a.getId());
                 killAgent(a, true);
             }
         }
@@ -608,6 +608,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     System.out.println("death: " + a.getId());
                     return false;
                 }
+                //System.out.println("1.");
                 String act = action.getCode();
 
                 if (SimulationParameters.activateReplication.equals("replalgon")) {
@@ -632,6 +633,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     }
 
                     currentNode = a.getLocation();
+                    //System.out.println("2.");
                     if (SimulationParameters.activateReplication.equals("replalgon")) {
                         /*if (a.status == Action.DIE) {
                             System.out.println("death before getNode" + a.getId());
@@ -826,6 +828,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                 //visitedNodes.add(currentNode);
                                 break;
                             case 1: //die
+                                System.out.println("action: kill ");
                                 killAgent(a, true);
                                 return false;
                             default:
@@ -842,7 +845,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                 //System.out.println("wat" + a.getId());
                 return flag;
             } catch (NullPointerException ex) {
-                System.out.println("Killing agent" + a.getId());
+                System.out.println("Killing agent by null exception: " + a.getId() + " message: ");
+                //ex.printStackTrace();
                 killAgent(a, true);
                 return false;
             }

@@ -120,9 +120,11 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         agentsLive = new XYSeries("agentsLive");
         nodesLive = new XYSeries("nodesLive");
         neighborMatchingSim = new XYSeries("Neighbour Sim");
+        
         juegoDatos.addSeries(agentsLive);
         juegoDatos.addSeries(nodesLive);
         juegoDatos.addSeries(neighborMatchingSim);
+        
         frame2.setLocation(350, 150);
         frame2.setSize(450, 450);
         frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
@@ -203,7 +205,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
 
         //Creates "Agents"
         for (int i = 0; i < population; i++) {
-            AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(probFailure, SimulationParameters.motionAlg);
+            AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
             MobileAgent a = new MobileAgent(program, i);
             GraphElements.MyVertex tmp = getLocation(g);
             //System.out.println("tmp" + tmp);
@@ -271,7 +273,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                             juegoDatos, PlotOrientation.VERTICAL,
                             true, true, false);
                     ChartPanel chpanel = new ChartPanel(chart);
-
+                    
                     JPanel jPanel = new JPanel();
                     jPanel.setLayout(new BorderLayout());
                     jPanel.add(chpanel, BorderLayout.NORTH);
@@ -408,12 +410,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
             try {
                 //!world.isFinished()) {
                 Thread.sleep(50);
-
             } catch (InterruptedException ex) {
                 Logger.getLogger(DataReplicationEscenarioNodeFailing.class
                         .getName()).log(Level.SEVERE, null, ex);
             }
-
             if (fgup == null) {
                 fgup = new FrameGraphUpdater(world.getTopology(), frame, world);
                 fgup.start();
