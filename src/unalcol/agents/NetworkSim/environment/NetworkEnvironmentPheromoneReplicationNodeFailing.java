@@ -150,7 +150,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     getTopology().addEdge("eb" + vertex.getName() + nodeTo.getName(), vertex, nodeTo);
                 } else {
                     getTopology().addEdge("e" + vertex.getName() + nodeTo.getName(), vertex, nodeTo);
-
                 }
             }
             adyacenceMatrix[nametoAdyLocation.get(vertex.getName())][nametoAdyLocation.get(nodetoConnect)] = 1;
@@ -375,7 +374,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             }
         }
         //not sure if this is necessary
-        // n.getVertex().setName(n.getVertex().getName() + " failed");
+        
 
         synchronized (TopologySingleton.getInstance()) {
             if (nodes.remove(n)) {
@@ -383,6 +382,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             }
             removeVertex(n.getVertex());
         }
+        n.getVertex().setName(n.getVertex().getName() + " failed");
         n.getVertex().setStatus("failed");
         n.die();
         setChanged();
