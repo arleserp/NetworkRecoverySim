@@ -142,20 +142,22 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     }
 
     private void connect(GraphElements.MyVertex vertex, String nodetoConnect) {
-        GraphElements.MyVertex nodeTo = findVertex(nodetoConnect);
-        if (nodeTo != null) {
-            if (!getTopology().isNeighbor(vertex, nodeTo)) {
-                if (getTopology().containsEdge("e" + vertex.getName() + nodeTo.getName())) {
-                    System.out.println("creating extra name while cleaning vertex");
-                    getTopology().addEdge("eb" + vertex.getName() + nodeTo.getName(), vertex, nodeTo);
-                } else {
-                    getTopology().addEdge("e" + vertex.getName() + nodeTo.getName(), vertex, nodeTo);
+        synchronized (NetworkEnvironmentPheromoneReplicationNodeFailing.class) {
+            GraphElements.MyVertex nodeTo = findVertex(nodetoConnect);
+            if (nodeTo != null) {
+                if (!getTopology().isNeighbor(vertex, nodeTo)) {
+                    if (getTopology().containsEdge("e" + vertex.getName() + nodeTo.getName())) {
+                        System.out.println("creating extra name while cleaning vertex");
+                        getTopology().addEdge("eb" + vertex.getName() + nodeTo.getName(), vertex, nodeTo);
+                    } else {
+                        getTopology().addEdge("e" + vertex.getName() + nodeTo.getName(), vertex, nodeTo);
+                    }
                 }
+                adyacenceMatrix[nametoAdyLocation.get(vertex.getName())][nametoAdyLocation.get(nodetoConnect)] = 1;
+                adyacenceMatrix[nametoAdyLocation.get(nodetoConnect)][nametoAdyLocation.get(vertex.getName())] = 1;
+            } else {
+                System.out.println("node to connect is null:" + nodetoConnect);
             }
-            adyacenceMatrix[nametoAdyLocation.get(vertex.getName())][nametoAdyLocation.get(nodetoConnect)] = 1;
-            adyacenceMatrix[nametoAdyLocation.get(nodetoConnect)][nametoAdyLocation.get(vertex.getName())] = 1;
-        } else {
-            System.out.println("node to connect is null:" + nodetoConnect);
         }
     }
 
@@ -205,19 +207,21 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     }
 
     void addConnection(GraphElements.MyVertex dvertex, Node n) {
-        if (getTopology().containsVertex(dvertex) && getTopology().containsVertex(n.getVertex()) && !getTopology().isNeighbor(dvertex, n.getVertex())) {
-            // if (topology.containsEdge("e" + dvertex.getName() + n.getVertex().getName())) {
-            //      topology.removeEdge("e" + dvertex.getName() + n.getVertex().getName());
-            // }
-            if (getTopology().containsEdge("e" + dvertex + n.getVertex().getName())) {
-                System.out.println("creating extra name while cleaning vertex");
-                getTopology().addEdge("eb" + dvertex.getName() + n.getVertex().getName(), n.getVertex(), n.getVertex());
-            } else {
-                getTopology().addEdge("e" + dvertex.getName() + n.getVertex().getName(), dvertex, n.getVertex());
+        synchronized (NetworkEnvironmentPheromoneReplicationNodeFailing.class) {
+            if (getTopology().containsVertex(dvertex) && getTopology().containsVertex(n.getVertex()) && !getTopology().isNeighbor(dvertex, n.getVertex())) {
+                // if (topology.containsEdge("e" + dvertex.getName() + n.getVertex().getName())) {
+                //      topology.removeEdge("e" + dvertex.getName() + n.getVertex().getName());
+                // }
+                if (getTopology().containsEdge("e" + dvertex + n.getVertex().getName())) {
+                    System.out.println("creating extra name while cleaning vertex");
+                    getTopology().addEdge("eb" + dvertex.getName() + n.getVertex().getName(), n.getVertex(), n.getVertex());
+                } else {
+                    getTopology().addEdge("e" + dvertex.getName() + n.getVertex().getName(), dvertex, n.getVertex());
+                }
             }
+            adyacenceMatrix[nametoAdyLocation.get(n.getVertex().getName())][nametoAdyLocation.get(dvertex.getName())] = 1;
+            adyacenceMatrix[nametoAdyLocation.get(dvertex.getName())][nametoAdyLocation.get(n.getVertex().getName())] = 1;
         }
-        adyacenceMatrix[nametoAdyLocation.get(n.getVertex().getName())][nametoAdyLocation.get(dvertex.getName())] = 1;
-        adyacenceMatrix[nametoAdyLocation.get(dvertex.getName())][nametoAdyLocation.get(n.getVertex().getName())] = 1;
     }
 
     void createNewNode(Node n, String d) {
@@ -374,7 +378,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             }
         }
         //not sure if this is necessary
-        
 
         synchronized (TopologySingleton.getInstance()) {
             if (nodes.remove(n)) {

@@ -34,4 +34,5 @@ public class SimulationParameters {
     public static String nodeDelay = "NODELAY";
     public static float npf = 0;
     public static int nhops=2;
+    public static String simMode = "default";
 }
