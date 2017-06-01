@@ -204,26 +204,28 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
             loadLocations();
         }
 
-        //Creates "Agents"
-        for (int i = 0; i < population; i++) {
-            AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
-            MobileAgent a = new MobileAgent(program, i);
-            GraphElements.MyVertex tmp = getLocation(g);
-            //System.out.println("tmp" + tmp);
-            a.setRound(-1);
-            a.setLocation(tmp);
-            a.setPrevLocation(tmp);
-            a.setProgram(program);
-            a.setAttribute("infi", new ArrayList<String>());
-            NetworkMessageBuffer.getInstance().createBuffer(a.getId());
-            agents.add(a);
+        if (SimulationParameters.simMode.equals("broadcast")) {
+            //Creates "Agents"
+            for (int i = 0; i < population; i++) {
+                AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
+                MobileAgent a = new MobileAgent(program, i);
+                GraphElements.MyVertex tmp = getLocation(g);
+                //System.out.println("tmp" + tmp);
+                a.setRound(-1);
+                a.setLocation(tmp);
+                a.setPrevLocation(tmp);
+                a.setProgram(program);
+                a.setAttribute("infi", new ArrayList<String>());
+                NetworkMessageBuffer.getInstance().createBuffer(a.getId());
+                agents.add(a);
 
-            String[] msgnode = new String[3];
-            msgnode[0] = "arrived";
-            msgnode[1] = String.valueOf(a.getId());
-            msgnode[2] = String.valueOf(a.getIdFather());
-            NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
-            //Initialize implies arrival message from nodes!
+                String[] msgnode = new String[3];
+                msgnode[0] = "arrived";
+                msgnode[1] = String.valueOf(a.getId());
+                msgnode[2] = String.valueOf(a.getIdFather());
+                NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode);
+                //Initialize implies arrival message from nodes!
+            }
         }
 
         graphVisualization = new DataReplicationNodeFailingObserver();
@@ -302,8 +304,6 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                         // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
                         //vv.repaint();
                         //}
-                        
-                        
                         int agentsAlive = n.getAgentsAlive();
                         int nodesAlive = n.getNodesAlive();
                         //System.out.println("n" + n.getAge() + "," + agentsAlive);
@@ -371,7 +371,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                     Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
                         @Override
                         public Paint transform(GraphElements.MyVertex i) {
-                            if  (n.isOccuped(i)) {
+                            if (n.isOccuped(i)) {
                                 return Color.YELLOW;
                             }
 
@@ -443,13 +443,9 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
             if (world instanceof NetworkEnvironmentPheromoneReplicationNodeFailing && SimulationParameters.motionAlg.equals("carriersrep")) {
                 ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).evaporatePheromone();
             }*/
-            if (SimulationParameters.simMode.equals("broadcast")) {
-                ((NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast) world).updateWorldAge();
-                ((NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast) world).validateNodesAlive();
-            } else {
-                ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).updateWorldAge();
-                ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).validateNodesAlive();
-            }
+
+            world.updateWorldAge();
+            world.validateNodesAlive();
 
             /*
             if (world instanceof WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl) {

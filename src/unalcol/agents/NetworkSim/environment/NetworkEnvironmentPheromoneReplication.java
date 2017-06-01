@@ -395,4 +395,9 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
     public boolean isOccuped(GraphElements.MyVertex v) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public void validateNodesAlive() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

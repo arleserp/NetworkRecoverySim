@@ -610,8 +610,7 @@ public abstract class NetworkEnvironmentReplication extends Environment {
         return agentsAlive;
     }
 
-     public abstract boolean isOccuped(GraphElements.MyVertex v);
-    
-    
-    
+    public abstract boolean isOccuped(GraphElements.MyVertex v);
+
+    public abstract void validateNodesAlive();
 }

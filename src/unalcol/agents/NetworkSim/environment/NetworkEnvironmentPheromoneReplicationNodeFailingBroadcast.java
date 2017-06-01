@@ -85,11 +85,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast extends 
         nodeLanguage = _nlanguage;
 
         // agentsAlive = new 
-        for (Agent a : _agents) {
-            if (a instanceof MobileAgent) {
-                agentsAlive.add((MobileAgent) a);
-            }
-        }
         int size = gr.getVertexCount();
         adyacenceMatrix = new int[size][size];
         //mapVertex =  new ConcurrentHashMap<>();T
@@ -683,7 +678,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast extends 
                             System.out.println("death before network data" + a.getId());
                             return false;
                         }
-/*
+                        /*
                         String[] msgnet = new String[5];
                         msgnet[0] = "networkdata";
                         msgnet[1] = String.valueOf(a.getId());
@@ -855,33 +850,28 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast extends 
             }
         }
         if (agent instanceof Node) {
-            
-            
             agent.sleep(50);
             Node n = (Node) agent;
             //System.out.println("thread of node " + n.getVertex().getName() + "ph: " + n.getVertex().getPh());
             n.incRounds();
             //System.out.println("node thread:" + n.getVertex().getName());
-            
             String act = action.getCode();
-            
-             ArrayList<String> topologyDatas = new ArrayList(this.getTopologyNames(n.getVertex()));
-            for(String neigbour: topologyDatas){
-                        String[] msgnet = new String[5];
-                        msgnet[0] = "networkdata";
-                        msgnet[1] = String.valueOf(n.getVertex().getName());
-                        StringSerializer s = new StringSerializer();
-                        msgnet[2] = s.serialize(n.getNetworkdata());
-                        if(!NetworkNodeMessageBuffer.getInstance().putMessage(neigbour, msgnet)){
-                            System.out.println("node is down!" + neigbour);
-                        }
-                        //System.out.println("send data!!!!!!!!!!! :V :V" + n.getNetworkdata());
+            if (n.getRounds() < SimulationParameters.nhops) {
+                ArrayList<String> topologyDatas = new ArrayList(this.getTopologyNames(n.getVertex()));
+                for (String neigbour : topologyDatas) {
+                    String[] msgnet = new String[5];
+                    msgnet[0] = "networkdata";
+                    msgnet[1] = String.valueOf(n.getVertex().getName());
+                    StringSerializer s = new StringSerializer();
+                    msgnet[2] = s.serialize(n.getNetworkdata());
+                    if (!NetworkNodeMessageBuffer.getInstance().putMessage(neigbour, msgnet)) {
+                        System.out.println("node is down: " + neigbour);
+                    }
                 }
-            
+            }
             //System.out.println("thread " + n.getVertex().getName());
             //Node has no neighbours
             //System.out.println("to" + (topology.getNeighbors(n.getVertex())));
-
             //1. process messages from an agent
             //System.out.println("action" + act + ", code:" + nodeLanguage.getActionIndex(act));
             switch (nodeLanguage.getActionIndex(act)) {
@@ -892,7 +882,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast extends 
                         if (SimulationParameters.activateReplication.equals("replalgon")) {
                             //Send a message to current node before moving to new destination v
                             //Send message arrived to node arrived|id|getPrevLocation
-                            if (inbox[0].equals("arrived")) {
+                            /*if (inbox[0].equals("arrived")) {
                                 int agentId = Integer.valueOf(inbox[1]);
                                 int father = Integer.valueOf(inbox[2]);
                                 //n.setLastAgentArrive(agentId, n.getRounds());
@@ -946,7 +936,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast extends 
                                     incrementFalsePossitives();
                                     //deleteNextReplica(n);
                                 }
-                            }
+                            }*/
                             if (inbox[0].equals("networkdata")) {
                                 //completes and updates data
                                 StringSerializer s = new StringSerializer();
@@ -963,12 +953,12 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast extends 
                             }
                         }
                     }
-                    if (SimulationParameters.activateReplication.equals("replalgon")) {
-                        n.calculateTimeout();
-                        evaluateAgentCreation(n);
+                    /*if (SimulationParameters.activateReplication.equals("replalgon")) {
+                        //n.calculateTimeout();
+                        //evaluateAgentCreation(n);
                         // n.calculateTimeoutArrival();
                         //evaluateAgentCreationArrival(n);
-                    }
+                    }*/
                     break;
                 case 1: //what happens if a node dies?
                     System.out.println("node " + n.getVertex().getName() + " n followed agents:" + n.getResponsibleAgents());
@@ -1043,9 +1033,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast extends 
                 } else if (n.getNetworkdata().isEmpty()) {
                     n.getNetworkdata().put(n.getVertex().getName(), topologyData);
                 }
-                
+
                 //Send topology data to others
-                
                 //evaporate pheromone
                 n.getVertex().setPh((n.getVertex().getPh() - n.getVertex().getPh() * 0.001f));
             }
