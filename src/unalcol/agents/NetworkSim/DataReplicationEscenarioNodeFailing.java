@@ -47,6 +47,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailing;
+import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication;
 import unalcol.agents.NetworkSim.environment.NetworkMessageBuffer;
 import unalcol.agents.NetworkSim.environment.NetworkNodeMessageBuffer;
@@ -228,11 +229,11 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         graphVisualization = new DataReplicationNodeFailingObserver();
 
         if (SimulationParameters.simMode.equals("broadcast")) {
+            world = new NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast(agents, agentsLanguage, nodeLanguaje, g);
+            ((NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast) world).addNodes(nodes);
+        } else {
             world = new NetworkEnvironmentPheromoneReplicationNodeFailing(agents, agentsLanguage, nodeLanguaje, g);
             ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).addNodes(nodes);
-        }else{
-            world = new NetworkEnvironmentPheromoneReplicationNodeFailing(agents, agentsLanguage, nodeLanguaje, g);
-            ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).addNodes(nodes);        
         }
         world.addObserver(graphVisualization);
         world.not();
@@ -301,8 +302,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                         // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
                         //vv.repaint();
                         //}
-                        int agentsAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getAgentsAlive();
-                        int nodesAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing) n).getNodesAlive();
+                        
+                        
+                        int agentsAlive = n.getAgentsAlive();
+                        int nodesAlive = n.getNodesAlive();
                         //System.out.println("n" + n.getAge() + "," + agentsAlive);
                         //System.out.println("n" + n.getAge() + "," + nodesAlive);
                         if (nodesAlive == 0) {
@@ -368,7 +371,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                     Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
                         @Override
                         public Paint transform(GraphElements.MyVertex i) {
-                            if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
+                            if  (n.isOccuped(i)) {
                                 return Color.YELLOW;
                             }
 
@@ -440,8 +443,14 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
             if (world instanceof NetworkEnvironmentPheromoneReplicationNodeFailing && SimulationParameters.motionAlg.equals("carriersrep")) {
                 ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).evaporatePheromone();
             }*/
-            ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).updateWorldAge();
-            ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).validateNodesAlive();
+            if (SimulationParameters.simMode.equals("broadcast")) {
+                ((NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast) world).updateWorldAge();
+                ((NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast) world).validateNodesAlive();
+            } else {
+                ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).updateWorldAge();
+                ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).validateNodesAlive();
+            }
+
             /*
             if (world instanceof WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl) {
                 ((WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl) world).evaporatePheromone();

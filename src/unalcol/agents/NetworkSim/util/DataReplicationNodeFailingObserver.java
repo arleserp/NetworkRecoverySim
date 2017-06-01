@@ -213,8 +213,8 @@ public class DataReplicationNodeFailingObserver implements Observer {
             if (areAllAgentsDead) {
                 System.out.println("are all death: " + areAllAgentsDead);
             }*/
-            int agentsAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing)n).getAgentsAlive();
-            int nodesAlive = ((NetworkEnvironmentPheromoneReplicationNodeFailing)n).getNodesAlive();
+            int agentsAlive = n.getAgentsAlive();
+            int nodesAlive = n.getNodesAlive();
             if (lastnodesAlive == -1 || nodesAlive != lastnodesAlive) {
                 System.out.println("Nodes alive: " + nodesAlive);
                 lastnodesAlive = nodesAlive;

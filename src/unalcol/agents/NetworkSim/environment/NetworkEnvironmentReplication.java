@@ -21,7 +21,7 @@ import unalcol.agents.NetworkSim.GraphElements;
 import unalcol.agents.NetworkSim.MobileAgent;
 import unalcol.agents.NetworkSim.Node;
 
-public class NetworkEnvironmentReplication extends Environment {
+public abstract class NetworkEnvironmentReplication extends Environment {
 
     public static String msg = null;
     public static float percentageSuccess = -1.0f;
@@ -610,4 +610,8 @@ public class NetworkEnvironmentReplication extends Environment {
         return agentsAlive;
     }
 
+     public abstract boolean isOccuped(GraphElements.MyVertex v);
+    
+    
+    
 }
