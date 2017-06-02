@@ -8,6 +8,7 @@ package unalcol.agents.NetworkSim;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,6 +55,7 @@ public class Node extends Agent {
     private HashMap<Integer, Integer> followedAgentsCounter; // Stores <agentId, counter>
     private HashMap<String, ConcurrentHashMap<Integer, Integer>> agentsInNeighbors;
     AtomicInteger c = new AtomicInteger(0);
+    protected Hashtable<String, Object> properties = new Hashtable<String, Object>();
 
     public void incrementAgentCount() {
         c.incrementAndGet();
@@ -764,7 +766,7 @@ public class Node extends Agent {
         Object[] keys = agentsInNode.keySet().toArray();
         Arrays.sort(keys);
         for (int i = 0; i < keys.length - 1; i++) {
-            if ((Integer)agentsInNode.get(keys[i]) != -1 && ((Integer)agentsInNode.get(keys[i]) == (Integer) agentsInNode.get(keys[i + 1]))) {
+            if ((Integer) agentsInNode.get(keys[i]) != -1 && ((Integer) agentsInNode.get(keys[i]) == (Integer) agentsInNode.get(keys[i + 1]))) {
                 if (!duplicatedAgents.contains((int) keys[i + 1])) {
                     duplicatedAgents.add((int) keys[i + 1]);
                     System.out.print("," + keys[i + 1]);
@@ -794,5 +796,21 @@ public class Node extends Agent {
      */
     public void setAgentsInNeighbors(HashMap<String, ConcurrentHashMap<Integer, Integer>> agentsInNeighbors) {
         this.agentsInNeighbors = agentsInNeighbors;
+    }
+
+    public void setAttribute(String key, Object value) {
+        properties.put(key, value);
+    }
+
+    public Object getAttribute(String key) {
+        return properties.get(key);
+    }
+
+    public boolean removeAttribute(String key) {
+        if (properties.remove(key) != null) {
+            return true;
+        } else {
+            return (false);
+        }
     }
 }
