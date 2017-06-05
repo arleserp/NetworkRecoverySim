@@ -1078,28 +1078,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         }
     }
 
-    private void evaluateAgentCreationArrival(Node n) {
-        synchronized (NetworkEnvironmentPheromoneReplicationNodeFailing.class) {
-            Iterator<Map.Entry<Integer, Integer>> iter = n.getResponsibleAgentsArrival().entrySet().iterator();
-            //System.out.println(n.getVertex().getName() + " hashmap " + n.getResponsibleAgents());
-            double estimatedTimeoutArrival = 0;
-            double stdDevTimeoutArrival = 0;
-            while (iter.hasNext()) {
-                //Key: agentId|roundNumber
-                Map.Entry<Integer, Integer> Key = iter.next();
-                int k = Key.getKey();
-                estimatedTimeoutArrival = n.estimateExpectedTimeArrival();
-                stdDevTimeoutArrival = (int) n.getStdDevTimeoutArrival();
-
-                if (n.getLastAgentDeparting().containsKey(k) && Math.abs((n.getRounds() - n.getLastAgentArrive(k))) > (estimatedTimeoutArrival + 3 * stdDevTimeoutArrival)) { //this is not the expresion
-                    // AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
-                    System.out.println("create new agent arrival: est timeout:" + estimatedTimeoutArrival + ", stdDevTimeout:" + stdDevTimeoutArrival);
-                    createNewAgents(1, n, -1);
-                    iter.remove();
-                }
-            }
-        }
-    }
 
     //Example: It is better handshake protocol. J. Gomez
     public void evaluateAgentCreation(Node n) {
