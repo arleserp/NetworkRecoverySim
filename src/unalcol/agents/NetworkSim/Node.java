@@ -8,6 +8,7 @@ package unalcol.agents.NetworkSim;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,6 +45,7 @@ public class Node extends Agent {
     private ReplicationStrategyInterface repStrategy;
 
     AtomicInteger c = new AtomicInteger(0);
+    protected Hashtable<String, Object> properties = new Hashtable<String, Object>();
 
     public void incrementAgentCount() {
         c.incrementAndGet();
@@ -525,5 +527,21 @@ public class Node extends Agent {
      */
     public void setAgentsInNeighbors(HashMap<String, ConcurrentHashMap<Integer, Integer>> agentsInNeighbors) {
         this.agentsInNeighbors = agentsInNeighbors;
+    }
+
+    public void setAttribute(String key, Object value) {
+        properties.put(key, value);
+    }
+
+    public Object getAttribute(String key) {
+        return properties.get(key);
+    }
+
+    public boolean removeAttribute(String key) {
+        if (properties.remove(key) != null) {
+            return true;
+        } else {
+            return (false);
+        }
     }
 }

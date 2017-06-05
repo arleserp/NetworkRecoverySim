@@ -22,8 +22,8 @@ public class RandomSynchronizationProgram implements AgentProgram {
 
     public RandomSynchronizationProgram(float pf) {
         this.pf = pf;
-        System.out.println("random motion program");
-        System.out.println("pf: " + pf);
+        //System.out.println("random motion program");
+        // System.out.println("pf: " + pf);
     }
 
     @Override
