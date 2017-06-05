@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 
-/**
+    /**
  *
  * @author ARODRIGUEZ
  */
@@ -30,11 +30,10 @@ public class Node extends Agent {
     private int nMsgSend;
     private int nMsgRecv;
     private int rounds;
-    private HashMap<Integer, Integer> lastStartDeparting;
-    private HashMap<String, Integer> lastMessageFreeResp;
+    
     // private ArrayList<Integer> timeout;
     private int amountRounds;
-    private HashMap<String, ArrayList<Integer>> nodeTimeouts;
+   
     private ArrayList<Integer> nodeTimeoutsArrival;
     private HashMap<String, ArrayList> networkdata;
     private HashMap<Object, ArrayList> pending;
@@ -74,11 +73,8 @@ public class Node extends Agent {
         this.networkdata = new HashMap<>();
         this.v = ve;
         currentAgents = new ArrayList<>();
-        lastMessageFreeResp = new HashMap<>();
         rounds = 0;
-        nodeTimeouts = new HashMap();
         respAgentsBkp = new HashMap<>();
-        lastStartDeparting = new HashMap<>();
         nodeTimeoutsArrival = new ArrayList<>();
         prevLoc = new HashMap<>();
         followedAgentsCounter = new HashMap<>();
@@ -93,16 +89,14 @@ public class Node extends Agent {
         this.networkdata = new HashMap<>();
         this.v = ve;
         agentsInNode = new ConcurrentHashMap<>();
-        lastMessageFreeResp = new HashMap<>();
         rounds = 0;
-        nodeTimeouts = tout;
         respAgentsBkp = new HashMap<>();
-        lastStartDeparting = new HashMap<>();
         nodeTimeoutsArrival = new ArrayList<>();
         prevLoc = new HashMap<>();
         followedAgentsCounter = new HashMap<>();
         agentsInNeighbors = new HashMap<>();
         repStrategy = new ReplicationStrategyPAAMS();
+        repStrategy.setNodeTimeouts(tout);
     }
 
     public GraphElements.MyVertex getVertex() {
@@ -305,15 +299,14 @@ public class Node extends Agent {
      * @return the lastMessageArrival
      */
     public int getLastMessageFreeResp(int agentId) {
-        return getLastMessageFreeResp().get(agentId);
+        return repStrategy.getLastMessageFreeResp().get(agentId);
     }
 
     /**
      * @param lastMessageArrival the lastMessageArrival to set
      */
     public void setLastMessageFreeResp(int agentId, int nodeAge, String newLocation) {
-        String key = agentId + "-" + newLocation;
-        getLastMessageFreeResp().put(key, nodeAge);
+        repStrategy.setLastMessageFreeResp(agentId, nodeAge, newLocation);
     }
 
     public void calculateTimeout() {
@@ -343,14 +336,14 @@ public class Node extends Agent {
      * @return the lastMessageArrival
      */
     public HashMap<String, Integer> getLastMessageFreeResp() {
-        return lastMessageFreeResp;
+        return repStrategy.getLastMessageFreeResp();
     }
 
     /**
      * @param lastMessageFreeResp the lastMessageArrival to set
      */
     public void setLastMessageFreeResp(HashMap<String, Integer> lastMessageFreeResp) {
-        this.lastMessageFreeResp = lastMessageFreeResp;
+        repStrategy.setLastMessageFreeResp(lastMessageFreeResp);
     }
 
     public double getStdDevTimeout() {
@@ -361,14 +354,14 @@ public class Node extends Agent {
      * @return the nodeTimeouts
      */
     public HashMap<String, ArrayList<Integer>> getNodeTimeouts() {
-        return nodeTimeouts;
+        return repStrategy.getNodeTimeouts();
     }
 
     /**
      * @param nodeTimeouts the nodeTimeouts to set
      */
     public void setNodeTimeouts(HashMap<String, ArrayList<Integer>> nodeTimeouts) {
-        this.nodeTimeouts = nodeTimeouts;
+        repStrategy.setNodeTimeouts(nodeTimeouts);
     }
 
     public void addCreationTime(int time) {
@@ -435,23 +428,6 @@ public class Node extends Agent {
     }
 
 
-    public void setLastStartDeparting(int agentId, int rounds) {
-        lastStartDeparting.put(agentId, rounds);
-    }
-
-    /**
-     * @return the lastStartDeparting
-     */
-    public HashMap<Integer, Integer> getLastStartDeparting() {
-        return lastStartDeparting;
-    }
-
-    /**
-     * @param lastStartDeparting the lastStartDeparting to set
-     */
-    public void setLastStartDeparting(HashMap<Integer, Integer> lastStartDeparting) {
-        this.lastStartDeparting = lastStartDeparting;
-    }
 
     public void increaseFollowedAgentsCounter(int agentId) {
         if (!followedAgentsCounter.containsKey(agentId)) {

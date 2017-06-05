@@ -6,7 +6,6 @@
 package unalcol.agents.NetworkSim;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import unalcol.agents.NetworkSim.util.StatisticsNormalDist;
@@ -17,6 +16,11 @@ import unalcol.agents.NetworkSim.util.StatisticsNormalDist;
  */
 public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
 
+    public ReplicationStrategyPAAMS(){
+        super();
+    }
+    
+    
     @Override
     public void calculateTimeout() {
         Iterator<Map.Entry<Integer, Integer>> iter = getResponsibleAgents().entrySet().iterator();
@@ -90,21 +94,6 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
     }
 
     @Override
-    public HashMap<Integer, Integer> getLastAgentDeparting() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public HashMap<String, Integer> getLastMessageFreeResp() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void setLastMessageFreeResp(HashMap<String, Integer> lastMessageFreeResp) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public double getStdDevTimeout() {
         int maxMedianStdTimeout = Integer.MIN_VALUE;
         //System.out.println("nodeTimeouts" + getNodeTimeouts());
@@ -133,10 +122,6 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
         return maxMedianStdTimeout;
     }
 
-    @Override
-    public HashMap<String, ArrayList<Integer>> getNodeTimeouts() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
     @Override
     public int estimateExpectedTime(String nodeId) {

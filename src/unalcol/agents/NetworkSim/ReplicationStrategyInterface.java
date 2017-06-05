@@ -13,13 +13,15 @@ import java.util.HashMap;
  * @author Arles Rodriguez <arles.rodriguez@gmail.com>
  */
 public abstract class ReplicationStrategyInterface {
+
     private HashMap<Integer, Integer> responsibleAgents;
     private HashMap<Integer, Integer> responsibleAgentsArrival;
     private HashMap<Integer, String> responsibleAgentsLocation;
     private HashMap<Integer, Integer> lastAgentDeparting;
     private HashMap<Integer, Integer> lastAgentArrival;
-
+    private HashMap<String, Integer> lastMessageFreeResp;
     HashMap<String, ArrayList<Integer>> nodeTimeouts;
+
     int INITIAL_TIMEOUT = 30;//50
     int WINDOW_SIZE = 10;//5
 
@@ -29,6 +31,18 @@ public abstract class ReplicationStrategyInterface {
         lastAgentDeparting = new HashMap<>();
         responsibleAgentsArrival = new HashMap<>();
         lastAgentArrival = new HashMap<>();
+        lastMessageFreeResp = new HashMap<>();
+        nodeTimeouts = new HashMap();
+    }
+
+    public ReplicationStrategyInterface(HashMap tout) {
+        responsibleAgents = new HashMap<>();
+        responsibleAgentsLocation = new HashMap<>();
+        lastAgentDeparting = new HashMap<>();
+        responsibleAgentsArrival = new HashMap<>();
+        lastAgentArrival = new HashMap<>();
+        lastMessageFreeResp = new HashMap<>();
+        nodeTimeouts = tout;
     }
 
     public abstract void calculateTimeout();
@@ -41,13 +55,20 @@ public abstract class ReplicationStrategyInterface {
         return lastAgentDeparting;
     }
 
-    public abstract HashMap<String, Integer> getLastMessageFreeResp();
+    public HashMap<String, Integer> getLastMessageFreeResp() {
+        return lastMessageFreeResp;
+    }
 
-    public abstract void setLastMessageFreeResp(HashMap<String, Integer> lastMessageFreeResp);
+    public void setLastMessageFreeResp(int agentId, int nodeAge, String newLocation) {
+        String key = agentId + "-" + newLocation;
+        getLastMessageFreeResp().put(key, nodeAge);
+    }
 
     public abstract double getStdDevTimeout();
 
-    public abstract HashMap<String, ArrayList<Integer>> getNodeTimeouts();
+    public HashMap<String, ArrayList<Integer>> getNodeTimeouts(){
+        return nodeTimeouts;
+    }
 
     public abstract int estimateExpectedTime(String nodeId);
 
@@ -77,6 +98,17 @@ public abstract class ReplicationStrategyInterface {
      */
     public void setResponsibleAgentsLocation(HashMap<Integer, String> responsibleAgentsLocation) {
         this.responsibleAgentsLocation = responsibleAgentsLocation;
+    }
+
+    /**
+     * @param lastMessageFreeResp the lastMessageFreeResp to set
+     */
+    public void setLastMessageFreeResp(HashMap<String, Integer> lastMessageFreeResp) {
+        this.lastMessageFreeResp = lastMessageFreeResp;
+    }
+
+    void setNodeTimeouts(HashMap<String, ArrayList<Integer>> nodeTimeouts) {
+        this.nodeTimeouts = nodeTimeouts;
     }
 
 }

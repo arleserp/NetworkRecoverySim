@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Observer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -896,7 +895,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                 int agentId = Integer.valueOf(inbox[1]);
                                 int father = Integer.valueOf(inbox[2]);
                                 n.setLastAgentDeparting(agentId, n.getRounds());
-                                n.setLastStartDeparting(agentId, n.getRounds());
+                                
                                 n.incMsgRecv();
                                 n.getResponsibleAgents().put(agentId, father);
                                 n.getResponsibleAgentsLocation().put(agentId, inbox[3]);

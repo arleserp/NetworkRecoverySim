@@ -200,11 +200,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
             nodes.add(n);
         }
 
-        if (SimulationParameters.filenameLoc.length() > 1) {
-            loadLocations();
-        }
-
-        if (SimulationParameters.simMode.equals("broadcast")) {
+        if (!SimulationParameters.simMode.equals("broadcast")) {
+            if (SimulationParameters.filenameLoc.length() > 1) {
+                loadLocations();
+            }
             //Creates "Agents"
             for (int i = 0; i < population; i++) {
                 AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);

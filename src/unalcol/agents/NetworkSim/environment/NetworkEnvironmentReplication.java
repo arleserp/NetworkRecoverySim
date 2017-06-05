@@ -574,23 +574,7 @@ public abstract class NetworkEnvironmentReplication extends Environment {
         return true;
     }
 
-    public int getNodesAlive() {
-        int nodesAlive = 0;
-        synchronized (NetworkEnvironmentReplication.class) {
-            Vector cloneAgents = (Vector) this.getAgents().clone();
-            Iterator itr = cloneAgents.iterator();
-
-            while (itr.hasNext()) {
-                Agent a = (Agent) itr.next();
-                if (a instanceof Node) {
-                    if (((Node) a).status != Action.DIE) {
-                        nodesAlive++;
-                    }
-                }
-            }
-        }
-        return nodesAlive;
-    }
+    public abstract int getNodesAlive();
 
     public int getAgentsAlive() {
         int agentsAlive = 0;
