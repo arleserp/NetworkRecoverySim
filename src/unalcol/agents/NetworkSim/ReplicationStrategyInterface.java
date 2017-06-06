@@ -22,7 +22,15 @@ public abstract class ReplicationStrategyInterface {
     private HashMap<String, Integer> lastMessageFreeResp;
     HashMap<String, ArrayList<Integer>> nodeTimeouts;
 
-    int INITIAL_TIMEOUT = 30;//50
+    int INITIAL_TIMEOUT = 1;// 30;//50
+
+    public int getINITIAL_TIMEOUT() {
+        return INITIAL_TIMEOUT;
+    }
+
+    public void setINITIAL_TIMEOUT(int INITIAL_TIMEOUT) {
+        this.INITIAL_TIMEOUT = INITIAL_TIMEOUT;
+    }
     int WINDOW_SIZE = 10;//5
 
     public ReplicationStrategyInterface() {

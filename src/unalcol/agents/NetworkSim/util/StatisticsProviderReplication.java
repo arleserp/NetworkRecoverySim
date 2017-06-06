@@ -67,8 +67,8 @@ class StatisticsProviderReplication {
                 msgout.add((double) a.getnMsgSend());
             } else if (w.getAgent(i) instanceof Node) {
                 Node node = (Node) w.getAgent(i);
-                nodeTimeout.put(node.getVertex().getName(), node.getNodeTimeouts());
-                Iterator it = node.getNodeTimeouts().keySet().iterator();
+                nodeTimeout.put(node.getVertex().getName(), node.getNodeTimeouts(1));
+                Iterator it = node.getNodeTimeouts(1).keySet().iterator();
 
                 System.out.print("Node " + node.getVertex().getName() + ": ");
                 while (it.hasNext()) {

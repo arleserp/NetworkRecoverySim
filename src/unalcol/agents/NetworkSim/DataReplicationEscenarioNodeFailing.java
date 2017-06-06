@@ -48,6 +48,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailing;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast;
+import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailingChain;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication;
 import unalcol.agents.NetworkSim.environment.NetworkMessageBuffer;
 import unalcol.agents.NetworkSim.environment.NetworkNodeMessageBuffer;
@@ -213,6 +214,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                 a.setRound(-1);
                 a.setLocation(tmp);
                 a.setPrevLocation(tmp);
+                
+                a.setPrevPrevLocation(tmp);
                 a.setProgram(program);
                 a.setAttribute("infi", new ArrayList<String>());
                 NetworkMessageBuffer.getInstance().createBuffer(a.getId());
@@ -232,6 +235,9 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         if (SimulationParameters.simMode.equals("broadcast")) {
             world = new NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast(agents, agentsLanguage, nodeLanguaje, g);
             ((NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast) world).addNodes(nodes);
+        } else if(SimulationParameters.simMode.equals("chain")){ 
+           world = new NetworkEnvironmentPheromoneReplicationNodeFailingChain(agents, agentsLanguage, nodeLanguaje, g);
+            ((NetworkEnvironmentPheromoneReplicationNodeFailingChain) world).addNodes(nodes);
         } else {
             world = new NetworkEnvironmentPheromoneReplicationNodeFailing(agents, agentsLanguage, nodeLanguaje, g);
             ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).addNodes(nodes);

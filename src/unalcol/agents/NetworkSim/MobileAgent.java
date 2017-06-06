@@ -33,6 +33,16 @@ public class MobileAgent extends Agent implements Serializable {
     private int nMsgRecv;
     private int idFather;
     private GraphElements.MyVertex prevLocation;
+    private GraphElements.MyVertex prevPrevLocation;
+    private ArrayList<String> lastLocations;
+
+    public GraphElements.MyVertex getPrevPrevLocation() {
+        return prevPrevLocation;
+    }
+
+    public void setPrevPrevLocation(GraphElements.MyVertex prevPrevLocation) {
+        this.prevPrevLocation = prevPrevLocation;
+    }
     private List<HashMap> localNetwork;
     private List<HashMap<String, Integer>> localAgentsInNetwork;
     private List<HashMap<String, ConcurrentHashMap<Integer, Integer>>> localAgentsInNetworkHmap;
@@ -51,6 +61,15 @@ public class MobileAgent extends Agent implements Serializable {
         respAgentsBkp = new HashMap<>();
         localAgentsInNetwork = new ArrayList<>();
         localAgentsInNetworkHmap = new ArrayList<>();
+        lastLocations = new ArrayList<String>();
+    }
+
+    public ArrayList<String> getLastLocations() {
+        return lastLocations;
+    }
+
+    public void setLastLocations(ArrayList<String> lastLocations) {
+        this.lastLocations = lastLocations;
     }
 
     public MobileAgent() {
@@ -59,6 +78,8 @@ public class MobileAgent extends Agent implements Serializable {
         this.localNetwork = new ArrayList<>();
         localAgentsInNetwork = new ArrayList<>();
         localAgentsInNetworkHmap = new ArrayList<>();
+        lastLocations = new ArrayList<String>();
+
     }
 
     public void setAttribute(String key, Object value) {

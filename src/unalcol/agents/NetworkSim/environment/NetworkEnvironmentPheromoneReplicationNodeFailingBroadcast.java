@@ -763,7 +763,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast extends 
                     }*/
                     break;
                 case 1: //what happens if a node dies?
-                    System.out.println("node " + n.getVertex().getName() + " n followed agents:" + n.getResponsibleAgents());
+                    //System.out.println("node " + n.getVertex().getName() + " n followed agents:" + n.getResponsibleAgents());
                     KillNode(n);
                     /*if (n.getRounds() > 100) {
                         KillNode(n);
