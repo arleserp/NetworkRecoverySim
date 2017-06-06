@@ -185,8 +185,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         a.live();
         Thread t = new Thread(a);
         a.setThread(t);
+        
         a.setLocation(n.getVertex());
-        //a.setPrevLocation(n.getVertex());
+        a.setPrevLocation(n.getVertex());
         a.setArchitecture(this);
         setTotalAgents(getTotalAgents() + 1);
         agentsAlive.add(a);
@@ -264,7 +265,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
 
             //System.out.println("adding data to node" + nod.getVertex().getName() + ":" + n.getNetworkdata());
             nod.setNetworkdata(new HashMap(n.getNetworkdata()));
-            //System.out.println("adding data to node" + nod.getVertex().getName() + ":" + n.getRespAgentsBkp());
+
             nod.setAgentsInNeighbors(new HashMap(n.getAgentsInNeighbors()));
             nod.getAgentsInNeighbors().remove(d);
             if (n.getAgentsInNeighbors().containsKey(d)) {
@@ -280,14 +281,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     }
                 }
             }
-            /* nod.setRespAgentsBkp(new HashMap(n.getRespAgentsBkp()));
-           nod.getRespAgentsBkp().remove(d);
-            if (n.getRespAgentsBkp().containsKey(d)) {
-               int i = n.getRespAgentsBkp().get(d);
-                System.out.println("in node" + d + " creating " + i + " agents...");
-                //rule to create new agents???
-                createNewAgents(i, nod, -1);
-            }*/
             setChanged();
             notifyObservers();
         }
@@ -314,7 +307,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         increaseAgentsDie();
         agentsAlive.remove(a);
         a.die();
-        a.setLocation(null);
+        //a.setLocation(null);
         setChanged();
         notifyObservers();
         //System.out.println(" agents alive after removal " + agentsAlive.size());
@@ -614,16 +607,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                 //System.out.println("1.");
                 String act = action.getCode();
 
-                if (SimulationParameters.activateReplication.equals("replalgon")) {
-                    if (a.getPrevLocation() != null) {
-                        String[] msgnoder = new String[3];
-                        msgnoder[0] = "freeresp";
-                        msgnoder[1] = String.valueOf(a.getId());
-                        msgnoder[2] = a.getLocation().getName();
-                        NetworkNodeMessageBuffer.getInstance().putMessage(a.getPrevLocation().getName(), msgnoder);
-                    }
-                }
-
                 if (language.getActionIndex(act) == 2) {
                     System.out.println("informfailure" + a.getId());
                     setChanged();
@@ -650,15 +633,18 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                             return false;
                         }*/
                         Node c = getNode(a.getLocation().getName());
-                        HashMap<String, Object> nodeNet = new HashMap<>();
-                        nodeNet.put(a.getLocation().getName(), getTopologyNames(a.getLocation()));
-                        HashMap<String, Integer> agentsinNodeNet = new HashMap<>();
-                        agentsinNodeNet.put(c.getVertex().getName(), c.getAgentCount());
 
+                        if (c == null) {
+                            System.out.println("Agent" + a.getId() + " location has failed " + a.getLocation().getName());
+                            killAgent(a, true);
+                            return false;
+                        }
+                        HashMap<String, Object> nodeNet = new HashMap<>();
+                        nodeNet.put(a.getLocation().getName(), getTopologyNames(a.getLocation()));                                                
                         HashMap<String, ConcurrentHashMap<Integer, Integer>> agentsinNodeNetMap = new HashMap<>();
                         agentsinNodeNetMap.put(c.getVertex().getName(), c.getAgentsInNode());
                         a.getLocalAgentsInNetworkHmap().add(agentsinNodeNetMap);
-                        a.getLocalAgentsInNetwork().add(agentsinNodeNet);
+                        
                         a.getLocalNetwork().add(nodeNet);
 
                         //}
@@ -668,13 +654,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                             a.setLocalNetwork(nl);
                         }
 
-                        if (a.getLocalAgentsInNetwork().size() > SimulationParameters.nhops) {
-                            List aln = new ArrayList(a.getLocalAgentsInNetwork().subList(a.getLocalAgentsInNetwork().size() - SimulationParameters.nhops, a.getLocalAgentsInNetwork().size()));
-                            a.setLocalAgentsInNetwork(aln);
-                        }
-
-                        if (a.getLocalAgentsInNetwork().size() > SimulationParameters.nhops) {
-                            List aln2 = new ArrayList(a.getLocalAgentsInNetwork().subList(a.getLocalAgentsInNetworkHmap().size() - SimulationParameters.nhops, a.getLocalAgentsInNetworkHmap().size()));
+                        if (a.getLocalAgentsInNetworkHmap().size() > SimulationParameters.nhops) {
+                            List aln2 = new ArrayList(a.getLocalAgentsInNetworkHmap().subList(a.getLocalAgentsInNetworkHmap().size() - SimulationParameters.nhops, a.getLocalAgentsInNetworkHmap().size()));
                             a.setLocalAgentsInNetworkHmap(aln2);
                         }
 
@@ -684,13 +665,12 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                             return false;
                         }
 
-                        String[] msgnet = new String[5];
+                        String[] msgnet = new String[4];
                         msgnet[0] = "networkdata";
                         msgnet[1] = String.valueOf(a.getId());
                         StringSerializer s = new StringSerializer();
-                        msgnet[2] = s.serialize(a.getLocalAgentsInNetwork());
-                        msgnet[3] = s.serialize(a.getLocalNetwork());
-                        msgnet[4] = s.serialize(a.getLocalAgentsInNetworkHmap());
+                        msgnet[2] = s.serialize(a.getLocalNetwork());
+                        msgnet[3] = s.serialize(a.getLocalAgentsInNetworkHmap());
                         if (a.status == Action.DIE) {
                             System.out.println("death before network data" + a.getId());
                             return false;
@@ -759,6 +739,16 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                 } else //Send a message to current node before moving to new destination v
                                 //msgnode: "departing"|agentId|FatherId|newDest
                                 {
+
+                                    if (SimulationParameters.activateReplication.equals("replalgon")) {
+                                        if (!a.getPrevLocation().equals(a.getLocation())) {
+                                            String[] msgnoder = new String[3];
+                                            msgnoder[0] = "freeresp";
+                                            msgnoder[1] = String.valueOf(a.getId());
+                                            msgnoder[2] = a.getLocation().getName();
+                                            NetworkNodeMessageBuffer.getInstance().putMessage(a.getPrevLocation().getName(), msgnoder);
+                                        }
+                                    }
                                     if (SimulationParameters.activateReplication.equals("replalgon")) {
                                         String[] msgnode = new String[4];
                                         msgnode[0] = "departing";
@@ -896,7 +886,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                 int agentId = Integer.valueOf(inbox[1]);
                                 int father = Integer.valueOf(inbox[2]);
                                 n.setLastAgentDeparting(agentId, n.getRounds(), hops);
-                                
+
                                 n.incMsgRecv();
                                 n.getResponsibleAgents(hops).put(agentId, father);
                                 n.getResponsibleAgentsLocation(hops).put(agentId, inbox[3]);
@@ -932,21 +922,16 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                             }
 
                             if (inbox[0].equals("networkdata")) {
+                                StringSerializer ss = new StringSerializer();
+                                ArrayList<HashMap> agentLoc = (ArrayList) ss.deserialize(inbox[2]);
+
+                                for (HashMap< String, ArrayList> agentData : agentLoc) {
+                                    //Compare node data with agent data
+                                    n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), agentData));
+                                }
                                 //completes and updates data
                                 StringSerializer s = new StringSerializer();
-                                ArrayList<HashMap<String, Integer>> agentList = (ArrayList<HashMap<String, Integer>>) s.deserialize(inbox[2]);
-                                Iterator<HashMap<String, Integer>> itr = agentList.iterator();
-
-                                while (itr.hasNext()) {
-                                    HashMap<String, Integer> agentBkp = itr.next();
-                                    //Maybe update this?
-                                    for (String key : agentBkp.keySet()) {
-                                        n.getRespAgentsBkp().put(key, agentBkp.get(key));
-                                        //System.out.println("node " + n.getVertex().getName() + ", Responsible Agents Info:" + n.getRespAgentsBkp());
-                                    }
-                                }
-                                StringSerializer sx = new StringSerializer();
-                                ArrayList<HashMap<String, ConcurrentHashMap<Integer, Integer>>> agentInNeigborsList = (ArrayList<HashMap<String, ConcurrentHashMap<Integer, Integer>>>) s.deserialize(inbox[4]);
+                                ArrayList<HashMap<String, ConcurrentHashMap<Integer, Integer>>> agentInNeigborsList = (ArrayList<HashMap<String, ConcurrentHashMap<Integer, Integer>>>) s.deserialize(inbox[3]);
                                 Iterator<HashMap<String, ConcurrentHashMap<Integer, Integer>>> itr2 = agentInNeigborsList.iterator();
 
                                 while (itr2.hasNext()) {
@@ -954,19 +939,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                     //Maybe update this?
                                     for (String key : agentBkp.keySet()) {
                                         n.getAgentsInNeighbors().put(key, agentBkp.get(key));
-                                        //System.out.println("node " + n.getVertex().getName() + ", Responsible Agents Info:" + n.getRespAgentsBkp());
                                     }
                                 }
 
-                                //System.out.println("res" + n.getRespAgentsBkp());
-                                StringSerializer ss = new StringSerializer();
-                                ArrayList<HashMap> agentLoc = (ArrayList) ss.deserialize(inbox[3]);
-                                //System.out.print(n.getVertex().getName() + " n antes" + n.getNetworkdata());
-                                for (HashMap< String, ArrayList> agentData : agentLoc) {
-                                    //Compare node data with agent data
-                                    n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), agentData));
-                                }
-                                //System.out.println(", n despues" + n.getNetworkdata());
                             }
                             if (inbox[0].equals("connect")) {
                                 //message msgnodediff: connect|level|nodeid|nodetoconnect
@@ -1077,7 +1052,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
             }
         }
     }
-
 
     //Example: It is better handshake protocol. J. Gomez
     public void evaluateAgentCreation(Node n) {

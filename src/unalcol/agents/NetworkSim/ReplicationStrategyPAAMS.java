@@ -47,7 +47,7 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
                     }
 
                     if (getNodeTimeouts().get(nodeId).size() >= WINDOW_SIZE) {
-                        nodeTimeouts.put(nodeId, new ArrayList<>(nodeTimeouts.get(nodeId).subList(nodeTimeouts.get(nodeId).size() - WINDOW_SIZE, nodeTimeouts.get(nodeId).size() - 1)));
+                        nodeTimeouts.put(nodeId, new ArrayList<>(nodeTimeouts.get(nodeId).subList(nodeTimeouts.get(nodeId).size() - WINDOW_SIZE, nodeTimeouts.get(nodeId).size())));
                     }
                     getNodeTimeouts().get(nodeId).add(diff);
                     //System.out.println("calculatetimeout size getNodeTimeOuts():" + nodeId + "+" + getNodeTimeouts().get(nodeId).size());
@@ -109,7 +109,7 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
             }
 
             if (dtimeout.size() >= WINDOW_SIZE) {
-                dtimeout = new ArrayList<>(dtimeout.subList(dtimeout.size() - WINDOW_SIZE, dtimeout.size() - 1));
+                dtimeout = new ArrayList<>(dtimeout.subList(dtimeout.size() - WINDOW_SIZE, dtimeout.size()));
             }
 
             //if (dtimeout.size() > 1) {
@@ -135,7 +135,7 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
             dtimeout.add(d.doubleValue());
         }
         if (dtimeout.size() >= WINDOW_SIZE) {
-            dtimeout = new ArrayList<>(dtimeout.subList(dtimeout.size() - WINDOW_SIZE, dtimeout.size() - 1));
+            dtimeout = new ArrayList<>(dtimeout.subList(dtimeout.size() - WINDOW_SIZE, dtimeout.size()));
         }
         //if (dtimeout.size() > 1) {
         StatisticsNormalDist st = new StatisticsNormalDist(dtimeout, dtimeout.size());

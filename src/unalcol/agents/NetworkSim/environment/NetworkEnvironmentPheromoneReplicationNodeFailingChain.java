@@ -185,7 +185,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
         Thread t = new Thread(a);
         a.setThread(t);
         a.setLocation(n.getVertex());
-        //a.setPrevLocation(n.getVertex());
+        a.setPrevLocation(n.getVertex()); //Added now but not before
+        
         a.setArchitecture(this);
         setTotalAgents(getTotalAgents() + 1);
         agentsAlive.add(a);
@@ -266,7 +267,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
             //System.out.println("adding data to node" + nod.getVertex().getName() + ":" + n.getRespAgentsBkp());
             nod.setAgentsInNeighbors(new HashMap(n.getAgentsInNeighbors()));
             nod.getAgentsInNeighbors().remove(d);
-            if (n.getAgentsInNeighbors().containsKey(d)) {
+           /* if (n.getAgentsInNeighbors().containsKey(d)) {
                 System.out.println("creating " + n.getAgentsInNeighbors().get(d).size() + " agents in node:" + nod.getVertex().getName());
                 ConcurrentHashMap<Integer, Integer> i = n.getAgentsInNeighbors().get(d);
                 Iterator<Integer> it = i.keySet().iterator();
@@ -278,7 +279,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                         createnewAgent(nod, i.get(id));
                     }
                 }
-            }
+            }*/
             /* nod.setRespAgentsBkp(new HashMap(n.getRespAgentsBkp()));
            nod.getRespAgentsBkp().remove(d);
             if (n.getRespAgentsBkp().containsKey(d)) {
@@ -313,7 +314,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
         increaseAgentsDie();
         agentsAlive.remove(a);
         a.die();
-        a.setLocation(null);
+       // a.setLocation(null);
         setChanged();
         notifyObservers();
         //System.out.println(" agents alive after removal " + agentsAlive.size());
@@ -613,19 +614,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                 //System.out.println("1.");
                 String act = action.getCode();
 
-                if (SimulationParameters.activateReplication.equals("replalgon")) {
-                    StringSerializer s = new StringSerializer();
-                    if (!a.getPrevLocation().equals(a.getLocation())) {
-                        String[] msgnoder = new String[5];
-                        msgnoder[0] = "freeresp";
-                        msgnoder[1] = String.valueOf(a.getId());
-                        msgnoder[2] = a.getLocation().getName();
-                        msgnoder[3] = String.valueOf(1); //first hop
-                        msgnoder[4] = s.serialize(new ArrayList<>(a.getLastLocations())); //a.getPrevPrevLocation().getName();
-                        NetworkNodeMessageBuffer.getInstance().putMessage(a.getPrevLocation().getName(), msgnoder);
-                    }
-                }
-
                 if (language.getActionIndex(act) == 2) {
                     System.out.println("informfailure" + a.getId());
                     setChanged();
@@ -652,6 +640,13 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                             return false;
                         }*/
                         Node c = getNode(a.getLocation().getName());
+                        
+                        if (c == null) {
+                            System.out.println("Agent" + a.getId() + " location has failed " + a.getLocation().getName());
+                            killAgent(a, true);
+                            return false;
+                        }
+                        
                         HashMap<String, Object> nodeNet = new HashMap<>();
                         nodeNet.put(a.getLocation().getName(), getTopologyNames(a.getLocation()));
                         HashMap<String, Integer> agentsinNodeNet = new HashMap<>();
@@ -763,6 +758,19 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                 {
                                     if (SimulationParameters.activateReplication.equals("replalgon")) {
                                         StringSerializer s = new StringSerializer();
+                                        if (!a.getPrevLocation().equals(a.getLocation())) {
+                                            String[] msgnoder = new String[5];
+                                            msgnoder[0] = "freeresp";
+                                            msgnoder[1] = String.valueOf(a.getId());
+                                            msgnoder[2] = a.getLocation().getName();
+                                            msgnoder[3] = String.valueOf(1); //first hop
+                                            msgnoder[4] = s.serialize(new ArrayList<>(a.getLastLocations())); //a.getPrevPrevLocation().getName();
+                                            NetworkNodeMessageBuffer.getInstance().putMessage(a.getPrevLocation().getName(), msgnoder);
+                                        }
+                                    }
+                                                                        
+                                    if (SimulationParameters.activateReplication.equals("replalgon")) {
+                                        StringSerializer s = new StringSerializer();
                                         String[] msgnode = new String[6];
                                         msgnode[0] = "departing";
                                         msgnode[1] = String.valueOf(a.getId());
@@ -806,7 +814,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
 
                                     a.setLocation(v);
                                     a.getLocation().setStatus("visited");
-                                    /*if (SimulationParameters.activateReplication.equals("replalgon")) {
+                                    if (SimulationParameters.activateReplication.equals("replalgon")) {
                                         String[] msgarrived = new String[4];
                                         msgarrived[0] = "arrived";
                                         msgarrived[1] = String.valueOf(a.getId());
@@ -818,7 +826,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                             killAgent(a, true);
                                             return false;
                                         }
-                                    }*/
+                                    }
 
                                     //agent.sleep(50);
                                     // getLocationAgents().put(a, a.getLocation());
@@ -892,7 +900,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                         if (SimulationParameters.activateReplication.equals("replalgon")) {
                             //Send a message to current node before moving to new destination v
                             //Send message arrived to node arrived|id|getPrevLocation
-                            /*if (inbox[0].equals("arrived")) {
+                            if (inbox[0].equals("arrived")) {
                                 int agentId = Integer.valueOf(inbox[1]);
                                 int father = Integer.valueOf(inbox[2]);
                                 //n.setLastAgentArrive(agentId, n.getRounds());
@@ -907,7 +915,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                 }
                                 //System.out.println("Agents in node: " + n.getAgentsInNode());
                                 //System.out.println(n.getVertex().getName() + "arrived:" + agentId);
-                            }*/
+                            }
                             //msgnode: "departing"|agentId|FatherId|newDest
                             if (inbox[0].equals("departing")) {
                                 int agentId = Integer.valueOf(inbox[1]);

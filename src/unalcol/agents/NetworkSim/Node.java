@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import unalcol.agents.Agent;
@@ -82,13 +83,13 @@ public class Node extends Agent {
         agentsInNode = new ConcurrentHashMap<>();
         agentsInNeighbors = new HashMap<>();
         repStrategy = new HashMap<>();
-        
+
         if (!SimulationParameters.simMode.equals("chain")) {
-            repStrategy.put(1, new ReplicationStrategyPAAMS());            
+            repStrategy.put(1, new ReplicationStrategyPAAMS());
         } else {
             for (int i = 1; i <= SimulationParameters.nhops; i++) {
                 repStrategy.put(i, new ReplicationStrategyPAAMS());
-                //repStrategy.get(i).setINITIAL_TIMEOUT(repStrategy.get(i).getINITIAL_TIMEOUT()*i);
+                repStrategy.get(i).setINITIAL_TIMEOUT(repStrategy.get(i).getINITIAL_TIMEOUT()*i);
             }
         }
     }
@@ -108,15 +109,15 @@ public class Node extends Agent {
 
         if (!SimulationParameters.simMode.equals("chain")) {
             repStrategy.put(1, new ReplicationStrategyPAAMS());
-            repStrategy.get(1).setNodeTimeouts(tout);            
+            repStrategy.get(1).setNodeTimeouts(tout);
         } else {
             for (int i = 1; i <= SimulationParameters.nhops; i++) {
                 repStrategy.put(i, new ReplicationStrategyPAAMS());
                 repStrategy.get(i).setNodeTimeouts(tout);
-                //repStrategy.get(i).setINITIAL_TIMEOUT(repStrategy.get(i).getINITIAL_TIMEOUT()*i);
+                repStrategy.get(i).setINITIAL_TIMEOUT(repStrategy.get(i).getINITIAL_TIMEOUT() * i);
             }
         }
-        
+
     }
 
     public GraphElements.MyVertex getVertex() {
@@ -128,9 +129,9 @@ public class Node extends Agent {
     }
 
     public void addAgentInNode(int agId, int fId) {
-        if (!agentsInNode.contains(agId)) {
-            getAgentsInNode().put(agId, fId);
-        }
+        //if (!agentsInNode.contains(agId)) {
+        getAgentsInNode().put(agId, fId);
+        //}
     }
 
     public void deleteAgentInNode(int agId) {
@@ -199,7 +200,7 @@ public class Node extends Agent {
      * @return the responsibleAgents
      */
     public HashMap<Integer, Integer> getResponsibleAgents(int hop) {
-        
+
         return repStrategy.get(hop).getResponsibleAgents();
     }
 
@@ -479,32 +480,41 @@ public class Node extends Agent {
 
         Iterator<Integer> it = agentsInNode.keySet().iterator();
         //System.out.print("Agents in node: " + agentsInNode + ", duplicated agents:");
+        // 1. Rule to find if a process with original father has repeated agents
         while (it.hasNext()) {
             int agent = it.next();
             int father = agentsInNode.get(agent);
             if (father != -1) {
                 if (agentsInNode.containsKey(father)) {
                     duplicatedAgents.add(agent);
-                    System.out.print("," + agent);
+                    System.out.print("1. " + agent);
                 }
             }
         }
+
+        // 2. Compare by now is bubble n*n-1 detection can be optimized
         Object[] keys = agentsInNode.keySet().toArray();
-        Arrays.sort(keys);
+//        Arrays.sort(keys);        
+        
         for (int i = 0; i < keys.length - 1; i++) {
-            if ((Integer) agentsInNode.get(keys[i]) != -1 && ((Integer) agentsInNode.get(keys[i]) == (Integer) agentsInNode.get(keys[i + 1]))) {
-                if (!duplicatedAgents.contains((int) keys[i + 1])) {
-                    duplicatedAgents.add((int) keys[i + 1]);
-                    System.out.print("," + keys[i + 1]);
+            for (int j = i + 1; j < keys.length; j++) {
+                //System.out.println("2." + agentsInNode + "-" + agentsInNode.get(keys[i]) + " vs " + agentsInNode.get(keys[j]));
+                if (agentsInNode.get(keys[i]) != -1 && (Objects.equals(agentsInNode.get(keys[i]), agentsInNode.get(keys[j])))) {
+                    if (!duplicatedAgents.contains((int) keys[j])) {
+                        duplicatedAgents.add((int) keys[j]);
+                        System.out.print("," + keys[j]);
+                    }
                 }
             }
         }
+
         if (!duplicatedAgents.isEmpty()) {
-            System.out.println("Agents in node: " + agentsInNode + ", duplicated agents:");
+            System.out.print("Agents in node: " + agentsInNode + ", duplicated agents detected. ");
             System.out.println("yayayayay");
             for (Integer r : duplicatedAgents) {
-                agentsInNode.remove(r);
+                agentsInNode.remove(r);                
             }
+            System.out.println("After - Agents in node: " + agentsInNode + ".");
         }
         return duplicatedAgents;
     }
