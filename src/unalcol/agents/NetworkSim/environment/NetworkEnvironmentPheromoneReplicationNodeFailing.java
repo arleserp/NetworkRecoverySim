@@ -185,7 +185,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         a.live();
         Thread t = new Thread(a);
         a.setThread(t);
-        
+
         a.setLocation(n.getVertex());
         a.setPrevLocation(n.getVertex());
         a.setArchitecture(this);
@@ -362,16 +362,10 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         NetworkNodeMessageBuffer.getInstance().deleteBuffer(n.getVertex().getName());
         //System.out.println("node fail?");
         //Send kill signal to agents
-        Iterator<Integer> it = n.getAgentsInNode().keySet().iterator();//getAgentsInNode(n).iterator();
-        while (it.hasNext()) {
-            MobileAgent i = getMobileAgent(it.next());
-            if (i != null) {
-                System.out.println("node n" + n.getVertex().getName() + " is removing" + i.getId());
-                killAgent(i, false);
-            }
-        }
-        //not sure if this is necessary
 
+        Iterator<Integer> it = n.getAgentsInNode().keySet().iterator();
+
+        //not sure if this is necessary
         synchronized (TopologySingleton.getInstance()) {
             if (nodes.remove(n)) {
                 System.out.println("removed: " + n.getVertex().getName());
@@ -380,6 +374,13 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         }
         n.getVertex().setName(n.getVertex().getName() + " failed");
         n.getVertex().setStatus("failed");
+        while (it.hasNext()) {
+            MobileAgent i = getMobileAgent(it.next());
+            if (i != null) {
+                System.out.println("node n" + n.getVertex().getName() + " is removing" + i.getId());
+                killAgent(i, false);
+            }
+        }
         n.die();
         setChanged();
         notifyObservers();
@@ -640,11 +641,11 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                             return false;
                         }
                         HashMap<String, Object> nodeNet = new HashMap<>();
-                        nodeNet.put(a.getLocation().getName(), getTopologyNames(a.getLocation()));                                                
+                        nodeNet.put(a.getLocation().getName(), getTopologyNames(a.getLocation()));
                         HashMap<String, ConcurrentHashMap<Integer, Integer>> agentsinNodeNetMap = new HashMap<>();
                         agentsinNodeNetMap.put(c.getVertex().getName(), c.getAgentsInNode());
                         a.getLocalAgentsInNetworkHmap().add(agentsinNodeNetMap);
-                        
+
                         a.getLocalNetwork().add(nodeNet);
 
                         //}
@@ -739,8 +740,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                 } else //Send a message to current node before moving to new destination v
                                 //msgnode: "departing"|agentId|FatherId|newDest
                                 {
-
-                                    if (SimulationParameters.activateReplication.equals("replalgon")) {
+                                    if (a.status == Action.DIE) {
+                                        System.out.println("killed before sending free msg");
+                                    } else if (SimulationParameters.activateReplication.equals("replalgon")) {
                                         if (!a.getPrevLocation().equals(a.getLocation())) {
                                             String[] msgnoder = new String[3];
                                             msgnoder[0] = "freeresp";
@@ -749,7 +751,10 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                             NetworkNodeMessageBuffer.getInstance().putMessage(a.getPrevLocation().getName(), msgnoder);
                                         }
                                     }
-                                    if (SimulationParameters.activateReplication.equals("replalgon")) {
+
+                                    if (a.status == Action.DIE) {
+                                        System.out.println("killed before sending free msg");
+                                    } else if (SimulationParameters.activateReplication.equals("replalgon")) {
                                         String[] msgnode = new String[4];
                                         msgnode[0] = "departing";
                                         msgnode[1] = String.valueOf(a.getId());
@@ -938,6 +943,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                     HashMap<String, ConcurrentHashMap<Integer, Integer>> agentBkp = itr2.next();
                                     //Maybe update this?
                                     for (String key : agentBkp.keySet()) {
+                                        //overwrite the key instead merge? stores one agent by node?
                                         n.getAgentsInNeighbors().put(key, agentBkp.get(key));
                                     }
                                 }
@@ -961,7 +967,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     }
                     break;
                 case 1: //what happens if a node dies?
-                    System.out.println("node " + n.getVertex().getName() + " n followed agents:" + n.getResponsibleAgents(hops));
+                    System.out.println("node " + n.getVertex().getName() + ", n followed agents:" + n.getResponsibleAgents(hops) + ", agents in neighbours:" + n.getAgentsInNeighbors());
                     KillNode(n);
                     /*if (n.getRounds() > 100) {
                         KillNode(n);
