@@ -114,7 +114,7 @@ public class Node extends Agent {
             for (int i = 1; i <= SimulationParameters.nhops; i++) {
                 repStrategy.put(i, new ReplicationStrategyPAAMS());
                 repStrategy.get(i).setNodeTimeouts(tout);
-                repStrategy.get(i).setINITIAL_TIMEOUT(repStrategy.get(i).getINITIAL_TIMEOUT() * i);
+                repStrategy.get(i).setINITIAL_TIMEOUT(repStrategy.get(i).getINITIAL_TIMEOUT() * i * i);
             }
         }
 
@@ -321,7 +321,11 @@ public class Node extends Agent {
      * @return the lastMessageArrival
      */
     public int getLastMessageFreeResp(int agentId, int hop) {
-        return repStrategy.get(hop).getLastMessageFreeResp().get(agentId);
+        if (repStrategy.containsKey(hop) && repStrategy.get(hop).getLastMessageFreeResp().containsKey(agentId)) {
+            return repStrategy.get(hop).getLastMessageFreeResp().get(agentId);
+        }
+        //System.out.println("no last free messages free!");
+        return -1;
     }
 
     /**
@@ -495,7 +499,7 @@ public class Node extends Agent {
         // 2. Compare by now is bubble n*n-1 detection can be optimized
         Object[] keys = agentsInNode.keySet().toArray();
 //        Arrays.sort(keys);        
-        
+
         for (int i = 0; i < keys.length - 1; i++) {
             for (int j = i + 1; j < keys.length; j++) {
                 //System.out.println("2." + agentsInNode + "-" + agentsInNode.get(keys[i]) + " vs " + agentsInNode.get(keys[j]));
@@ -509,12 +513,12 @@ public class Node extends Agent {
         }
 
         if (!duplicatedAgents.isEmpty()) {
-            System.out.print("Agents in node: " + agentsInNode + ", duplicated agents detected. ");
-            System.out.println("yayayayay");
+            //System.out.print("Agents in node: " + agentsInNode + ", duplicated agents detected. ");
+            //System.out.println("yayayayay");
             for (Integer r : duplicatedAgents) {
-                agentsInNode.remove(r);                
+                agentsInNode.remove(r);
             }
-            System.out.println("After - Agents in node: " + agentsInNode + ".");
+            //System.out.println("After - Agents in node: " + agentsInNode + ".");
         }
         return duplicatedAgents;
     }

@@ -16,11 +16,10 @@ import unalcol.agents.NetworkSim.util.StatisticsNormalDist;
  */
 public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
 
-    public ReplicationStrategyPAAMS(){
+    public ReplicationStrategyPAAMS() {
         super();
     }
-    
-    
+
     @Override
     public void calculateTimeout() {
         Iterator<Map.Entry<Integer, Integer>> iter = getResponsibleAgents().entrySet().iterator();
@@ -40,7 +39,7 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
                 if (agentId == k && getLastAgentDeparting().containsKey(k) && getLastMessageFreeResp().containsKey(KeyM.getKey())) {
                     int diff = Math.abs(getLastMessageFreeResp().get(KeyM.getKey()) - getLastAgentDeparting().get(k));
                     //System.out.println("diff" +  diff);
-                    //if (diff != 0) {
+                    // if (diff != 0) {
                     if (!nodeTimeouts.containsKey(nodeId)) {
                         getNodeTimeouts().put(nodeId, new ArrayList());
                         getNodeTimeouts().get(nodeId).add(INITIAL_TIMEOUT);
@@ -49,7 +48,10 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
                     if (getNodeTimeouts().get(nodeId).size() >= WINDOW_SIZE) {
                         nodeTimeouts.put(nodeId, new ArrayList<>(nodeTimeouts.get(nodeId).subList(nodeTimeouts.get(nodeId).size() - WINDOW_SIZE, nodeTimeouts.get(nodeId).size())));
                     }
-                    getNodeTimeouts().get(nodeId).add(diff);
+
+                    if (diff != 0 && diff != 1) {
+                        getNodeTimeouts().get(nodeId).add(diff);
+                    }
                     //System.out.println("calculatetimeout size getNodeTimeOuts():" + nodeId + "+" + getNodeTimeouts().get(nodeId).size());
                     //}
                     //System.out.println("node:" + getVertex().getName() + ", antes:" + getLastMessageArrival());
@@ -67,6 +69,8 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
 
     @Override
     public int estimateTimeout() {
+        // return INITIAL_TIMEOUT;
+
         int maxMedianTimeout = Integer.MIN_VALUE;
         System.out.println("nodeTimeouts" + getNodeTimeouts());
 
@@ -96,7 +100,7 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
     @Override
     public double getStdDevTimeout() {
         int maxMedianStdTimeout = Integer.MIN_VALUE;
-        //System.out.println("nodeTimeouts" + getNodeTimeouts());
+        //System.out.println("getStdTimeout nodeTimeouts" + getNodeTimeouts());
 
         if (getNodeTimeouts().isEmpty()) {
             return 0;
@@ -112,19 +116,23 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
                 dtimeout = new ArrayList<>(dtimeout.subList(dtimeout.size() - WINDOW_SIZE, dtimeout.size()));
             }
 
-            //if (dtimeout.size() > 1) {
+           //if (dtimeout.size() > 1) {
             StatisticsNormalDist st = new StatisticsNormalDist(dtimeout, dtimeout.size());
             if (st.getStdDev() > maxMedianStdTimeout) {
                 maxMedianStdTimeout = (int) st.getStdDevMedian();
             }
         }
+        
+        if(maxMedianStdTimeout == Integer.MIN_VALUE){
+            return 0;
+        }
         //System.out.println("Max std timeout" + maxMedianStdTimeout);
         return maxMedianStdTimeout;
     }
 
-
     @Override
     public int estimateExpectedTime(String nodeId) {
+
         //System.out.println("nodeTimeouts" + getNodeTimeouts());
         if (!getNodeTimeouts().containsKey(nodeId)) {
             return INITIAL_TIMEOUT;

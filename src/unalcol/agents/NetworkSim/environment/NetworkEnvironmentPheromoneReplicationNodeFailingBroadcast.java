@@ -626,8 +626,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast extends 
                 if (!NetworkNodeMessageBuffer.getInstance().putMessage(neigbour, msgnet)) {
                     System.out.println("node is down: " + neigbour);
                 }
-            }
             //}
+            }
 
             /**
              * Send part of Raynal Protocol if (((ArrayList)
