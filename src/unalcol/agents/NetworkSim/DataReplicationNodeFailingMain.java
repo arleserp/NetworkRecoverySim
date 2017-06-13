@@ -43,6 +43,9 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 11) {
                     SimulationParameters.simMode = String.valueOf(args[12]);
                 }
+                if (args.length > 12) {
+                    SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
+                }
             }
 
             if (SimulationParameters.graphMode.equals("community")) {
@@ -74,6 +77,9 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 12) {
                     SimulationParameters.simMode = String.valueOf(args[12]);
                 }
+                if (args.length > 13) {
+                    SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
+                }
             }
 
             if (SimulationParameters.graphMode.equals("communitycircle")) {
@@ -99,6 +105,10 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 12) {
                     SimulationParameters.simMode = String.valueOf(args[12]);
                 }
+                if (args.length > 13) {
+                    SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
+                }
+
             }
 
             if (SimulationParameters.graphMode.equals("scalefree")) {
@@ -129,6 +139,9 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 13) {
                     SimulationParameters.simMode = String.valueOf(args[13]);
                 }
+                if (args.length > 14) {
+                    SimulationParameters.nhopsChain = Integer.valueOf(args[14]);
+                }
             }
 
             if (SimulationParameters.graphMode.equals("lattice")) {
@@ -155,8 +168,11 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 11) {
                     SimulationParameters.nhops = Integer.valueOf(args[11]);
                 }
-                if (args.length > 11) {
-                    SimulationParameters.simMode = String.valueOf(args[11]);
+                if (args.length > 12) {
+                    SimulationParameters.simMode = String.valueOf(args[12]);
+                }
+                if (args.length > 13) {
+                    SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
                 }
             }
 
@@ -186,6 +202,9 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 11) {
                     SimulationParameters.simMode = String.valueOf(args[11]);
                 }
+                if (args.length > 12) {
+                    SimulationParameters.nhopsChain = Integer.valueOf(args[12]);
+                }
             }
 
             if (SimulationParameters.graphMode.equals("hubandspoke")) {
@@ -213,6 +232,9 @@ public class DataReplicationNodeFailingMain {
                 }
                 if (args.length > 11) {
                     SimulationParameters.simMode = String.valueOf(args[11]);
+                }
+                if (args.length > 12) {
+                    SimulationParameters.nhopsChain = Integer.valueOf(args[12]);
                 }
             }
 
@@ -243,6 +265,9 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 12) {
                     SimulationParameters.simMode = String.valueOf(args[12]);
                 }
+                if (args.length > 13) {
+                    SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
+                }
             }
 
             if (SimulationParameters.graphMode.equals("circle")) {
@@ -271,6 +296,9 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 12) {
                     SimulationParameters.simMode = String.valueOf(args[12]);
                 }
+                if (args.length > 13) {
+                    SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
+                }
             }
 
             if (SimulationParameters.graphMode.equals("load")) {
@@ -298,6 +326,9 @@ public class DataReplicationNodeFailingMain {
                 }
                 if (args.length > 11) {
                     SimulationParameters.simMode = String.valueOf(args[11]);
+                }
+                if (args.length > 12) {
+                    SimulationParameters.nhopsChain = Integer.valueOf(args[12]);
                 }
             }
             System.out.println("MaxIter" + SimulationParameters.maxIter);

@@ -89,7 +89,7 @@ public class Node extends Agent {
         } else {
             for (int i = 1; i <= SimulationParameters.nhops; i++) {
                 repStrategy.put(i, new ReplicationStrategyPAAMS());
-                repStrategy.get(i).setINITIAL_TIMEOUT(repStrategy.get(i).getINITIAL_TIMEOUT()*i);
+                repStrategy.get(i).setINITIAL_TIMEOUT(repStrategy.get(i).getINITIAL_TIMEOUT()*i*i);
             }
         }
     }
