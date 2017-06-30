@@ -53,11 +53,11 @@ public class NetworkNodeMessageBuffer {
             System.out.println("");
         }*/
         if (pid == null) {
-            System.out.println("Warning!!! Destination is null");
+            //System.out.println("Warning!!! Destination is null");
             return false;
         }
         if (!mbuffer.containsKey(pid)) {
-            System.out.println("Warning!!!! Destination does not exist:" + pid + " msg:" + msg[0] + "from" + msg[1]);
+            //System.out.println("Warning!!!! Destination does not exist:" + pid + " msg:" + msg[0] + "from" + msg[1]);
             return false;
         }
         mbuffer.get(pid).add(msg);
