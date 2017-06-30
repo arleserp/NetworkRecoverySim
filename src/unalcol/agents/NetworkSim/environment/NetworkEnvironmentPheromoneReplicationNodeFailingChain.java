@@ -397,6 +397,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
         if (a != null) {
             killAgent(a, false);
         }
+        
     }
 
     private MobileAgent getMobileAgent(int id) {
@@ -917,9 +918,12 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                 //n.calculateTimeoutArrival();
                                 n.addAgentInNode(agentId, father);
                                 n.incrementAgentCount();
+                                
+                                //following lines delete duplicated agents
                                 ArrayList<Integer> repeatedAgents = n.getDuplicatedAgents();
                                 for (int id : repeatedAgents) {
-                                    removeAgent(id);
+                                   // removeAgent(id);                                                                      
+                                    //how to control hop number? to avoid deletion and recreation of an agent
                                 }
                                 //System.out.println("Agents in node: " + n.getAgentsInNode());
                                 //System.out.println(n.getVertex().getName() + "arrived:" + agentId);
@@ -968,8 +972,10 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                         msgnode[3] = dest;
                                         msgnode[4] = String.valueOf(hop); // hop inicial
                                         msgnode[5] = inbox[5];
+                                        agent.sleep(10);
                                         NetworkNodeMessageBuffer.getInstance().putMessage(prevLoc, msgnode);
                                         // System.out.println("Resending departing agent:" + agentId + ", hop: " + hop + " to:" + prevLoc);
+                                        
                                     }
                                 }
 
@@ -992,12 +998,14 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                 if (n.getResponsibleAgents(hop).containsKey(agentId)) {
                                     n.getResponsibleAgents(hop).remove(agentId);
                                 } else {
+                                    //here it is not a false positive because when agents fail lose the followed agents vector
+                                    
+                                    //System.out.println("false positives increases! :O");
                                     //System.out.println("does not contain!!!!");
                                     //System.out.println("n.followedagents" + n.getResponsibleAgents(hop) + ", hop" + hop + "agentId" + agentId);
                                     incrementFalsePossitives();
                                     //deleteNextReplica(n);
                                 }
-
                                 if (PrevLocations.size() - hop > 0) {
                                     String prevPrevLoc = PrevLocations.get(PrevLocations.size() - hop);
 
@@ -1010,6 +1018,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                         msgnoder[2] = newLocation;
                                         msgnoder[3] = String.valueOf(hop); //first hop
                                         msgnoder[4] = inbox[4]; //Todo: review hops number -> probably this is different
+                                        agent.sleep(10);
                                         NetworkNodeMessageBuffer.getInstance().putMessage(prevPrevLoc, msgnoder);
                                         // System.out.println("Resending free resp agent:" + agentId + ", hop: " + hop + " to:" + prevPrevLoc);
                                     }
