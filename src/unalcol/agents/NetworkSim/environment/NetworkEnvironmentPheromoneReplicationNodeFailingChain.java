@@ -959,7 +959,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                     n.deleteAgentInNode(agentId);
                                 } else {
                                     System.out.println("this cannot happen??????????????????????????????????????? :O :O :O");
-
                                 }
                                 if (PrevLocations.size() - hop > 0) {
                                     String prevLoc = PrevLocations.get(PrevLocations.size() - hop);
@@ -972,13 +971,12 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                         msgnode[3] = dest;
                                         msgnode[4] = String.valueOf(hop); // hop inicial
                                         msgnode[5] = inbox[5];
-                                        agent.sleep(10);
+                                        long delay = (long) (30 * Math.random());
+                                        agent.sleep(delay);
                                         NetworkNodeMessageBuffer.getInstance().putMessage(prevLoc, msgnode);
                                         // System.out.println("Resending departing agent:" + agentId + ", hop: " + hop + " to:" + prevLoc);
-
                                     }
                                 }
-
                             }
                             if (inbox[0].equals("freeresp")) {
                                 int agentId = Integer.valueOf(inbox[1]);
@@ -1018,7 +1016,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                         msgnoder[2] = newLocation;
                                         msgnoder[3] = String.valueOf(hop); //first hop
                                         msgnoder[4] = inbox[4]; //Todo: review hops number -> probably this is different
-                                        agent.sleep(10);
+                                        long delay = (long) (30 * Math.random()); //TODO: Initialize at beginning
+                                        agent.sleep(delay);
                                         NetworkNodeMessageBuffer.getInstance().putMessage(prevPrevLoc, msgnoder);
                                         // System.out.println("Resending free resp agent:" + agentId + ", hop: " + hop + " to:" + prevPrevLoc);
                                     }
