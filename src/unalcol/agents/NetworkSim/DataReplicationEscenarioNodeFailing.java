@@ -98,6 +98,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     private final JPanel bPanel;
     private final JButton redraw;
     Graph<GraphElements.MyVertex, String> initialNetwork;
+    HashMap<Integer, Double> similarity;
 
     /**
      * Creates a simulation without graphic interface
@@ -142,6 +143,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         frame.setSize(650, 650);
         frame.setVisible(true);
         frame2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        similarity = new HashMap<>();
     }
 
     /**
@@ -186,7 +189,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         String graphType = SimulationParameters.graphMode;
         graphType = graphType.replaceAll(".graph", "");
 
-        String fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.pf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + ".timeout";
+        //Here we use node pf instead agent pf.
+        String fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + ".timeout";
         SimulationParameters.genericFilenameTimeouts = fileTimeout;
         HashMap<String, HashMap<Integer, ReplicationStrategyInterface>> nodeTimeout = (HashMap) ObjectSerializer.loadDeserializedObject(fileTimeout);
 
@@ -234,7 +238,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
             }
         }
 
-        graphVisualization = new DataReplicationNodeFailingObserver();
+        graphVisualization = new DataReplicationNodeFailingObserver(this);
 
         if (SimulationParameters.simMode.equals("broadcast")) {
             world = new NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast(agents, agentsLanguage, nodeLanguaje, g);
@@ -248,6 +252,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         }
         world.setNetworkDelays(networkDelays);
         world.addObserver(graphVisualization);
+
         world.not();
         world.run();
         executions++;
@@ -329,7 +334,9 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                             // System.out.println("similarity" + gcmp.calculateSimilarity(initialNetwork, g));
 //                            cosineSim.add(n.getAge(), gcmp.calculateSimilarity(initialNetwork, g));
                             GraphComparator gnm = new GraphComparator();
-                            neighborMatchingSim.add(n.getAge(), gnm.calculateSimilarity(initialNetwork, g));
+                            double sim = gnm.calculateSimilarity(initialNetwork, g);
+                            neighborMatchingSim.add(n.getAge(), sim);
+                            similarity.put(n.getAge(), sim);
 
                         } // System.out.println("entra:" + n.getAge());
                         frame2.repaint();
@@ -417,6 +424,14 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                 }
             }
         }
+    }
+
+    public HashMap<Integer, Double> getSimilarity() {
+        return similarity;
+    }
+
+    public void setSimilarity(HashMap<Integer, Double> similarity) {
+        this.similarity = similarity;
     }
 
     /**

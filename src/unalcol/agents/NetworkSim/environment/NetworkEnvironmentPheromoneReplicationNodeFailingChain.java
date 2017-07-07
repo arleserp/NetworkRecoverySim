@@ -581,16 +581,16 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                 //System.out.println("a location" + a.getLocation() + "status" + a.getLocation().getStatus());
                 if (a.status != Action.DIE && !a.getLocation().getStatus().equals("failed")) {
                     p.setAttribute("neighbors", getTopology().getNeighbors(a.getLocation()));
+                    /*agent will no get data from locations 
                     if (a.status != Action.DIE) {
                         a.getData().removeAll(a.getLocation().getData());
                         a.getData().addAll(a.getLocation().getData());
                         a.getLocation().saveAgentInfo(a.getData(), a.getId(), a.getRound(), getAge());
-                    }
+                    }*/
                     //    throw new NullPointerException("Agent arrived to a node recently death killing a: " + a.getId() + " father:" + a.getIdFather() + " " + a.getLocation() + " " + ex.getLocalizedMessage());
                     //}
                 } else {
                     p.setAttribute("nodedeath", true);
-
                 }
             } catch (NullPointerException ex) {
                 System.out.println("Killing agent sensing null node: " + a.getId());
@@ -707,6 +707,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                         System.out.println("death before getData" + a.getId());
                         return false;
                     }
+                    /* Agents will no get data by now
                     synchronized (a.getLocation().getData()) {
                         //Get data from agent and put information in node
                         for (Object data : a.getData()) {
@@ -720,6 +721,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                             }
                         }
                     }
+                     */
                     if (flag) {
                         //String act = action.getCode();
                         String msg = null;
@@ -918,7 +920,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                 //n.calculateTimeoutArrival();
                                 n.addAgentInNode(agentId, father);
                                 n.incrementAgentCount();
-
                                 //following lines delete duplicated agents
                                 /* ArrayList<Integer> repeatedAgents = n.getDuplicatedAgents();
                                 for (int id : repeatedAgents) {
@@ -937,10 +938,14 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                 StringSerializer s = new StringSerializer();
                                 ArrayList<String> PrevLocations = new ArrayList((ArrayList<String>) s.deserialize(inbox[5]));
 
+                                //hops greater than one means departing messages from other nodes
+                                if (hop > 1) {
+                                    n.incMsgRecv();
+                                }
+
                                 //if didn't receive first the getLastFreeResp
                                 if (n.getLastMessageFreeResp(agentId, hop) == -1) {
                                     n.setLastAgentDeparting(agentId, n.getRounds(), hop);
-                                    n.incMsgRecv();
                                     n.getResponsibleAgents(hop).put(agentId, father);
                                     n.getResponsibleAgentsLocation(hop).put(agentId, inbox[3]);
                                     n.addResponsibleAgentsPrevLocations(agentId, PrevLocations, hop);
@@ -994,7 +999,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
 
                                 ArrayList<String> PrevLocations = (ArrayList<String>) s.deserialize(inbox[4]);
                                 incrementACKAmount();
+                                
                                 n.incMsgRecv();
+                                
                                 n.setLastMessageFreeResp(agentId, n.getRounds(), newLocation, hop);
 
                                 //for (int i = 1; i <= SimulationParameters.nhops; i++) {
@@ -1226,12 +1233,12 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                             createNewAgents(1, n, idOrig);
                             System.out.println("create new agent instance..." + n.getVertex().getName() + " father: " + idOrig);
                         }
-                        ArrayList<String> PrevLocations = n.getResponsibleAgentsPrevLocations(k, hop);
+                        /*ArrayList<String> PrevLocations = n.getResponsibleAgentsPrevLocations(k, hop);
                         if (PrevLocations!=null && PrevLocations.size() - hop > 0) {
                             String prevPrevLoc = PrevLocations.get(PrevLocations.size() - hop);
                             StringSerializer s = new StringSerializer();
 
-                            /*String sPrevLocations = (String) s.serialize(PrevLocations);
+                            String sPrevLocations = (String) s.serialize(PrevLocations);
                             if (hop <= SimulationParameters.nhopsChain && !prevPrevLoc.equals(n.getVertex().getName())) {
                                 //System.out.println(n.getVertex().getName() + "resending freeresp to prevprev" + prevPrevLoc);
                                 hop++;
@@ -1247,8 +1254,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                 System.out.println("xxx:" + msgnoder[2]);
                                 NetworkNodeMessageBuffer.getInstance().putMessage(prevPrevLoc, msgnoder);
                                 //System.out.println("Resending free resp agent:" + agentId + ", hop: " + hop + " to:" + prevPrevLoc + " key: " + msgnoder[2]);
-                            }*/
-                        }
+                            }
+                        }*/
 
                     }
 

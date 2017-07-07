@@ -25,7 +25,6 @@ public abstract class NetworkEnvironmentReplication extends Environment {
 
     public static String msg = null;
     public static float percentageSuccess = -1.0f;
-
     public int[][] structure = null;
     public SimpleLanguage language = null;
     Date date;
@@ -37,7 +36,6 @@ public abstract class NetworkEnvironmentReplication extends Environment {
     public List<GraphElements.MyVertex> visitedNodes = Collections.synchronizedList(new ArrayList());
     public HashMap<MobileAgent, GraphElements.MyVertex> locationAgents = null;
     private HashMap<GraphElements.MyVertex, ArrayList<Agent>> nodesAgents = null;
-
     //private static final HashMap<Integer, ConcurrentLinkedQueue> mbuffer = new HashMap<>();
     private int roundComplete = -1;
     private int idBest = -1;
@@ -46,6 +44,7 @@ public abstract class NetworkEnvironmentReplication extends Environment {
     public static int agentsDie = 0;
     private static int totalAgents = 0;
     private static HashMap<String, Long> networkDelays;
+    
 
     /**
      * @return the totalAgents
@@ -607,6 +606,6 @@ public abstract class NetworkEnvironmentReplication extends Environment {
     public abstract boolean isOccuped(GraphElements.MyVertex v);
 
     public abstract void validateNodesAlive();
-    
+
     public abstract List<Node> getNodes();
 }

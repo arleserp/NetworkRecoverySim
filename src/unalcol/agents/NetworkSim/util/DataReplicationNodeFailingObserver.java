@@ -13,7 +13,12 @@ import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -21,8 +26,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import org.apache.commons.collections15.Transformer;
+import unalcol.agents.NetworkSim.DataReplicationEscenarioNodeFailing;
 import unalcol.agents.NetworkSim.GraphElements;
 import unalcol.agents.NetworkSim.Node;
 import unalcol.agents.NetworkSim.ReplicationStrategyInterface;
@@ -38,7 +48,6 @@ import unalcol.agents.NetworkSim.environment.ObjectSerializer;
 public class DataReplicationNodeFailingObserver implements Observer {
 
     JFrame frame;
-
     BasicVisualizationServer<GraphElements.MyVertex, String> vv = null;
     boolean added = false;
     boolean isDrawing = false;
@@ -46,11 +55,14 @@ public class DataReplicationNodeFailingObserver implements Observer {
     HashMap<Integer, Double> globalInfo = new HashMap();
     HashMap<Integer, Integer> agentsNumber = new HashMap<>();
     HashMap<Integer, Integer> nodesComplete = new HashMap<>();
+
     public static int lastagentsAlive = -1;
     public static int lastnodesAlive = -1;
     private long lastAge = -1;
 
-    public DataReplicationNodeFailingObserver() {
+    DataReplicationEscenarioNodeFailing dataReplEsc;
+
+    public DataReplicationNodeFailingObserver(DataReplicationEscenarioNodeFailing drs) {
         frame = new JFrame("Simple Graph View");
         //frame.setSize(1000, 1000);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -62,6 +74,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
         //frame.setLocationRelativeTo(null);
         // frame.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
         isUpdating = false;
+        dataReplEsc = drs;
     }
 
     public class FrameGraphUpdater extends Thread {
@@ -208,7 +221,6 @@ public class DataReplicationNodeFailingObserver implements Observer {
             }
 
             if (lastagentsAlive == -1 || agentsAlive != lastagentsAlive) {
-
                 System.out.println("Agents alive: " + agentsAlive);
                 lastagentsAlive = agentsAlive;
             }
@@ -225,11 +237,65 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     }
                     n.stop();
                     String timeoutFile = SimulationParameters.genericFilenameTimeouts;
-                    ObjectSerializer.saveSerializedObject(timeoutFile, timeouts);
+                    File file = new File(timeoutFile);
+
+                    if (file.delete()) {
+                        System.out.println(file.getName() + " is deleted!");
+                    } else {
+                        System.out.println("Delete operation is failed.");
+                    }
                     
-                    System.out.println("keys" + globalInfo);
+                    ObjectSerializer.saveSerializedObject(timeoutFile, timeouts);
+
+                    String baseFilename = SimulationParameters.genericFilenameTimeouts;
+                    baseFilename = baseFilename.replace(".timeout", "");
+                    baseFilename = baseFilename.replace("timeout+", "");
+                    System.out.println("base filename:" + baseFilename);
+
+                    //Write similarity metrics by round by simulation
+                    String graphSimilarity = baseFilename + "+similarity";
+                    createDir(graphSimilarity);
+                    String graphSimilarityStats = "./" + graphSimilarity + "/" + baseFilename + "+" + getFileName() + "+similarity.csv";
+
+                    PrintWriter writeSimilarity = null;
+                    try {
+                        writeSimilarity = new PrintWriter(new BufferedWriter(new FileWriter(graphSimilarityStats, true)));
+                        SortedSet<Integer> keysSim = new TreeSet<>(dataReplEsc.getSimilarity().keySet());
+                        for (int x : keysSim) {
+                            writeSimilarity.println(x + "," + dataReplEsc.getSimilarity().get(x));
+                        }
+                        writeSimilarity.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                    //Write agents live number
+                    String agNumberdirName = baseFilename + "+agentNumber";
+                    createDir(agNumberdirName);
+                    String agentNumberStats = "./" + agNumberdirName + "/" + baseFilename + "+" + getFileName() + "+agentnumber.csv";
+
+                    PrintWriter escribirAgentNumber = null;
+                    try {
+                        escribirAgentNumber = new PrintWriter(new BufferedWriter(new FileWriter(agentNumberStats, true)));
+                        SortedSet<Integer> keysAg = new TreeSet<>(agentsNumber.keySet());
+                        for (int x : keysAg) {
+                            escribirAgentNumber.println(x + "," + agentsNumber.get(x));
+                        }
+                        escribirAgentNumber.close();
+
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                    //Statistics regarding messages received by node.
+                    StatisticsProviderReplicationNodeFailing sti = new StatisticsProviderReplicationNodeFailing(baseFilename);
+
+                    //ToFix: Statistis
+                    sti.printStatistics(n);
+
                     System.out.println("The end" + n.getAge());
                     System.exit(0);
+
                 }
             }
             /*  
@@ -298,23 +364,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
-                    //Write agents live number
-                    String agNumberdirName = pref + "+agentNumber";
-                    createDir(agNumberdirName);
-                    String agentNumberStats = "./" + agNumberdirName + "/" + pref + "+" + getFileName() + "+agentnumber.csv";
-
-                    PrintWriter escribirAgentNumber = null;
-                    try {
-                        escribirAgentNumber = new PrintWriter(new BufferedWriter(new FileWriter(agentNumberStats, true)));
-                        SortedSet<Integer> keysAg = new TreeSet<>(agentsNumber.keySet());
-                        for (int x : keysAg) {
-                            escribirAgentNumber.println(x + "," + agentsNumber.get(x));
-                        }
-                        escribirAgentNumber.close();
-
-                    } catch (IOException ex) {
-                        Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                    
 
                     //Write completion percentage
                     //Write agents live number
@@ -349,32 +399,11 @@ public class DataReplicationNodeFailingObserver implements Observer {
         // Transformer maps the vertex number to a vertex property
     }
 
-    private String getFileName(NetworkEnvironmentReplication n) {
-        String filename = "exp+ps+" + SimulationParameters.popSize + "+pf+" + SimulationParameters.pf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + n.getTopology().getEdges().size() + "+v+" + n.getTopology().getVertices().size() + "+" + SimulationParameters.graphMode;
-
-        if (SimulationParameters.graphMode.equals("smallworld")) {
-            filename += "+beta+" + SimulationParameters.beta;
-            filename += "+degree+" + SimulationParameters.degree;
-        }
-
-        if (SimulationParameters.graphMode.equals("community")) {
-            filename += "+beta+" + SimulationParameters.beta;
-            filename += "+degree+" + SimulationParameters.degree;
-            filename += "+clusters+" + SimulationParameters.clusters;
-        }
-
-        if (SimulationParameters.graphMode.equals("scalefree")) {
-            filename += "+stnds+" + SimulationParameters.startNodesScaleFree;
-            filename += "+edgetat+" + SimulationParameters.edgesToAttachScaleFree;
-            filename += "+numsteps+" + SimulationParameters.numSteps;
-        }
-
-        if (SimulationParameters.graphMode.equals("lattice")) {
-            filename += "+rows+" + SimulationParameters.rows;
-            filename += "+col+" + SimulationParameters.columns;
-        }
-        filename += "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay;
-        return filename;
+    private String getFileName() {
+        DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+        Date today = Calendar.getInstance().getTime();
+        String reportDate = df.format(today);
+        return reportDate;
     }
 
     private void createDir(String filename) {
