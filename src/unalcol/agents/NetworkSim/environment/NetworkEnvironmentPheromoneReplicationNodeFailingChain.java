@@ -42,7 +42,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
     HashMap<String, Integer> nametoAdyLocation = new HashMap<>();
     HashMap<Integer, String> locationtoVertexName = new HashMap<>();
 
-    public static List<Node> getNodes() {
+    public List<Node> getNodes() {
         return nodes;
     }
 
@@ -79,7 +79,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
         return ACKAmount;
     }
 
-    public NetworkEnvironmentPheromoneReplicationNodeFailingChain(Vector<Agent> _agents, SimpleLanguage _language, SimpleLanguage _nlanguage, Graph<GraphElements.MyVertex, String> gr) {
+    public NetworkEnvironmentPheromoneReplicationNodeFailingChain(Vector<Agent> _agents, SimpleLanguage _language, SimpleLanguage _nlanguage, Graph gr) {
         super(_agents, _language, gr);
         nodeLanguage = _nlanguage;
 
@@ -943,6 +943,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                     n.incMsgRecv();
                                     n.getResponsibleAgents(hop).put(agentId, father);
                                     n.getResponsibleAgentsLocation(hop).put(agentId, inbox[3]);
+                                    n.addResponsibleAgentsPrevLocations(agentId, PrevLocations, hop);
                                     //for (int i = 1; i <= SimulationParameters.nhops; i++) {
                                     n.calculateTimeout(hop);
                                     //}// System.out.println(n.getVertex().getName() + "departing:" + agentId);
@@ -968,13 +969,20 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                         msgnode[0] = "departing";
                                         msgnode[1] = String.valueOf(agentId);
                                         msgnode[2] = String.valueOf(father);
-                                        msgnode[3] = dest;
+                                        msgnode[3] = n.getVertex().getName() + dest;
                                         msgnode[4] = String.valueOf(hop); // hop inicial
                                         msgnode[5] = inbox[5];
-                                        long delay = (long) (30 * Math.random());
-                                        agent.sleep(delay);
+                                        //long delay = (long) (30 * Math.random());
+                                        //agent.sleep(delay);
+                                        //GraphElements.MyEdge x = getTopology().
+                                        if (getNetworkDelays().containsKey(n.getVertex().getName() + prevLoc)) {
+                                            agent.sleep(getNetworkDelays().get(n.getVertex().getName() + prevLoc));
+                                        } else {
+                                            System.out.println(n.getVertex().getName() + prevLoc + " not found in delay data structure");
+                                            agent.sleep(SimulationParameters.averageDelay);
+                                        }
                                         NetworkNodeMessageBuffer.getInstance().putMessage(prevLoc, msgnode);
-                                        // System.out.println("Resending departing agent:" + agentId + ", hop: " + hop + " to:" + prevLoc);
+                                        //System.out.println("Resending departing agent:" + agentId + ", hop: " + hop + " to:" + prevLoc + " key: " + msgnode[3]);
                                     }
                                 }
                             }
@@ -985,7 +993,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                 StringSerializer s = new StringSerializer();
 
                                 ArrayList<String> PrevLocations = (ArrayList<String>) s.deserialize(inbox[4]);
-
                                 incrementACKAmount();
                                 n.incMsgRecv();
                                 n.setLastMessageFreeResp(agentId, n.getRounds(), newLocation, hop);
@@ -995,6 +1002,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                 //}
                                 if (n.getResponsibleAgents(hop).containsKey(agentId)) {
                                     n.getResponsibleAgents(hop).remove(agentId);
+                                    n.removeResponsibleAgentsPrevLocations(agentId, hop);
                                 } else {
                                     //here it is not a false positive because when agents fail lose the followed agents vector
 
@@ -1013,13 +1021,17 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                         String[] msgnoder = new String[5];
                                         msgnoder[0] = "freeresp";
                                         msgnoder[1] = String.valueOf(agentId);
-                                        msgnoder[2] = newLocation;
+                                        msgnoder[2] = n.getVertex().getName() + newLocation;
                                         msgnoder[3] = String.valueOf(hop); //first hop
                                         msgnoder[4] = inbox[4]; //Todo: review hops number -> probably this is different
-                                        long delay = (long) (30 * Math.random()); //TODO: Initialize at beginning
-                                        agent.sleep(delay);
+
+                                        if (getNetworkDelays().containsKey(n.getVertex().getName() + prevPrevLoc)) {
+                                            agent.sleep(getNetworkDelays().get(n.getVertex().getName() + prevPrevLoc));
+                                        } else {
+                                            System.out.println(n.getVertex().getName() + prevPrevLoc + " not found in delay data structure");
+                                            agent.sleep(SimulationParameters.averageDelay);
+                                        }
                                         NetworkNodeMessageBuffer.getInstance().putMessage(prevPrevLoc, msgnoder);
-                                        // System.out.println("Resending free resp agent:" + agentId + ", hop: " + hop + " to:" + prevPrevLoc);
                                     }
                                 }
 
@@ -1082,6 +1094,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                         //evaluateAgentCreationArrival(n);
                     }
                     break;
+
                 case 1: //what happens if a node dies?
                     // System.out.println("node " + n.getVertex().getName() + " n followed agents:" + n.getResponsibleAgents());
                     KillNode(n);
@@ -1203,12 +1216,40 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                     }*/
                     System.out.println("nodep: " + n.getVertex().getName() + ", estimatedTimeout: " + estimatedTimeout + ", 3*stdvTimeout" + 3 * stdDevTimeout + ", lastAgentDep: " + n.getLastAgentDeparting(k, hop) + ", node rounds: " + n.getRounds() + ", hops:" + hop);
 
-                    if (n.getResponsibleAgents(hop).get(k) == -1) {
-                        System.out.println("create new agent instance..." + n.getVertex().getName() + " father: " + k);
-                        createNewAgents(1, n, k);
-                    } else {
-                        createNewAgents(1, n, n.getResponsibleAgents(hop).get(k));
-                        System.out.println("create new agent instance..." + n.getVertex().getName() + " father: " + n.getResponsibleAgents(hop).get(k));
+                    if (n.getResponsibleAgents(hop).containsKey(k)) {
+                        if (n.getResponsibleAgents(hop).get(k) == -1) {
+                            System.out.println("create new agent instance..." + n.getVertex().getName() + " father: " + k);
+                            createNewAgents(1, n, k);
+
+                        } else {
+                            int idOrig = n.getResponsibleAgents(hop).get(k);
+                            createNewAgents(1, n, idOrig);
+                            System.out.println("create new agent instance..." + n.getVertex().getName() + " father: " + idOrig);
+                        }
+                        ArrayList<String> PrevLocations = n.getResponsibleAgentsPrevLocations(k, hop);
+                        if (PrevLocations!=null && PrevLocations.size() - hop > 0) {
+                            String prevPrevLoc = PrevLocations.get(PrevLocations.size() - hop);
+                            StringSerializer s = new StringSerializer();
+
+                            /*String sPrevLocations = (String) s.serialize(PrevLocations);
+                            if (hop <= SimulationParameters.nhopsChain && !prevPrevLoc.equals(n.getVertex().getName())) {
+                                //System.out.println(n.getVertex().getName() + "resending freeresp to prevprev" + prevPrevLoc);
+                                hop++;
+                                String[] msgnoder = new String[5];
+                                msgnoder[0] = "freeresp";
+                                msgnoder[1] = String.valueOf(k);
+                                msgnoder[2] = n.getResponsibleAgentsLocation(hop).get(k);
+                                msgnoder[3] = String.valueOf(hop); //first hop
+                                msgnoder[4] = sPrevLocations; //Todo: review hops number -> probably this is different
+                                //long delay = (long) (30 * Math.random()); //TODO: Initialize at beginning
+                                //agent.sleep(30);
+//                                        agent.sleep(delay);
+                                System.out.println("xxx:" + msgnoder[2]);
+                                NetworkNodeMessageBuffer.getInstance().putMessage(prevPrevLoc, msgnoder);
+                                //System.out.println("Resending free resp agent:" + agentId + ", hop: " + hop + " to:" + prevPrevLoc + " key: " + msgnoder[2]);
+                            }*/
+                        }
+
                     }
 
                     //System.out.println("Get 0" + );
@@ -1253,6 +1294,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                     //n.addCreationTime(n.getRounds() - n.getLastAgentArrival(k));
                     //System.out.println("node before: " + n.getVertex().getName() + " - " + n.getResponsibleAgents());
                     iter.remove();
+                    n.removeResponsibleAgentsPrevLocations(k, hop);
                     //System.out.println("node after: " + n.getVertex().getName() + " - " + n.getResponsibleAgents());
                     //System.out.println("end creation of agent" + newAgentID);
                 }

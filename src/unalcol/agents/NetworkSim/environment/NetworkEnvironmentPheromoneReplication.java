@@ -7,7 +7,9 @@ import java.util.Vector;
 
 import edu.uci.ics.jung.graph.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import unalcol.agents.NetworkSim.ActionParameters;
 import unalcol.agents.NetworkSim.GraphElements;
@@ -20,7 +22,6 @@ import static unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplicatio
 public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentReplication {
 
     private static int falsePossitives = 0;
-    
     private static int agentMovements = 0;
     private static int ACKAmount = 0;
     int hops = 1;
@@ -58,6 +59,7 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
         return ACKAmount;
     }
 
+   
     public NetworkEnvironmentPheromoneReplication(Vector<Agent> _agents, SimpleLanguage _language, Graph<GraphElements.MyVertex, String> gr) {
         super(_agents, _language, gr);
     }
@@ -404,6 +406,11 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
 
     @Override
     public int getNodesAlive() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Node> getNodes() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

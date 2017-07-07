@@ -13,11 +13,7 @@ import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -25,19 +21,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JFrame;
 import org.apache.commons.collections15.Transformer;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartUtilities;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
 import unalcol.agents.NetworkSim.GraphElements;
+import unalcol.agents.NetworkSim.Node;
+import unalcol.agents.NetworkSim.ReplicationStrategyInterface;
+import unalcol.agents.NetworkSim.SimulationParameters;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailing;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication;
+import unalcol.agents.NetworkSim.environment.ObjectSerializer;
 
 /**
  *
@@ -57,15 +49,12 @@ public class DataReplicationNodeFailingObserver implements Observer {
     public static int lastagentsAlive = -1;
     public static int lastnodesAlive = -1;
     private long lastAge = -1;
-    
-   
 
     public DataReplicationNodeFailingObserver() {
         frame = new JFrame("Simple Graph View");
         //frame.setSize(1000, 1000);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        
         //frame.setSize(1000, 1000);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //frame.getContentPane().add(vv);
@@ -136,7 +125,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     Transformer<GraphElements.MyVertex, Paint> vertexColor = new Transformer<GraphElements.MyVertex, Paint>() {
                         @Override
                         public Paint transform(GraphElements.MyVertex i) {
-                            if (((NetworkEnvironmentPheromoneReplicationNodeFailing)n).isOccuped(i)) {
+                            if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
                                 return Color.YELLOW;
                             }
                             if (n.getVisitedNodes().contains(i)) {
@@ -181,7 +170,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
             final NetworkEnvironmentReplication n = (NetworkEnvironmentReplication) o;
 
             //if (Math.random() > 0.5) { //Receives to many notify if replication explodes.
-           // Graph<GraphElements.MyVertex, String> g = n.getTopology();
+            // Graph<GraphElements.MyVertex, String> g = n.getTopology();
 /*
             if(n.getAge() % 5 == 0 && n.getAge() != lastAge) {
                 if (!isDrawing) {
@@ -189,27 +178,25 @@ public class DataReplicationNodeFailingObserver implements Observer {
                 }
                 lastAge = n.getAge();
             }
-*/
+             */
             //}
             //System.out.println("World age" + n.getAge() + ", info:" + n.getAmountGlobalInfo());
-  /*          if (!globalInfo.containsKey(n.getAge())) {
+            /*          if (!globalInfo.containsKey(n.getAge())) {
                 //System.out.println("n" + n.getAge() + ", al:" + n.getAgentsLive());
                /* synchronized (DataReplicationNodeFailingObserver.class) {
                     agentsLive.add(n.getAge(), n.getAgentsLive());
                 }*/
-
 //                globalInfo.put(n.getAge(), n.getAmountGlobalInfo());
-    //        }
-
+            //        }
             if (!agentsNumber.containsKey(n.getAge())) {
                 agentsNumber.put(n.getAge(), n.getAgentsLive());
             }
-/*
+            /*
             if (!nodesComplete.containsKey(n.getAge())) {
                 nodesComplete.put(n.getAge(), n.getCompletionPercentage());
             }
-*/
-            /*boolean areAllAgentsDead = n.areAllAgentsDead();
+             */
+ /*boolean areAllAgentsDead = n.areAllAgentsDead();
             if (areAllAgentsDead) {
                 System.out.println("are all death: " + areAllAgentsDead);
             }*/
@@ -226,9 +213,27 @@ public class DataReplicationNodeFailingObserver implements Observer {
                 lastagentsAlive = agentsAlive;
             }
 
-            
+            if (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) {
+                if (!isUpdating) {
+                    System.out.println("stopping simulation");
+                    isUpdating = true;
+
+                    HashMap<String, HashMap<Integer, ReplicationStrategyInterface>> timeouts = new HashMap<>();
+
+                    for (Node node : n.getNodes()) {
+                        timeouts.put(node.getVertex().getName(), node.getRepStrategy());
+                    }
+                    n.stop();
+                    String timeoutFile = SimulationParameters.genericFilenameTimeouts;
+                    ObjectSerializer.saveSerializedObject(timeoutFile, timeouts);
+                    
+                    System.out.println("keys" + globalInfo);
+                    System.out.println("The end" + n.getAge());
+                    System.exit(0);
+                }
+            }
             /*  
-            //if ((SimulationParameters.maxIter == -1 && n.nodesComplete()) || (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) || (!SimulationParameters.activateReplication.equals("replalgon") && areAllAgentsDead)) {
+            if ((SimulationParameters.maxIter == -1 && n.nodesComplete()) || (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) || (!SimulationParameters.activateReplication.equals("replalgon") && areAllAgentsDead)) {
 //                //StatsTemperaturesMapImpl sti = new StatsTemperaturesMapImpl("experiment-p-" + ((World) obs).getAgents().size() + "- pf-" + pf + ".csv");
 
                 if (areAllAgentsDead) {
@@ -344,22 +349,32 @@ public class DataReplicationNodeFailingObserver implements Observer {
         // Transformer maps the vertex number to a vertex property
     }
 
-    private String getFileName() {
-        /*Calendar c = new GregorianCalendar();
-        String dia, mes, annio, hora, minutos, segundos;
-        dia = Integer.toString(c.get(Calendar.DATE));
-        mes = Integer.toString(c.get(Calendar.MONTH) + 1);
-        annio = Integer.toString(c.get(Calendar.YEAR));
-        hora = Integer.toString(c.get(Calendar.HOUR_OF_DAY));
-        minutos = Integer.toString(c.get(Calendar.MINUTE));
-        segundos = Integer.toString((c.get(Calendar.SECOND)));
-        return annio + mes + dia + hora + minutos + segundos;
-         */
-        DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
-        Date today = Calendar.getInstance().getTime();
-        String reportDate = df.format(today);
+    private String getFileName(NetworkEnvironmentReplication n) {
+        String filename = "exp+ps+" + SimulationParameters.popSize + "+pf+" + SimulationParameters.pf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + n.getTopology().getEdges().size() + "+v+" + n.getTopology().getVertices().size() + "+" + SimulationParameters.graphMode;
 
-        return reportDate;
+        if (SimulationParameters.graphMode.equals("smallworld")) {
+            filename += "+beta+" + SimulationParameters.beta;
+            filename += "+degree+" + SimulationParameters.degree;
+        }
+
+        if (SimulationParameters.graphMode.equals("community")) {
+            filename += "+beta+" + SimulationParameters.beta;
+            filename += "+degree+" + SimulationParameters.degree;
+            filename += "+clusters+" + SimulationParameters.clusters;
+        }
+
+        if (SimulationParameters.graphMode.equals("scalefree")) {
+            filename += "+stnds+" + SimulationParameters.startNodesScaleFree;
+            filename += "+edgetat+" + SimulationParameters.edgesToAttachScaleFree;
+            filename += "+numsteps+" + SimulationParameters.numSteps;
+        }
+
+        if (SimulationParameters.graphMode.equals("lattice")) {
+            filename += "+rows+" + SimulationParameters.rows;
+            filename += "+col+" + SimulationParameters.columns;
+        }
+        filename += "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay;
+        return filename;
     }
 
     private void createDir(String filename) {
@@ -383,5 +398,4 @@ public class DataReplicationNodeFailingObserver implements Observer {
 
     }
 
-    
 }

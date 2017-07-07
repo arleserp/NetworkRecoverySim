@@ -214,6 +214,7 @@ public class GraphElements {
             this.name = name;
         }
 
+        @Override
         public String toString() {
             return name;
         }

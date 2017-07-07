@@ -45,7 +45,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast extends 
     HashMap<String, Integer> nametoAdyLocation = new HashMap<>();
     HashMap<Integer, String> locationtoVertexName = new HashMap<>();
 
-    public static List<Node> getNodes() {
+    @Override
+    public  List<Node> getNodes() {
         return nodes;
     }
 
@@ -82,7 +83,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast extends 
         return ACKAmount;
     }
 
-    public NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast(Vector<Agent> _agents, SimpleLanguage _language, SimpleLanguage _nlanguage, Graph<GraphElements.MyVertex, String> gr) {
+    public NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast(Vector<Agent> _agents, SimpleLanguage _language, SimpleLanguage _nlanguage, Graph gr) {
         super(_agents, _language, gr);
         nodeLanguage = _nlanguage;
 

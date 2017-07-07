@@ -43,7 +43,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     HashMap<Integer, String> locationtoVertexName = new HashMap<>();
     public int hops = 1;
 
-    public static List<Node> getNodes() {
+    public List<Node> getNodes() {
         return nodes;
     }
 
@@ -80,7 +80,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
         return ACKAmount;
     }
 
-    public NetworkEnvironmentPheromoneReplicationNodeFailing(Vector<Agent> _agents, SimpleLanguage _language, SimpleLanguage _nlanguage, Graph<GraphElements.MyVertex, String> gr) {
+    public NetworkEnvironmentPheromoneReplicationNodeFailing(Vector<Agent> _agents, SimpleLanguage _language, SimpleLanguage _nlanguage, Graph gr) {
         super(_agents, _language, gr);
         nodeLanguage = _nlanguage;
 

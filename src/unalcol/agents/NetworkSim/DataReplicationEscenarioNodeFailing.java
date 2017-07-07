@@ -83,6 +83,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     int height;
     private Observer graphVisualization;
     ArrayList<GraphElements.MyVertex> locations;
+    HashMap<String, Long> networkDelays;
     int indexLoc;
     boolean added = false;
     JFrame frame;
@@ -184,8 +185,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
 
         String graphType = SimulationParameters.graphMode;
         graphType = graphType.replaceAll(".graph", "");
+
         String fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.pf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + ".timeout";
-        HashMap<String, HashMap> nodeTimeout = (HashMap) ObjectSerializer.loadDeserializedObject(fileTimeout);
+        SimulationParameters.genericFilenameTimeouts = fileTimeout;
+        HashMap<String, HashMap<Integer, ReplicationStrategyInterface>> nodeTimeout = (HashMap) ObjectSerializer.loadDeserializedObject(fileTimeout);
 
         for (GraphElements.MyVertex v : g.getVertices()) {
             v.setStatus("alive");
@@ -204,6 +207,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         if (!SimulationParameters.simMode.equals("broadcast")) {
             if (SimulationParameters.filenameLoc.length() > 1) {
                 loadLocations();
+                loadNetworkDelays();
             }
             //Creates "Agents"
             for (int i = 0; i < population; i++) {
@@ -214,7 +218,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                 a.setRound(-1);
                 a.setLocation(tmp);
                 a.setPrevLocation(tmp);
-                
+
                 a.setPrevPrevLocation(tmp);
                 a.setProgram(program);
                 a.setAttribute("infi", new ArrayList<String>());
@@ -235,13 +239,14 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         if (SimulationParameters.simMode.equals("broadcast")) {
             world = new NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast(agents, agentsLanguage, nodeLanguaje, g);
             ((NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast) world).addNodes(nodes);
-        } else if(SimulationParameters.simMode.equals("chain")){ 
-           world = new NetworkEnvironmentPheromoneReplicationNodeFailingChain(agents, agentsLanguage, nodeLanguaje, g);
+        } else if (SimulationParameters.simMode.equals("chain")) {
+            world = new NetworkEnvironmentPheromoneReplicationNodeFailingChain(agents, agentsLanguage, nodeLanguaje, g);
             ((NetworkEnvironmentPheromoneReplicationNodeFailingChain) world).addNodes(nodes);
         } else {
             world = new NetworkEnvironmentPheromoneReplicationNodeFailing(agents, agentsLanguage, nodeLanguaje, g);
             ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).addNodes(nodes);
         }
+        world.setNetworkDelays(networkDelays);
         world.addObserver(graphVisualization);
         world.not();
         world.run();
@@ -477,6 +482,14 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     public void loadLocations() {
         StringSerializer s = new StringSerializer();
         locations = (ArrayList<GraphElements.MyVertex>) s.loadDeserializeObject(SimulationParameters.filenameLoc);
+    }
+
+    public void loadNetworkDelays() {
+        String output = SimulationParameters.filenameLoc.replace("loc", "");
+        output += "ndelay";
+        StringSerializer s = new StringSerializer();
+        networkDelays = (HashMap<String, Long>) s.loadDeserializeObject(output);
+        System.out.println("net Delays" + networkDelays);
     }
 
     private GraphElements.MyVertex getLocation(Graph<GraphElements.MyVertex, String> g) {

@@ -45,6 +45,7 @@ public class Node extends Agent {
 
     private HashMap<Integer, ReplicationStrategyInterface> repStrategy;
 
+
     AtomicInteger c = new AtomicInteger(0);
     protected Hashtable<String, Object> properties = new Hashtable<String, Object>();
 
@@ -111,10 +112,9 @@ public class Node extends Agent {
             repStrategy.put(1, new ReplicationStrategyPAAMS());
             repStrategy.get(1).setNodeTimeouts(tout);
         } else {
+            setRepStrategy(tout);
             for (int i = 1; i <= SimulationParameters.nhops; i++) {
-                repStrategy.put(i, new ReplicationStrategyPAAMS());
-                repStrategy.get(i).setNodeTimeouts(tout);
-                repStrategy.get(i).setINITIAL_TIMEOUT(repStrategy.get(i).getINITIAL_TIMEOUT());
+                repStrategy.get(i).initialize();
             }
         }
 
@@ -552,4 +552,27 @@ public class Node extends Agent {
             return (false);
         }
     }
+
+    public void removeResponsibleAgentsPrevLocations(int agId, int hop) {
+        repStrategy.get(hop).getResponsibleAgentsPrevLocations().remove(agId);
+    }
+
+    
+    public ArrayList<String> getResponsibleAgentsPrevLocations(int agId, int hop) {
+        return repStrategy.get(hop).getResponsibleAgentsPrevLocations().get(agId);
+    }
+    
+    public void addResponsibleAgentsPrevLocations(int agId, ArrayList<String> PrevLocations, int hop) {
+        repStrategy.get(hop).getResponsibleAgentsPrevLocations().put(agId, PrevLocations);
+    }
+    
+    
+    public HashMap<Integer, ReplicationStrategyInterface> getRepStrategy() {
+        return repStrategy;
+    }
+
+    public void setRepStrategy(HashMap<Integer, ReplicationStrategyInterface> repStrategy) {
+        this.repStrategy = repStrategy;
+    }
+
 }

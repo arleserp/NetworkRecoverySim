@@ -21,7 +21,7 @@ import unalcol.agents.NetworkSim.GraphElements;
 public class GraphStats {
     public final static HashMap<String, Double> distances = new HashMap<>();
     
-    public static double computeAveragePathLength(Graph<GraphElements.MyVertex, String> graph) {
+    public static double computeAveragePathLength(Graph<GraphElements.MyVertex, ?> graph) {
         double sum = 0;
         double n = graph.getVertexCount();
         //Transformer<GraphElements.MyVertex, Double> distances = DistanceStatistics.averageDistances(graph, new UnweightedShortestPath<>(graph));
@@ -49,7 +49,7 @@ public class GraphStats {
         return sum / (n * (n - 1));
     }
   
-    public static double computeStdDevAveragePathLength(Graph<GraphElements.MyVertex, String> graph) {
+    public static double computeStdDevAveragePathLength(Graph<GraphElements.MyVertex, ?> graph) {
         double sum = 0;
         double n = graph.getVertexCount();
         //Transformer<GraphElements.MyVertex, Double> distances = DistanceStatistics.averageDistances(graph, new UnweightedShortestPath<>(graph));

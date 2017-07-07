@@ -24,7 +24,8 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
     public void calculateTimeout() {
         Iterator<Map.Entry<Integer, Integer>> iter = getResponsibleAgents().entrySet().iterator();
         Iterator<Map.Entry<String, Integer>> iterM = getLastMessageFreeResp().entrySet().iterator();
-
+       // System.out.println("node timeouts" + getNodeTimeouts());
+        
         while (iter.hasNext()) {
             //Key: agentId|roundNumber
             Map.Entry<Integer, Integer> Key = iter.next();

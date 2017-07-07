@@ -36,4 +36,7 @@ public class SimulationParameters {
     public static int nhops=2;
     public static String simMode = "default";
     public static int nhopsChain = 2;
+    public static long averageDelay = 30;
+    public static String filenameDelays = "";
+    public static String genericFilenameTimeouts = "";
 }

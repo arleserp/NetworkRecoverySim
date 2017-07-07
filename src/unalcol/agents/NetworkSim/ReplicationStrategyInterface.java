@@ -5,6 +5,7 @@
  */
 package unalcol.agents.NetworkSim;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -12,11 +13,13 @@ import java.util.HashMap;
  *
  * @author Arles Rodriguez <arles.rodriguez@gmail.com>
  */
-public abstract class ReplicationStrategyInterface {
+public abstract class ReplicationStrategyInterface implements Serializable {
 
     private HashMap<Integer, Integer> responsibleAgents;
     private HashMap<Integer, Integer> responsibleAgentsArrival;
     private HashMap<Integer, String> responsibleAgentsLocation;
+    private HashMap<Integer, ArrayList<String>> responsibleAgentsPrevLocations;
+
     private HashMap<Integer, Integer> lastAgentDeparting;
     private HashMap<Integer, Integer> lastAgentArrival;
     private HashMap<String, Integer> lastMessageFreeResp;
@@ -36,6 +39,7 @@ public abstract class ReplicationStrategyInterface {
     public ReplicationStrategyInterface() {
         responsibleAgents = new HashMap<>();
         responsibleAgentsLocation = new HashMap<>();
+        responsibleAgentsPrevLocations = new HashMap<>();
         lastAgentDeparting = new HashMap<>();
         responsibleAgentsArrival = new HashMap<>();
         lastAgentArrival = new HashMap<>();
@@ -46,11 +50,22 @@ public abstract class ReplicationStrategyInterface {
     public ReplicationStrategyInterface(HashMap tout) {
         responsibleAgents = new HashMap<>();
         responsibleAgentsLocation = new HashMap<>();
+        responsibleAgentsPrevLocations = new HashMap<>();
         lastAgentDeparting = new HashMap<>();
         responsibleAgentsArrival = new HashMap<>();
         lastAgentArrival = new HashMap<>();
         lastMessageFreeResp = new HashMap<>();
         nodeTimeouts = tout;
+    }
+
+    public void initialize() {
+        responsibleAgents = new HashMap<>();
+        responsibleAgentsLocation = new HashMap<>();
+        responsibleAgentsPrevLocations = new HashMap<>();
+        lastAgentDeparting = new HashMap<>();
+        responsibleAgentsArrival = new HashMap<>();
+        lastAgentArrival = new HashMap<>();
+        lastMessageFreeResp = new HashMap<>();
     }
 
     public abstract void calculateTimeout();
@@ -67,6 +82,14 @@ public abstract class ReplicationStrategyInterface {
         return lastMessageFreeResp;
     }
 
+    public HashMap<Integer, ArrayList<String>> getResponsibleAgentsPrevLocations() {
+        return responsibleAgentsPrevLocations;
+    }
+
+    public void setResponsibleAgentsPrevLocations(HashMap<Integer, ArrayList<String>> responsibleAgentsPrevLocations) {
+        this.responsibleAgentsPrevLocations = responsibleAgentsPrevLocations;
+    }
+
     public void setLastMessageFreeResp(int agentId, int nodeAge, String newLocation) {
         String key = agentId + "-" + newLocation;
         getLastMessageFreeResp().put(key, nodeAge);
@@ -74,7 +97,7 @@ public abstract class ReplicationStrategyInterface {
 
     public abstract double getStdDevTimeout();
 
-    public HashMap<String, ArrayList<Integer>> getNodeTimeouts(){
+    public HashMap<String, ArrayList<Integer>> getNodeTimeouts() {
         return nodeTimeouts;
     }
 

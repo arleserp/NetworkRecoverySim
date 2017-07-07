@@ -6,16 +6,9 @@
 package unalcol.agents.NetworkSim;
 
 import edu.uci.ics.jung.graph.Graph;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import unalcol.agents.NetworkSim.util.GraphSerialization;
 import unalcol.agents.NetworkSim.util.StringSerializer;
 
@@ -44,7 +37,7 @@ public class LocationService {
     public static int degree = 2;
     public static String filenameLoc = "";
 
-    public static GraphElements.MyVertex getLocation(Graph<GraphElements.MyVertex, String> g) {
+    public static GraphElements.MyVertex getLocation(Graph<GraphElements.MyVertex, ?> g) {
         int pos = (int) (Math.random() * g.getVertexCount());
         Collection E = g.getVertices();
         return (GraphElements.MyVertex) E.toArray()[pos];

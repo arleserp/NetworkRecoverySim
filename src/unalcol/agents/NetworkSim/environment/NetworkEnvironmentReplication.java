@@ -26,6 +26,27 @@ public abstract class NetworkEnvironmentReplication extends Environment {
     public static String msg = null;
     public static float percentageSuccess = -1.0f;
 
+    public int[][] structure = null;
+    public SimpleLanguage language = null;
+    Date date;
+    //private final Graph<GraphElements.MyVertex, String> topology;
+    //TopologySingleton topology;
+    GraphElements.MyVertex currentNode = null;
+    String currentEdge = null;
+    String lastactionlog;
+    public List<GraphElements.MyVertex> visitedNodes = Collections.synchronizedList(new ArrayList());
+    public HashMap<MobileAgent, GraphElements.MyVertex> locationAgents = null;
+    private HashMap<GraphElements.MyVertex, ArrayList<Agent>> nodesAgents = null;
+
+    //private static final HashMap<Integer, ConcurrentLinkedQueue> mbuffer = new HashMap<>();
+    private int roundComplete = -1;
+    private int idBest = -1;
+    private boolean finished = false;
+    private AtomicInteger age = new AtomicInteger(0);
+    public static int agentsDie = 0;
+    private static int totalAgents = 0;
+    private static HashMap<String, Long> networkDelays;
+
     /**
      * @return the totalAgents
      */
@@ -46,25 +67,6 @@ public abstract class NetworkEnvironmentReplication extends Environment {
     public static void setTotalAgents(int aTotalAgents) {
         totalAgents = aTotalAgents;
     }
-    public int[][] structure = null;
-    public SimpleLanguage language = null;
-    Date date;
-    //private final Graph<GraphElements.MyVertex, String> topology;
-    //TopologySingleton topology;
-    GraphElements.MyVertex currentNode = null;
-    String currentEdge = null;
-    String lastactionlog;
-    public List<GraphElements.MyVertex> visitedNodes = Collections.synchronizedList(new ArrayList());
-    public HashMap<MobileAgent, GraphElements.MyVertex> locationAgents = null;
-    private HashMap<GraphElements.MyVertex, ArrayList<Agent>> nodesAgents = null;
-
-    //private static final HashMap<Integer, ConcurrentLinkedQueue> mbuffer = new HashMap<>();
-    private int roundComplete = -1;
-    private int idBest = -1;
-    private boolean finished = false;
-    private AtomicInteger age = new AtomicInteger(0);
-    public static int agentsDie = 0;
-    private static int totalAgents = 0;
 
     /**
      * @return the idBest
@@ -257,7 +259,7 @@ public abstract class NetworkEnvironmentReplication extends Environment {
         return p;
     }
 
-    public NetworkEnvironmentReplication(Vector<Agent> _agents, SimpleLanguage _language, Graph<GraphElements.MyVertex, String> gr) {
+    public NetworkEnvironmentReplication(Vector<Agent> _agents, SimpleLanguage _language, Graph gr) {
         super(_agents);
         //this.mbuffer = 
         int n = _agents.size();
@@ -303,6 +305,14 @@ public abstract class NetworkEnvironmentReplication extends Environment {
         synchronized (NetworkEnvironmentReplication.class) {
             NetworkEnvironmentReplication.agentsDie++;
         }
+    }
+
+    public HashMap<String, Long> getNetworkDelays() {
+        return networkDelays;
+    }
+
+    public void setNetworkDelays(HashMap<String, Long> in) {
+        this.networkDelays = in;
     }
 
     /**
@@ -597,4 +607,6 @@ public abstract class NetworkEnvironmentReplication extends Environment {
     public abstract boolean isOccuped(GraphElements.MyVertex v);
 
     public abstract void validateNodesAlive();
+    
+    public abstract List<Node> getNodes();
 }
