@@ -684,6 +684,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast extends 
                                 StringSerializer s = new StringSerializer();
                                 HashMap<String, ArrayList> recvData = (HashMap<String, ArrayList>) s.deserialize(inbox[2]);
                                 n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), recvData));
+                                n.incMsgRecv();
                                 /**
                                  * * receive part of raynal protocol
                                  * ArrayList<String> chanin = new

@@ -106,12 +106,15 @@ public class BoxPlotInfoMessagesNumberNodeFailing extends ApplicationFrame {
             String[] filename1 = f1.split(Pattern.quote("+"));
             String[] filename2 = f2.split(Pattern.quote("+"));
 
-            if (sortCriteria.equals("alg") || sortCriteria.equals("topology")) {
+            if (sortCriteria.equals("alg") || sortCriteria.equals("topology") || sortCriteria.equals("simmode")) {
                 String mode1 = filename1[6];
                 String graphtype1 = filename1[13];
 
                 String mode2 = filename2[6];
                 String graphtype2 = filename2[13];
+
+                String simulationMode1 = filename1[22];
+                String simulationMode2 = filename2[22];
 
                 String graphtypeParam1 = graphtype1 + f1.split(graphtype1)[1];
                 String graphtypeParam2 = graphtype2 + f2.split(graphtype2)[1];
@@ -121,6 +124,9 @@ public class BoxPlotInfoMessagesNumberNodeFailing extends ApplicationFrame {
                 }
                 if (sortCriteria.equals("topology")) {
                     return graphtypeParam1.compareTo(graphtypeParam2);
+                }
+                if (sortCriteria.equals("simmode")) {
+                    return simulationMode1.compareTo(simulationMode2);
                 }
                 return 0;
             } else if (sortCriteria.equals("skew")) {
@@ -271,6 +277,7 @@ public class BoxPlotInfoMessagesNumberNodeFailing extends ApplicationFrame {
                 int popsize = Integer.valueOf(filenamep[2]);
                 double pf = Double.valueOf(filenamep[4]);
                 String mode = filenamep[6];
+                String simMode = filenamep[22];
                 String graphtype;
 
                 int maxIter = -1;
@@ -291,50 +298,35 @@ public class BoxPlotInfoMessagesNumberNodeFailing extends ApplicationFrame {
                 final List list = new ArrayList();
                 try {
                     sc = new Scanner(file);
+                    double avgRecv;
 
+                    String[] data;
+                    while (sc.hasNext()) {
+                        String line = sc.nextLine();
+                        //System.out.println("line:" + line);
+                        data = line.split(",");
+                        avgRecv = Double.valueOf(data[0]);
+                        list.add(avgRecv);
+                    }
+
+                    LOGGER.debug("Adding series " + i);
+                    LOGGER.debug(list.toString());
+
+                    String[] filenametmp = file.getName().split(Pattern.quote(graphtype));
+                    String fn2 = filenametmp[1].replace(".graph.csv", "");
+                    if (Pf.contains(pf)) {
+                        /*pf == 1.0E-4 || pf == 3.0E-4*/
+                        if (Pf.size() == 1) {
+                            dataset.add(list, popsize, getTechniqueName(mode) + "\n" + graphtype + "\n" + fn2 + "\n");
+                        } else {
+                            dataset.add(list, String.valueOf(popsize) + "-" + pf, getTechniqueName(mode) + "+" + graphtype + fn2);
+                        }
+                    }
                 } catch (FileNotFoundException ex) {
                     Logger.getLogger(BoxPlotInfoMessagesNumberNodeFailing.class
                             .getName()).log(Level.SEVERE, null, ex);
                 }
-                int agentsCorrect = 0;
-                int worldSize = 0;
-                double averageExplored = 0.0;
-                int bestRoundNumber = 0;
-                double avgSend = 0;
-                double avgRecv = 0;
-                double avgdataExplInd = 0;
-                ArrayList<Double> acSt = new ArrayList<>();
-                ArrayList<Double> avgExp = new ArrayList<>();
-                ArrayList<Double> bestR = new ArrayList<>();
-                ArrayList<Double> avSnd = new ArrayList<>();
-                ArrayList<Double> avRecv = new ArrayList<>();
-                ArrayList<Double> avIndExpl = new ArrayList<>();
-
-                String[] data = null;
-                while (sc.hasNext()) {
-                    String line = sc.nextLine();
-                    //System.out.println("line:" + line);
-                    data = line.split(",");                   
-                    avgRecv = Double.valueOf(data[0]);
-                    avRecv.add(avgRecv);
-                    list.add(avgRecv);                    
-                }
-                LOGGER.debug("Adding series " + i);
-                LOGGER.debug(list.toString());
-
-                String[] filenametmp = file.getName().split(Pattern.quote(graphtype));
-                String fn2 = filenametmp[1].replace(".graph.csv", "");
-                if (Pf.contains(pf)) {
-                    /*pf == 1.0E-4 || pf == 3.0E-4*/
-                    if (Pf.size() == 1) {
-                        dataset.add(list, popsize, getTechniqueName(mode) + "\n" + graphtype + "\n" + fn2);
-                    } else {
-                        dataset.add(list, String.valueOf(popsize) + "-" + pf, getTechniqueName(mode) + "+" + graphtype + fn2);
-                    }
-                }
-                //}
             }
-
         }
         return dataset;
     }

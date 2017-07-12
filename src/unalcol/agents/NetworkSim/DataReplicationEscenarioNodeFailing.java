@@ -189,15 +189,20 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         String graphType = SimulationParameters.graphMode;
         graphType = graphType.replaceAll(".graph", "");
 
-        //Here we use node pf instead agent pf.
-        String fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + ".timeout";
+        String fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + ".timeout";
         SimulationParameters.genericFilenameTimeouts = fileTimeout;
-        HashMap<String, HashMap<Integer, ReplicationStrategyInterface>> nodeTimeout = (HashMap) ObjectSerializer.loadDeserializedObject(fileTimeout);
+
+        HashMap<String, HashMap<Integer, ReplicationStrategyInterface>> nodeTimeout = null;
+        //Here we use node pf instead agent pf.
+        if (!SimulationParameters.simMode.equals("broadcast")) {
+
+            nodeTimeout = (HashMap) ObjectSerializer.loadDeserializedObject(fileTimeout);
+        }
 
         for (GraphElements.MyVertex v : g.getVertices()) {
             v.setStatus("alive");
             Node n = null;
-            if (nodeTimeout != null && nodeTimeout.containsKey(v.getName())) {
+            if (!SimulationParameters.simMode.equals("broadcast") && nodeTimeout != null && nodeTimeout.containsKey(v.getName())) {
                 n = new Node(np, v, nodeTimeout.get(v.getName()));
             } else {
                 n = new Node(np, v);

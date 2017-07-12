@@ -999,9 +999,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
 
                                 ArrayList<String> PrevLocations = (ArrayList<String>) s.deserialize(inbox[4]);
                                 incrementACKAmount();
-                                
+
                                 n.incMsgRecv();
-                                
+
                                 n.setLastMessageFreeResp(agentId, n.getRounds(), newLocation, hop);
 
                                 //for (int i = 1; i <= SimulationParameters.nhops; i++) {

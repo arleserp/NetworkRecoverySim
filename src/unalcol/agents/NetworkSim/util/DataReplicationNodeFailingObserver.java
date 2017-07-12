@@ -235,17 +235,19 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     for (Node node : n.getNodes()) {
                         timeouts.put(node.getVertex().getName(), node.getRepStrategy());
                     }
-                    n.stop();
-                    String timeoutFile = SimulationParameters.genericFilenameTimeouts;
-                    File file = new File(timeoutFile);
 
-                    if (file.delete()) {
-                        System.out.println(file.getName() + " is deleted!");
-                    } else {
-                        System.out.println("Delete operation is failed.");
+                    if (!SimulationParameters.simMode.equals("broadcast")) {
+                        String timeoutFile = SimulationParameters.genericFilenameTimeouts;
+
+                        File file = new File(timeoutFile);
+
+                        if (file.delete()) {
+                            System.out.println(file.getName() + " is deleted!");
+                        } else {
+                            System.out.println("Delete operation is failed.");
+                        }
+                        ObjectSerializer.saveSerializedObject(timeoutFile, timeouts);
                     }
-                    
-                    ObjectSerializer.saveSerializedObject(timeoutFile, timeouts);
 
                     String baseFilename = SimulationParameters.genericFilenameTimeouts;
                     baseFilename = baseFilename.replace(".timeout", "");
@@ -292,7 +294,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
 
                     //ToFix: Statistis
                     sti.printStatistics(n);
-
+                    n.stop();
                     System.out.println("The end" + n.getAge());
                     System.exit(0);
 

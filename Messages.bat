@@ -1,1 +1,1 @@
-java  -Xmx4200m -classpath dist/NetworkSimulator.jar unalcol.agents.NetworkSim.util.BoxPlotInfoMessagesNumberNodeFailing
+java -classpath dist/NetworkSimulator.jar unalcol.agents.NetworkSim.util.BoxPlotInfoMessagesNumberNodeFailing . 900 900 simmode
