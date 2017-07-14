@@ -106,15 +106,19 @@ public class BoxPlotRoundNumberReplicationSort extends ApplicationFrame {
             String[] filename1 = f1.split(Pattern.quote("+"));
             String[] filename2 = f2.split(Pattern.quote("+"));
 
-            if (sortCriteria.equals("alg") || sortCriteria.equals("topology")) {
+            if (sortCriteria.equals("alg") || sortCriteria.equals("topology") || sortCriteria.equals("agnumber")) {
                 String mode1 = filename1[6];
                 String graphtype1 = filename1[13];
+                Integer numberAgents1 = Integer.valueOf(filename1[2]);
+                
+                
 
                 String mode2 = filename2[6];
                 String graphtype2 = filename2[13];
 
                 String graphtypeParam1 = graphtype1 + f1.split(graphtype1)[1];
                 String graphtypeParam2 = graphtype2 + f2.split(graphtype2)[1];
+                Integer numberAgents2 = Integer.valueOf(filename2[2]);
 
                 if (sortCriteria.equals("alg")) {
                     return mode1.compareTo(mode2);
@@ -122,7 +126,9 @@ public class BoxPlotRoundNumberReplicationSort extends ApplicationFrame {
                 if (sortCriteria.equals("topology")) {
                     return graphtypeParam1.compareTo(graphtypeParam2);
                 }
-
+                if(sortCriteria.equals("agnumber")){
+                    return numberAgents1.compareTo(numberAgents2);                
+                }
                 return 0;
             } else if (sortCriteria.equals("skew")) {
                 String graphtype1 = filename1[13];
