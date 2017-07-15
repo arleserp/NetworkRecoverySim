@@ -106,12 +106,14 @@ public class BoxPlotInfoMessagesNumberNodeFailing extends ApplicationFrame {
             String[] filename1 = f1.split(Pattern.quote("+"));
             String[] filename2 = f2.split(Pattern.quote("+"));
 
-            if (sortCriteria.equals("alg") || sortCriteria.equals("topology") || sortCriteria.equals("simmode")) {
+            if (sortCriteria.equals("alg") || sortCriteria.equals("topology") || sortCriteria.equals("simmode") || sortCriteria.equals("agnumber")) {
                 String mode1 = filename1[6];
                 String graphtype1 = filename1[13];
+                Integer numberAgents1 = Integer.valueOf(filename1[2]);
 
                 String mode2 = filename2[6];
                 String graphtype2 = filename2[13];
+                Integer numberAgents2 = Integer.valueOf(filename2[2]);
 
                 String simulationMode1 = filename1[22];
                 String simulationMode2 = filename2[22];
@@ -127,6 +129,9 @@ public class BoxPlotInfoMessagesNumberNodeFailing extends ApplicationFrame {
                 }
                 if (sortCriteria.equals("simmode")) {
                     return simulationMode1.compareTo(simulationMode2);
+                }
+                if(sortCriteria.equals("agnumber")){
+                    return numberAgents1.compareTo(numberAgents2);                
                 }
                 return 0;
             } else if (sortCriteria.equals("skew")) {
