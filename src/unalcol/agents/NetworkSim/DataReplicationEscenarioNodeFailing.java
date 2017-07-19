@@ -314,7 +314,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
 
                         try {
                             //!world.isFinished()) {
-                            Thread.sleep(500);
+                            Thread.sleep(10);
                         } catch (InterruptedException ex) {
                             Logger.getLogger(DataReplicationEscenarioNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
                         }
@@ -332,19 +332,22 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                             System.out.println("no nodes alive.");
                             break;
                         } else if (n != null) {
-                            agentsLive.add(n.getAge(), agentsAlive);
-                            nodesLive.add(n.getAge(), nodesAlive);
-                            //call comparator here!
-//                            GraphComparator gcmp = new GraphComparator();
-                            // System.out.println("similarity" + gcmp.calculateSimilarity(initialNetwork, g));
-//                            cosineSim.add(n.getAge(), gcmp.calculateSimilarity(initialNetwork, g));
-                            GraphComparator gnm = new GraphComparator();
-                            double sim = gnm.calculateSimilarity(initialNetwork, g);
-                            neighborMatchingSim.add(n.getAge(), sim);
-                            similarity.put(n.getAge(), sim);
 
+                            if (n.getAge() % 50 == 0) {
+                                agentsLive.add(n.getAge(), agentsAlive);
+                                nodesLive.add(n.getAge(), nodesAlive);
+                                //call comparator here!
+//                            GraphComparator gcmp = new GraphComparator();
+                                // System.out.println("similarity" + gcmp.calculateSimilarity(initialNetwork, g));
+//                            cosineSim.add(n.getAge(), gcmp.calculateSimilarity(initialNetwork, g));
+                                GraphComparator gnm = new GraphComparator();
+                                double sim = gnm.calculateSimilarity(initialNetwork, g);
+                                neighborMatchingSim.add(n.getAge(), sim);
+                                similarity.put(n.getAge(), sim);
+                                frame2.repaint();
+                            }
                         } // System.out.println("entra:" + n.getAge());
-                        frame2.repaint();
+                        
                         //frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
                     }
                 } catch (NullPointerException ex) {

@@ -34,7 +34,7 @@ public abstract class ReplicationStrategyInterface implements Serializable {
     public void setINITIAL_TIMEOUT(int INITIAL_TIMEOUT) {
         this.INITIAL_TIMEOUT = INITIAL_TIMEOUT;
     }
-    int WINDOW_SIZE = 10;//5
+    int WINDOW_SIZE = 5;
 
     public ReplicationStrategyInterface() {
         responsibleAgents = new HashMap<>();
