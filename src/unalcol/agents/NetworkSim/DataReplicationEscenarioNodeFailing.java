@@ -189,14 +189,15 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         String graphType = SimulationParameters.graphMode;
         graphType = graphType.replaceAll(".graph", "");
 
-        String fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + ".timeout";
+        String fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+wsize+" + SimulationParameters.wsize + ".timeout";
         SimulationParameters.genericFilenameTimeouts = fileTimeout;
 
         HashMap<String, HashMap<Integer, ReplicationStrategyInterface>> nodeTimeout = null;
         //Here we use node pf instead agent pf.
         if (!SimulationParameters.simMode.equals("broadcast")) {
-
+            
             nodeTimeout = (HashMap) ObjectSerializer.loadDeserializedObject(fileTimeout);
+            
         }
 
         for (GraphElements.MyVertex v : g.getVertices()) {
@@ -347,7 +348,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                                 frame2.repaint();
                             }
                         } // System.out.println("entra:" + n.getAge());
-                        
+
                         //frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
                     }
                 } catch (NullPointerException ex) {

@@ -5,6 +5,7 @@
  */
 package unalcol.agents.NetworkSim.util;
 
+import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.Graph;
@@ -18,7 +19,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -230,10 +230,10 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     System.out.println("stopping simulation");
                     isUpdating = true;
 
-                    HashMap<String, HashMap<Integer, ReplicationStrategyInterface>> timeouts = new HashMap<>();
+                    HashMap <String, HashMap<Integer, ReplicationStrategyInterface>> timeouts = new HashMap<>();
 
                     for (Node node : n.getNodes()) {
-                        timeouts.put(node.getVertex().getName(), node.getRepStrategy());
+                        timeouts.put(node.getVertex().getName(), new HashMap(node.getRepStrategy()));
                     }
 
                     if (!SimulationParameters.simMode.equals("broadcast")) {

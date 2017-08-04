@@ -25,26 +25,29 @@ public class DataReplicationNodeFailingMain {
                 SimulationParameters.popSize = Integer.valueOf(args[4]);
                 SimulationParameters.pf = Float.valueOf(String.valueOf(args[5]));
                 SimulationParameters.motionAlg = args[6];
-                if (args.length > 6) {
+                if (args.length > 7) {
                     SimulationParameters.filenameLoc = args[7];
                 }
-                if (args.length > 7) {
+                if (args.length > 8) {
                     SimulationParameters.maxIter = Integer.valueOf(args[8]);
                 }
-                if (args.length > 8) {
+                if (args.length > 9) {
                     SimulationParameters.activateReplication = args[9];
                 }
-                if (args.length > 9) {
+                if (args.length > 10) {
                     SimulationParameters.nodeDelay = args[10];
                 }
-                if (args.length > 10) {
+                if (args.length > 11) {
                     SimulationParameters.npf = Float.valueOf(args[11]);
                 }
-                if (args.length > 11) {
+                if (args.length > 12) {
                     SimulationParameters.simMode = String.valueOf(args[12]);
                 }
-                if (args.length > 12) {
+                if (args.length > 13) {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
+                }
+                if (args.length > 14) {
+                    SimulationParameters.wsize = Integer.valueOf(args[14]);
                 }
             }
 
@@ -80,6 +83,9 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 13) {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
                 }
+                if (args.length > 14) {
+                    SimulationParameters.wsize = Integer.valueOf(args[14]);
+                }
             }
 
             if (SimulationParameters.graphMode.equals("communitycircle")) {
@@ -107,6 +113,9 @@ public class DataReplicationNodeFailingMain {
                 }
                 if (args.length > 13) {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
+                }
+                if (args.length > 14) {
+                    SimulationParameters.wsize = Integer.valueOf(args[14]);
                 }
 
             }
@@ -142,6 +151,9 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 14) {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[14]);
                 }
+                if (args.length > 15) {
+                    SimulationParameters.wsize = Integer.valueOf(args[15]);
+                }
             }
 
             if (SimulationParameters.graphMode.equals("lattice")) {
@@ -174,6 +186,9 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 13) {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
                 }
+                if (args.length > 14) {
+                    SimulationParameters.wsize = Integer.valueOf(args[14]);
+                }
             }
 
             if (SimulationParameters.graphMode.equals("line")) {
@@ -205,6 +220,9 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 12) {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[12]);
                 }
+                if (args.length > 13) {
+                    SimulationParameters.wsize = Integer.valueOf(args[13]);
+                }
             }
 
             if (SimulationParameters.graphMode.equals("hubandspoke")) {
@@ -235,6 +253,9 @@ public class DataReplicationNodeFailingMain {
                 }
                 if (args.length > 12) {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[12]);
+                }
+                if (args.length > 13) {
+                    SimulationParameters.wsize = Integer.valueOf(args[13]);
                 }
             }
 
@@ -268,6 +289,9 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 13) {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
                 }
+                if (args.length > 14) {
+                    SimulationParameters.wsize = Integer.valueOf(args[14]);
+                }
             }
 
             if (SimulationParameters.graphMode.equals("circle")) {
@@ -299,6 +323,9 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 13) {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
                 }
+                if (args.length > 14) {
+                    SimulationParameters.wsize = Integer.valueOf(args[14]);
+                }
             }
 
             if (SimulationParameters.graphMode.equals("load")) {
@@ -329,6 +356,9 @@ public class DataReplicationNodeFailingMain {
                 }
                 if (args.length > 12) {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[12]);
+                }
+                if (args.length > 13) {
+                    SimulationParameters.wsize = Integer.valueOf(args[13]);
                 }
             }
             System.out.println("MaxIter" + SimulationParameters.maxIter);

@@ -103,18 +103,52 @@ public class BoxPlotInfoMessagesNumberNodeFailing extends ApplicationFrame {
 
         @Override
         public int compare(String f1, String f2) {
+            f1 = f1.replace(".csv", "");
+            f2 = f2.replace(".csv", "");
+
             String[] filename1 = f1.split(Pattern.quote("+"));
             String[] filename2 = f2.split(Pattern.quote("+"));
 
-            if (sortCriteria.equals("alg") || sortCriteria.equals("topology") || sortCriteria.equals("simmode") || sortCriteria.equals("agnumber")) {
+            if (sortCriteria.equals("alg") || sortCriteria.equals("topology") || sortCriteria.equals("simmode") || sortCriteria.equals("agnumber") || sortCriteria.equals("wsize")) {
                 String mode1 = filename1[6];
                 String graphtype1 = filename1[13];
                 Integer numberAgents1 = Integer.valueOf(filename1[2]);
+
+                int i = 0;
+                Integer wsize1 = 0, wsize2 = 0;
+
+                if (sortCriteria.equals("wsize")) {
+                    i = 0;
+                    for (String s : filename1) {
+                        System.out.println("i" + i + ", s:" + s);
+
+                        if (s.equals("wsize")) {
+                            i++;
+                            break;
+                        }
+                        i++;
+                    }
+                    wsize1 = Integer.valueOf(filename1[i]);
+                }
 
                 String mode2 = filename2[6];
                 String graphtype2 = filename2[13];
                 Integer numberAgents2 = Integer.valueOf(filename2[2]);
 
+                if (sortCriteria.equals("wsize")) {
+                    i = 0;
+                    for (String s : filename2) {
+                        System.out.println("i" + i + ", s:" + s);
+
+                        if (s.equals("wsize")) {
+                            i++;
+                            break;
+                        }
+                        i++;
+                    }
+
+                    wsize2 = Integer.valueOf(filename2[i]);
+                }
                 String simulationMode1 = filename1[22];
                 String simulationMode2 = filename2[22];
 
@@ -130,8 +164,11 @@ public class BoxPlotInfoMessagesNumberNodeFailing extends ApplicationFrame {
                 if (sortCriteria.equals("simmode")) {
                     return simulationMode1.compareTo(simulationMode2);
                 }
-                if(sortCriteria.equals("agnumber")){
-                    return numberAgents1.compareTo(numberAgents2);                
+                if (sortCriteria.equals("agnumber")) {
+                    return numberAgents1.compareTo(numberAgents2);
+                }
+                if (sortCriteria.equals("wsize")) {
+                    return wsize1.compareTo(wsize2);
                 }
                 return 0;
             } else if (sortCriteria.equals("skew")) {
@@ -322,9 +359,27 @@ public class BoxPlotInfoMessagesNumberNodeFailing extends ApplicationFrame {
                     if (Pf.contains(pf)) {
                         /*pf == 1.0E-4 || pf == 3.0E-4*/
                         if (Pf.size() == 1) {
-                            dataset.add(list, popsize, getTechniqueName(mode) + "\n" + graphtype + "\n" + fn2 + "\n");
+                            if (sortCriteria.equals("wsize")) {
+                                int wsize = 0;
+                                int l = 0;
+                                for (String s : filenamep) {
+                                    if (s.equals("wsize")) {
+                                        l++;
+                                        break;
+                                    }
+                                    l++;
+                                }
+                                wsize = Integer.valueOf(filenamep[l].replace(".csv",""));
+                                dataset.add(list, wsize + "-" + popsize, getTechniqueName(mode) + "\n" + graphtype + "\n" + fn2 + "\n");
+                            } else {
+                                dataset.add(list, popsize, getTechniqueName(mode) + "\n" + graphtype + "\n" + fn2 + "\n");
+                            }
                         } else {
-                            dataset.add(list, String.valueOf(popsize) + "-" + pf, getTechniqueName(mode) + "+" + graphtype + fn2);
+                            if (sortCriteria.equals("wsize")) {
+
+                            } else {
+                                dataset.add(list, String.valueOf(popsize) + "-" + pf, getTechniqueName(mode) + "+" + graphtype + fn2);
+                            }
                         }
                     }
                 } catch (FileNotFoundException ex) {

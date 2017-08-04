@@ -981,10 +981,10 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                         //agent.sleep(delay);
                                         //GraphElements.MyEdge x = getTopology().
                                         if (getNetworkDelays().containsKey(n.getVertex().getName() + prevLoc)) {
-                                            agent.sleep(getNetworkDelays().get(n.getVertex().getName() + prevLoc));
+                                            n.sleep(getNetworkDelays().get(n.getVertex().getName() + prevLoc));
                                         } else {
                                             System.out.println(n.getVertex().getName() + prevLoc + " not found in delay data structure");
-                                            agent.sleep(SimulationParameters.averageDelay);
+                                            n.sleep(SimulationParameters.averageDelay);
                                         }
                                         NetworkNodeMessageBuffer.getInstance().putMessage(prevLoc, msgnode);
                                         //System.out.println("Resending departing agent:" + agentId + ", hop: " + hop + " to:" + prevLoc + " key: " + msgnode[3]);
@@ -1033,10 +1033,10 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                         msgnoder[4] = inbox[4]; //Todo: review hops number -> probably this is different
 
                                         if (getNetworkDelays().containsKey(n.getVertex().getName() + prevPrevLoc)) {
-                                            agent.sleep(getNetworkDelays().get(n.getVertex().getName() + prevPrevLoc));
+                                            n.sleep(getNetworkDelays().get(n.getVertex().getName() + prevPrevLoc));
                                         } else {
                                             System.out.println(n.getVertex().getName() + prevPrevLoc + " not found in delay data structure");
-                                            agent.sleep(SimulationParameters.averageDelay);
+                                            n.sleep(SimulationParameters.averageDelay);
                                         }
                                         NetworkNodeMessageBuffer.getInstance().putMessage(prevPrevLoc, msgnoder);
                                     }

@@ -39,4 +39,5 @@ public class SimulationParameters {
     public static long averageDelay = 30;
     public static String filenameDelays = "";
     public static String genericFilenameTimeouts = "";
+    public static int wsize = 5;
 }

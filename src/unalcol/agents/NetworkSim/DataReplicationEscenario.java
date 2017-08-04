@@ -110,10 +110,16 @@ public class DataReplicationEscenario implements Runnable {
         System.out.println("Average Clustering Coefficient: " + GraphStats.averageCC(g));
         System.out.println("Average degree: " + GraphStats.averageDegree(g));
 
+        
         String graphType = SimulationParameters.graphMode;
         graphType = graphType.replaceAll(".graph", "");
-        String fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.pf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + ".timeout";
-        HashMap<String, HashMap> nodeTimeout = (HashMap) ObjectSerializer.loadDeserializedObject(fileTimeout);
+        
+       HashMap<String, HashMap> nodeTimeout = null;
+       
+       if (SimulationParameters.activateReplication.equals("replalgon")) {
+        String fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.pf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + ".timeout";        
+         nodeTimeout = (HashMap) ObjectSerializer.loadDeserializedObject(fileTimeout);
+       }
 
         for (GraphElements.MyVertex v : g.getVertices()) {
             Node n = null;

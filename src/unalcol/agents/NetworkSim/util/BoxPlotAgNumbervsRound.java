@@ -111,7 +111,7 @@ public class BoxPlotAgNumbervsRound extends ApplicationFrame {
     public BoxPlotAgNumbervsRound(final String title, ArrayList<Double> pf) {
         super(title);
         final BoxAndWhiskerCategoryDataset dataset = createSampleDataset(pf);
-        final CategoryAxis xAxis = new CategoryAxis("");
+        /*final CategoryAxis xAxis = new CategoryAxis("");
         //final NumberAxis yAxis = new NumberAxis("Round number");
         final NumberAxis yAxis = new NumberAxis("");
         yAxis.setAutoRangeIncludesZero(false);
@@ -170,7 +170,7 @@ public class BoxPlotAgNumbervsRound extends ApplicationFrame {
             Logger.getLogger(BoxPlotAgNumbervsRound.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(BoxPlotAgNumbervsRound.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
 
     }
 
@@ -297,7 +297,7 @@ public class BoxPlotAgNumbervsRound extends ApplicationFrame {
                 //String[] aMode = {"random", "levywalk", "sandc", "sandclw"};
                 //String[] aMode = {"levywalk", "lwphevap", "hybrid", "hybrid3", "hybrid4", "sequential"};
                 //if (/*Pf == pf && */isInMode(aMode, mode)) {
-                for (int r = 0; r < lastRoundReaded; r = r + interval) {
+                for (int r = 0; r <= lastRoundReaded; r = r + interval) {
                     String[] filenametmp = file.getName().split(Pattern.quote(graphtype));
                     String fn2 = filenametmp[1].replace(".graph.csv", "");
                     //if (Pf.contains(pf)) {
@@ -311,6 +311,68 @@ public class BoxPlotAgNumbervsRound extends ApplicationFrame {
                     }
                     //}
                 }
+
+                final CategoryAxis xAxis = new CategoryAxis("");
+                //final NumberAxis yAxis = new NumberAxis("Round number");
+                final NumberAxis yAxis = new NumberAxis("");
+                yAxis.setAutoRangeIncludesZero(false);
+                final BoxAndWhiskerRenderer renderer = new BoxAndWhiskerRenderer();
+                renderer.setFillBox(false);
+                renderer.setMeanVisible(false);
+                renderer.setToolTipGenerator(new BoxAndWhiskerToolTipGenerator());
+                renderer.setFillBox(true);
+                renderer.setSeriesPaint(0, Color.WHITE);
+                renderer.setSeriesPaint(1, Color.LIGHT_GRAY);
+                renderer.setSeriesOutlinePaint(0, Color.BLACK);
+                renderer.setSeriesOutlinePaint(1, Color.BLACK);
+                renderer.setUseOutlinePaintForWhiskers(true);
+                Font legendFont = new Font("SansSerif", Font.PLAIN, 16);
+                renderer.setLegendTextFont(0, legendFont);
+                renderer.setLegendTextFont(1, legendFont);
+                renderer.setMedianVisible(true);
+                renderer.setMeanVisible(false);
+                final CategoryPlot plot = new CategoryPlot(dataset, xAxis, yAxis, renderer);
+
+                Font font = new Font("Dialog", Font.PLAIN, 12);
+                xAxis.setTickLabelFont(font);
+                yAxis.setTickLabelFont(font);
+                yAxis.setLabelFont(font);
+                xAxis.setCategoryLabelPositions(CategoryLabelPositions.STANDARD);
+                xAxis.setMaximumCategoryLabelLines(5);
+
+                final JFreeChart chart = new JFreeChart(
+                        "Agent Number vs Round number" + getTitle(Pf),
+                        new Font("SansSerif", Font.BOLD, 18),
+                        plot,
+                        true
+                );
+
+                final ChartPanel chartPanel = new ChartPanel(chart);
+                chartPanel.setPreferredSize(new java.awt.Dimension(dimensionX, dimensionY));
+                setContentPane(chartPanel);
+
+                TextTitle legendText = null;
+                if (Pf.size() == 1) {
+                    legendText = new TextTitle("Round Number");
+                } else {
+                    legendText = new TextTitle("Round number - Probability of Failure");
+                }
+
+                legendText.setFont(font);
+                legendText.setPosition(RectangleEdge.BOTTOM);
+                chart.addSubtitle(legendText);
+                chart.getLegend().setItemFont(font);
+
+                FileOutputStream output;
+                try {
+                    output = new FileOutputStream("Agents vs round" + Pf + file.getName() +".jpg");
+                    ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, dimensionX, dimensionY, null);
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(BoxPlotAgNumbervsRound.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(BoxPlotAgNumbervsRound.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
             }
         }
         return dataset;
