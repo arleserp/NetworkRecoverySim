@@ -32,6 +32,7 @@ import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 import unalcol.agents.simulate.util.SimpleLanguage;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BoxLayout;
@@ -47,6 +48,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailing;
+import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailingChain;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication;
@@ -192,18 +194,17 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         String fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+wsize+" + SimulationParameters.wsize + ".timeout";
         SimulationParameters.genericFilenameTimeouts = fileTimeout;
 
-        HashMap<String, HashMap<Integer, ReplicationStrategyInterface>> nodeTimeout = null;
+        ConcurrentHashMap<String, ConcurrentHashMap<Integer, ReplicationStrategyInterface>> nodeTimeout = null;
         //Here we use node pf instead agent pf.
-        if (!SimulationParameters.simMode.equals("broadcast")) {
-            
-            nodeTimeout = (HashMap) ObjectSerializer.loadDeserializedObject(fileTimeout);
-            
+        if (SimulationParameters.simMode.equals("chain")) {            
+            nodeTimeout = (ConcurrentHashMap) ObjectSerializer.loadDeserializedObject(fileTimeout);            
         }
 
         for (GraphElements.MyVertex v : g.getVertices()) {
             v.setStatus("alive");
             Node n = null;
-            if (!SimulationParameters.simMode.equals("broadcast") && nodeTimeout != null && nodeTimeout.containsKey(v.getName())) {
+            if (SimulationParameters.simMode.equals("chain") && nodeTimeout != null && nodeTimeout.containsKey(v.getName())) {                
+                //System.out.println("load" + nodeTimeout.get(v.getName()));
                 n = new Node(np, v, nodeTimeout.get(v.getName()));
             } else {
                 n = new Node(np, v);
@@ -214,7 +215,9 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
             nodes.add(n);
         }
 
-        if (!SimulationParameters.simMode.equals("broadcast")) {
+        
+        
+        if (!SimulationParameters.simMode.equals("broadcast") && !SimulationParameters.simMode.equals("allinfo")) {
             if (SimulationParameters.filenameLoc.length() > 1) {
                 loadLocations();
                 loadNetworkDelays();
@@ -231,7 +234,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
 
                 a.setPrevPrevLocation(tmp);
                 a.setProgram(program);
-                a.setAttribute("infi", new ArrayList<String>());
+                a.setAttribute("infi", new ArrayList<>());
                 NetworkMessageBuffer.getInstance().createBuffer(a.getId());
                 agents.add(a);
 
@@ -246,15 +249,26 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
 
         graphVisualization = new DataReplicationNodeFailingObserver(this);
 
-        if (SimulationParameters.simMode.equals("broadcast")) {
-            world = new NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast(agents, agentsLanguage, nodeLanguaje, g);
-            ((NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast) world).addNodes(nodes);
-        } else if (SimulationParameters.simMode.equals("chain")) {
-            world = new NetworkEnvironmentPheromoneReplicationNodeFailingChain(agents, agentsLanguage, nodeLanguaje, g);
-            ((NetworkEnvironmentPheromoneReplicationNodeFailingChain) world).addNodes(nodes);
-        } else {
-            world = new NetworkEnvironmentPheromoneReplicationNodeFailing(agents, agentsLanguage, nodeLanguaje, g);
-            ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).addNodes(nodes);
+        switch (SimulationParameters.simMode) {
+            case "broadcast":
+                world = new NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast(agents, agentsLanguage, nodeLanguaje, g);
+                ((NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast) world).addNodes(nodes);
+                break;
+            case "chain":
+                world = new NetworkEnvironmentPheromoneReplicationNodeFailingChain(agents, agentsLanguage, nodeLanguaje, g);
+                ((NetworkEnvironmentPheromoneReplicationNodeFailingChain) world).addNodes(nodes);
+                break;
+            case "allinfo":
+                world = new NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo(agents, nodeLanguaje, nodeLanguaje, g);
+                ((NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo) world).addNodes(nodes);
+                for(Node n: world.getNodes()){
+                    //System.out.println("enerooooooooooooooooooo");
+                    n.setNetworkdata(((NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo)world).loadAllTopology());
+                }   break;
+            default:
+                world = new NetworkEnvironmentPheromoneReplicationNodeFailing(agents, agentsLanguage, nodeLanguaje, g);
+                ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).addNodes(nodes);
+                break;
         }
         world.setNetworkDelays(networkDelays);
         world.addObserver(graphVisualization);

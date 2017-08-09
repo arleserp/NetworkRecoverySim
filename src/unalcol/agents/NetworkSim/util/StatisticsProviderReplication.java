@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import unalcol.agents.NetworkSim.MobileAgent;
@@ -42,7 +43,7 @@ class StatisticsProviderReplication {
         Hashtable Statistics = new Hashtable();
         int right = 0;
         int wrong = 0;
-        HashMap<String, HashMap> nodeTimeout = new HashMap<>();
+        ConcurrentHashMap<String, ConcurrentHashMap> nodeTimeout = new ConcurrentHashMap<>();
 
         int n = w.getAgents().size();
 

@@ -110,8 +110,8 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
      */
     public BoxPlotSimilarityVsRound(final String title, ArrayList<Double> pf) {
         super(title);
-        final BoxAndWhiskerCategoryDataset dataset = createSampleDataset(pf);
-        final CategoryAxis xAxis = new CategoryAxis("");
+         createSampleDataset(pf);
+        /*final CategoryAxis xAxis = new CategoryAxis("");
         //final NumberAxis yAxis = new NumberAxis("Round number");
         final NumberAxis yAxis = new NumberAxis("");
         yAxis.setAutoRangeIncludesZero(false);
@@ -170,7 +170,7 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
             Logger.getLogger(BoxPlotSimilarityVsRound.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(BoxPlotSimilarityVsRound.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
 
     }
 
@@ -190,15 +190,13 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
         ArrayList<String> filenamesSorted = new ArrayList<>();
         Hashtable<String, File> fileHashtable = new Hashtable<>();
 
-        final DefaultBoxAndWhiskerCategoryDataset dataset
-                = new DefaultBoxAndWhiskerCategoryDataset();
-
         File f = new File(experimentsDir);
         File[] files = f.listFiles();
 
         for (File file : files) {
             if (file.isDirectory() && file.getName().endsWith("similarity")) {
-
+                final DefaultBoxAndWhiskerCategoryDataset dataset
+                        = new DefaultBoxAndWhiskerCategoryDataset();
                 File subdir = new File(file.getName());
                 File[] filesInfo = subdir.listFiles();
 
@@ -280,7 +278,7 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
 
                         while (sc.hasNext()) {
                             String line = sc.nextLine();
-                            System.out.println("line:" + line);
+                            //System.out.println("line:" + line);
                             data = line.split(",");
                             int round = Integer.valueOf(data[0]);
                             Double similarity = Double.valueOf(data[1]);
@@ -374,7 +372,7 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
                 }
             }
         }
-        return dataset;
+        return null;
     }
 
     private static ArrayList<Double> getFailureProbs() {

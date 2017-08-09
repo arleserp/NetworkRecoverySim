@@ -43,8 +43,7 @@ public class Node extends Agent {
     private HashMap<Integer, Integer> followedAgentsCounter; // Stores <agentId, counter>
     private HashMap<String, ConcurrentHashMap<Integer, Integer>> agentsInNeighbors;
 
-    private HashMap<Integer, ReplicationStrategyInterface> repStrategy;
-
+    private ConcurrentHashMap<Integer, ReplicationStrategyInterface> repStrategy;
 
     AtomicInteger c = new AtomicInteger(0);
     protected Hashtable<String, Object> properties = new Hashtable<String, Object>();
@@ -83,7 +82,7 @@ public class Node extends Agent {
         followedAgentsCounter = new HashMap<>();
         agentsInNode = new ConcurrentHashMap<>();
         agentsInNeighbors = new HashMap<>();
-        repStrategy = new HashMap<>();
+        repStrategy = new ConcurrentHashMap<>();
 
         if (!SimulationParameters.simMode.equals("chain")) {
             repStrategy.put(1, new ReplicationStrategyPAAMS());
@@ -95,7 +94,7 @@ public class Node extends Agent {
         }
     }
 
-    public Node(AgentProgram _program, GraphElements.MyVertex ve, HashMap tout) {
+    public Node(AgentProgram _program, GraphElements.MyVertex ve, ConcurrentHashMap tout) {
         super(_program);
         this.pending = new HashMap();
         this.networkdata = new HashMap<>();
@@ -378,14 +377,14 @@ public class Node extends Agent {
     /**
      * @return the nodeTimeouts
      */
-    public HashMap<String, ArrayList<Integer>> getNodeTimeouts(int hop) {
+    public ConcurrentHashMap<String, ArrayList<Integer>> getNodeTimeouts(int hop) {
         return repStrategy.get(hop).getNodeTimeouts();
     }
 
     /**
      * @param nodeTimeouts the nodeTimeouts to set
      */
-    public void setNodeTimeouts(HashMap<String, ArrayList<Integer>> nodeTimeouts, int hop) {
+    public void setNodeTimeouts(ConcurrentHashMap<String, ArrayList<Integer>> nodeTimeouts, int hop) {
         repStrategy.get(hop).setNodeTimeouts(nodeTimeouts);
     }
 
@@ -557,21 +556,19 @@ public class Node extends Agent {
         repStrategy.get(hop).getResponsibleAgentsPrevLocations().remove(agId);
     }
 
-    
     public ArrayList<String> getResponsibleAgentsPrevLocations(int agId, int hop) {
         return repStrategy.get(hop).getResponsibleAgentsPrevLocations().get(agId);
     }
-    
+
     public void addResponsibleAgentsPrevLocations(int agId, ArrayList<String> PrevLocations, int hop) {
         repStrategy.get(hop).getResponsibleAgentsPrevLocations().put(agId, PrevLocations);
     }
-    
-    
-    public HashMap<Integer, ReplicationStrategyInterface> getRepStrategy() {
+
+    public ConcurrentHashMap<Integer, ReplicationStrategyInterface> getRepStrategy() {
         return repStrategy;
     }
 
-    public void setRepStrategy(HashMap<Integer, ReplicationStrategyInterface> repStrategy) {
+    public void setRepStrategy(ConcurrentHashMap<Integer, ReplicationStrategyInterface> repStrategy) {
         this.repStrategy = repStrategy;
     }
 

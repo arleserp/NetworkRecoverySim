@@ -17,6 +17,7 @@ import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 import unalcol.agents.simulate.util.SimpleLanguage;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplication;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication;
 import unalcol.agents.NetworkSim.environment.NetworkMessageBuffer;
@@ -114,11 +115,11 @@ public class DataReplicationEscenario implements Runnable {
         String graphType = SimulationParameters.graphMode;
         graphType = graphType.replaceAll(".graph", "");
         
-       HashMap<String, HashMap> nodeTimeout = null;
+       ConcurrentHashMap<String, ConcurrentHashMap> nodeTimeout = null;
        
        if (SimulationParameters.activateReplication.equals("replalgon")) {
         String fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.pf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + ".timeout";        
-         nodeTimeout = (HashMap) ObjectSerializer.loadDeserializedObject(fileTimeout);
+         nodeTimeout = (ConcurrentHashMap) ObjectSerializer.loadDeserializedObject(fileTimeout);
        }
 
         for (GraphElements.MyVertex v : g.getVertices()) {

@@ -100,7 +100,7 @@ public class ObjectSerializer {
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println("h" + h.toString());
+        //System.out.println("h" + h.toString());
         return h;
     }
 

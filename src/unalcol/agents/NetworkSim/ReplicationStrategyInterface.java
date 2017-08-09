@@ -8,6 +8,7 @@ package unalcol.agents.NetworkSim;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -23,7 +24,7 @@ public abstract class ReplicationStrategyInterface implements Serializable {
     private HashMap<Integer, Integer> lastAgentDeparting;
     private HashMap<Integer, Integer> lastAgentArrival;
     private HashMap<String, Integer> lastMessageFreeResp;
-    HashMap<String, ArrayList<Integer>> nodeTimeouts;
+    ConcurrentHashMap<String, ArrayList<Integer>> nodeTimeouts;
 
     int INITIAL_TIMEOUT = 50;//100;//better50;// 30;//50
 
@@ -44,10 +45,10 @@ public abstract class ReplicationStrategyInterface implements Serializable {
         responsibleAgentsArrival = new HashMap<>();
         lastAgentArrival = new HashMap<>();
         lastMessageFreeResp = new HashMap<>();
-        nodeTimeouts = new HashMap();
+        nodeTimeouts = new ConcurrentHashMap<>();
     }
 
-    public ReplicationStrategyInterface(HashMap tout) {
+    public ReplicationStrategyInterface(ConcurrentHashMap tout) {
         responsibleAgents = new HashMap<>();
         responsibleAgentsLocation = new HashMap<>();
         responsibleAgentsPrevLocations = new HashMap<>();
@@ -97,7 +98,7 @@ public abstract class ReplicationStrategyInterface implements Serializable {
 
     public abstract double getStdDevTimeout();
 
-    public HashMap<String, ArrayList<Integer>> getNodeTimeouts() {
+    public ConcurrentHashMap<String, ArrayList<Integer>> getNodeTimeouts() {
         return nodeTimeouts;
     }
 
@@ -138,7 +139,7 @@ public abstract class ReplicationStrategyInterface implements Serializable {
         this.lastMessageFreeResp = lastMessageFreeResp;
     }
 
-    void setNodeTimeouts(HashMap<String, ArrayList<Integer>> nodeTimeouts) {
+    void setNodeTimeouts(ConcurrentHashMap<String, ArrayList<Integer>> nodeTimeouts) {
         this.nodeTimeouts = nodeTimeouts;
     }
 

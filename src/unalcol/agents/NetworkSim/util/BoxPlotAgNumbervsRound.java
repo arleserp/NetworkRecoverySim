@@ -110,7 +110,7 @@ public class BoxPlotAgNumbervsRound extends ApplicationFrame {
      */
     public BoxPlotAgNumbervsRound(final String title, ArrayList<Double> pf) {
         super(title);
-        final BoxAndWhiskerCategoryDataset dataset = createSampleDataset(pf);
+        createSampleDataset(pf);
         /*final CategoryAxis xAxis = new CategoryAxis("");
         //final NumberAxis yAxis = new NumberAxis("Round number");
         final NumberAxis yAxis = new NumberAxis("");
@@ -190,13 +190,14 @@ public class BoxPlotAgNumbervsRound extends ApplicationFrame {
         ArrayList<String> filenamesSorted = new ArrayList<>();
         Hashtable<String, File> fileHashtable = new Hashtable<>();
 
-        final DefaultBoxAndWhiskerCategoryDataset dataset
-                = new DefaultBoxAndWhiskerCategoryDataset();
+        
 
         File f = new File(experimentsDir);
         File[] files = f.listFiles();
 
         for (File file : files) {
+            final DefaultBoxAndWhiskerCategoryDataset dataset
+                = new DefaultBoxAndWhiskerCategoryDataset();
             if (file.isDirectory() && file.getName().endsWith("agentNumber")) {
 
                 File subdir = new File(file.getName());
@@ -280,7 +281,7 @@ public class BoxPlotAgNumbervsRound extends ApplicationFrame {
 
                         while (sc.hasNext()) {
                             String line = sc.nextLine();
-                            System.out.println("line:" + line);
+                            //System.out.println("line:" + line);
                             data = line.split(",");
                             int round = Integer.valueOf(data[0]);
                             Double agNumber = Double.valueOf(data[1]);
@@ -375,7 +376,7 @@ public class BoxPlotAgNumbervsRound extends ApplicationFrame {
 
             }
         }
-        return dataset;
+        return null;
     }
 
     private static ArrayList<Double> getFailureProbs() {

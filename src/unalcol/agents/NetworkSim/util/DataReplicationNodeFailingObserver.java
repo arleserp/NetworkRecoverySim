@@ -5,7 +5,6 @@
  */
 package unalcol.agents.NetworkSim.util;
 
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.Graph;
@@ -28,6 +27,7 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
@@ -225,15 +225,16 @@ public class DataReplicationNodeFailingObserver implements Observer {
                 lastagentsAlive = agentsAlive;
             }
 
-            if (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter) {
+            // System.out.println("maxIter:" + SimulationParameters.maxIter  + ", " + n.getAge());
+            if (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter || nodesAlive == 0) {
                 if (!isUpdating) {
                     System.out.println("stopping simulation");
                     isUpdating = true;
 
-                    HashMap <String, HashMap<Integer, ReplicationStrategyInterface>> timeouts = new HashMap<>();
+                    ConcurrentHashMap<String, ConcurrentHashMap<Integer, ReplicationStrategyInterface>> timeouts = new ConcurrentHashMap<>();
 
                     for (Node node : n.getNodes()) {
-                        timeouts.put(node.getVertex().getName(), new HashMap(node.getRepStrategy()));
+                        timeouts.put(node.getVertex().getName(), node.getRepStrategy());
                     }
 
                     if (!SimulationParameters.simMode.equals("broadcast")) {
