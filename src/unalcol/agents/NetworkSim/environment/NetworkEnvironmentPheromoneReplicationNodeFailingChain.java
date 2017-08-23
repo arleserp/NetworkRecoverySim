@@ -1104,12 +1104,12 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
 
                 case 1: //what happens if a node dies?
                     // System.out.println("node " + n.getVertex().getName() + " n followed agents:" + n.getResponsibleAgents());
-                    KillNode(n);
-                    /*if (n.getRounds() > 100) {
+                    //KillNode(n);
+                    if (n.getRounds() > SimulationParameters.nofailRounds) {
                         KillNode(n);
                     } else {
-                        System.out.println("not die for first 100 rounds");
-                    }*/
+                        System.out.println("Killed called not die for first " + SimulationParameters.nofailRounds + " rounds!");
+                    }
                     break;
                 default:
                     System.out.println("acrtion not specified");

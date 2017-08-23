@@ -5,7 +5,9 @@
  */
 package unalcol.agents.NetworkSim.programs;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import unalcol.agents.Action;
 import unalcol.agents.AgentProgram;
 import unalcol.agents.NetworkSim.ActionParameters;
@@ -35,11 +37,21 @@ public class RandomSynchronizationProgram implements AgentProgram {
             return new ActionParameters("die");
         }
 
-        Collection<GraphElements.MyVertex> vs = (Collection<GraphElements.MyVertex>) p.getAttribute("neighbors");
+        ArrayList<GraphElements.MyVertex> vs = null;
 
         try {
             boolean isSet = false;
             do {
+
+                Collection<GraphElements.MyVertex> c = (Collection<GraphElements.MyVertex>) p.getAttribute("neighbors");
+                Iterator<GraphElements.MyVertex> it = c.iterator();
+                vs = new ArrayList<>();
+                while (it.hasNext()) {
+                    GraphElements.MyVertex v = it.next();
+                    if (v != null && !v.getStatus().equals("failed")) {
+                        vs.add(v);
+                    }
+                }
                 pos = (int) (Math.random() * vs.size());
                 if (((GraphElements.MyVertex) vs.toArray()[pos]) != null) {
                     act.setAttribute("location", vs.toArray()[pos]);

@@ -191,19 +191,26 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         String graphType = SimulationParameters.graphMode;
         graphType = graphType.replaceAll(".graph", "");
 
-        String fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+wsize+" + SimulationParameters.wsize + ".timeout";
+        String fileTimeout;
+
+        if (SimulationParameters.nofailRounds == 0) {
+            fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+wsize+" + SimulationParameters.wsize + ".timeout";
+        } else {
+            fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+wsize+" + SimulationParameters.wsize + "+nofailr+" + SimulationParameters.nofailRounds +".timeout";
+        }
+
         SimulationParameters.genericFilenameTimeouts = fileTimeout;
 
         ConcurrentHashMap<String, ConcurrentHashMap<Integer, ReplicationStrategyInterface>> nodeTimeout = null;
         //Here we use node pf instead agent pf.
-        if (SimulationParameters.simMode.equals("chain")) {            
-            nodeTimeout = (ConcurrentHashMap) ObjectSerializer.loadDeserializedObject(fileTimeout);            
+        if (SimulationParameters.simMode.equals("chain")) {
+            nodeTimeout = (ConcurrentHashMap) ObjectSerializer.loadDeserializedObject(fileTimeout);
         }
 
         for (GraphElements.MyVertex v : g.getVertices()) {
             v.setStatus("alive");
             Node n = null;
-            if (SimulationParameters.simMode.equals("chain") && nodeTimeout != null && nodeTimeout.containsKey(v.getName())) {                
+            if (SimulationParameters.simMode.equals("chain") && nodeTimeout != null && nodeTimeout.containsKey(v.getName())) {
                 //System.out.println("load" + nodeTimeout.get(v.getName()));
                 n = new Node(np, v, nodeTimeout.get(v.getName()));
             } else {
@@ -215,8 +222,6 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
             nodes.add(n);
         }
 
-        
-        
         if (!SimulationParameters.simMode.equals("broadcast") && !SimulationParameters.simMode.equals("allinfo")) {
             if (SimulationParameters.filenameLoc.length() > 1) {
                 loadLocations();
@@ -261,10 +266,11 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
             case "allinfo":
                 world = new NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo(agents, nodeLanguaje, nodeLanguaje, g);
                 ((NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo) world).addNodes(nodes);
-                for(Node n: world.getNodes()){
+                for (Node n : world.getNodes()) {
                     //System.out.println("enerooooooooooooooooooo");
-                    n.setNetworkdata(((NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo)world).loadAllTopology());
-                }   break;
+                    n.setNetworkdata(((NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo) world).loadAllTopology());
+                }
+                break;
             default:
                 world = new NetworkEnvironmentPheromoneReplicationNodeFailing(agents, agentsLanguage, nodeLanguaje, g);
                 ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).addNodes(nodes);

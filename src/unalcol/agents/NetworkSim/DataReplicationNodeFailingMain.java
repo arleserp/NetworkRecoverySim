@@ -49,6 +49,10 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 14) {
                     SimulationParameters.wsize = Integer.valueOf(args[14]);
                 }
+                if (args.length > 15) {
+                    SimulationParameters.nofailRounds = Integer.valueOf(args[15]);
+                }
+
             }
 
             if (SimulationParameters.graphMode.equals("community")) {
@@ -86,6 +90,9 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 14) {
                     SimulationParameters.wsize = Integer.valueOf(args[14]);
                 }
+                if (args.length > 15) {
+                    SimulationParameters.nofailRounds = Integer.valueOf(args[15]);
+                }
             }
 
             if (SimulationParameters.graphMode.equals("communitycircle")) {
@@ -116,6 +123,9 @@ public class DataReplicationNodeFailingMain {
                 }
                 if (args.length > 14) {
                     SimulationParameters.wsize = Integer.valueOf(args[14]);
+                }
+                if (args.length > 15) {
+                    SimulationParameters.nofailRounds = Integer.valueOf(args[15]);
                 }
 
             }
@@ -154,6 +164,9 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 15) {
                     SimulationParameters.wsize = Integer.valueOf(args[15]);
                 }
+                if (args.length > 16) {
+                    SimulationParameters.nofailRounds = Integer.valueOf(args[16]);
+                }
             }
 
             if (SimulationParameters.graphMode.equals("lattice")) {
@@ -189,6 +202,9 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 14) {
                     SimulationParameters.wsize = Integer.valueOf(args[14]);
                 }
+                if (args.length > 15) {
+                    SimulationParameters.nofailRounds = Integer.valueOf(args[15]);
+                }
             }
 
             if (SimulationParameters.graphMode.equals("line")) {
@@ -223,6 +239,9 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 13) {
                     SimulationParameters.wsize = Integer.valueOf(args[13]);
                 }
+                if (args.length > 14) {
+                    SimulationParameters.nofailRounds = Integer.valueOf(args[14]);
+                }
             }
 
             if (SimulationParameters.graphMode.equals("hubandspoke")) {
@@ -256,6 +275,9 @@ public class DataReplicationNodeFailingMain {
                 }
                 if (args.length > 13) {
                     SimulationParameters.wsize = Integer.valueOf(args[13]);
+                }
+                if (args.length > 14) {
+                    SimulationParameters.nofailRounds = Integer.valueOf(args[14]);
                 }
             }
 
@@ -292,6 +314,9 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 14) {
                     SimulationParameters.wsize = Integer.valueOf(args[14]);
                 }
+                if (args.length > 15) {
+                    SimulationParameters.nofailRounds = Integer.valueOf(args[15]);
+                }
             }
 
             if (SimulationParameters.graphMode.equals("circle")) {
@@ -326,6 +351,9 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 14) {
                     SimulationParameters.wsize = Integer.valueOf(args[14]);
                 }
+                if (args.length > 15) {
+                    SimulationParameters.nofailRounds = Integer.valueOf(args[15]);
+                }
             }
 
             if (SimulationParameters.graphMode.equals("load")) {
@@ -359,6 +387,9 @@ public class DataReplicationNodeFailingMain {
                 }
                 if (args.length > 13) {
                     SimulationParameters.wsize = Integer.valueOf(args[13]);
+                }
+                if (args.length > 14) {
+                    SimulationParameters.nofailRounds = Integer.valueOf(args[14]);
                 }
             }
             System.out.println("MaxIter" + SimulationParameters.maxIter);

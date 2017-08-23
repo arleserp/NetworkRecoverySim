@@ -40,4 +40,5 @@ public class SimulationParameters {
     public static String filenameDelays = "";
     public static String genericFilenameTimeouts = "";
     public static int wsize = 5;
+    public static int nofailRounds = 0;
 }
