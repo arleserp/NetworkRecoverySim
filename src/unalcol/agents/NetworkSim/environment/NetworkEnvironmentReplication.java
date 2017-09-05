@@ -608,4 +608,6 @@ public abstract class NetworkEnvironmentReplication extends Environment {
     public abstract void validateNodesAlive();
 
     public abstract List<Node> getNodes();
+    
+    public abstract void evaporatePheromone();
 }

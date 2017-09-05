@@ -50,7 +50,7 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
                         nodeTimeouts.put(nodeId, new ArrayList<>(nodeTimeouts.get(nodeId).subList(nodeTimeouts.get(nodeId).size() - WINDOW_SIZE, nodeTimeouts.get(nodeId).size())));
                     }
 
-                    if (diff != 0 && diff != 1) {
+                    if (diff > 20) {
                         getNodeTimeouts().get(nodeId).add(diff);
                     }
                     //System.out.println("calculatetimeout size getNodeTimeOuts():" + nodeId + "+" + getNodeTimeouts().get(nodeId).size());

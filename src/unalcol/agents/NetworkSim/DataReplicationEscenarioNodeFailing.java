@@ -131,7 +131,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         juegoDatos.addSeries(nodesLive);
         juegoDatos.addSeries(neighborMatchingSim);
 
-        frame2.setLocation(350, 150);
+        frame2.setLocation(650, 150);
         frame2.setSize(450, 450);
         frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
         bPanel = new JPanel();
@@ -493,14 +493,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
              */
  /*if (world instanceof NetworkEnvironmentPheromoneReplicationNodeFailing && SimulationParameters.motionAlg.equals("carriers")) {
                 ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).evaporatePheromone();
-            }
-            if (world instanceof NetworkEnvironmentPheromoneReplicationNodeFailing && SimulationParameters.motionAlg.equals("carriersrep")) {
-                ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).evaporatePheromone();
-            }*/
-
+            }*/                      
             world.updateWorldAge();
             world.validateNodesAlive();
-
+            
             /*
             if (world instanceof WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl) {
                 ((WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl) world).evaporatePheromone();

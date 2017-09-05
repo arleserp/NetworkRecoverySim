@@ -26,7 +26,7 @@ public abstract class ReplicationStrategyInterface implements Serializable {
     private HashMap<String, Integer> lastMessageFreeResp;
     ConcurrentHashMap<String, ArrayList<Integer>> nodeTimeouts;
 
-    int INITIAL_TIMEOUT = 50;//100;//better50;// 30;//50
+    int INITIAL_TIMEOUT = 50;//50;//100;//better50;// 30;//50
 
     public int getINITIAL_TIMEOUT() {
         return INITIAL_TIMEOUT;

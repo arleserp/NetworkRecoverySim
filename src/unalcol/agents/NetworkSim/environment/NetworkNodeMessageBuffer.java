@@ -5,8 +5,13 @@
  */
 package unalcol.agents.NetworkSim.environment;
 
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import unalcol.agents.NetworkSim.Node;
+import unalcol.agents.NetworkSim.SimulationParameters;
 
 /**
  * Singleton interface for messaging agents
@@ -32,7 +37,7 @@ public class NetworkNodeMessageBuffer {
     }
 
     public void createBuffer(String pid) {
-        if (mbuffer.contains(pid)) {
+        if (mbuffer.containsKey(pid)) {
             System.out.println("error already exists!!!!");
         } else {
             mbuffer.put(pid, new LinkedBlockingQueue());
@@ -43,9 +48,44 @@ public class NetworkNodeMessageBuffer {
         mbuffer.remove(pid);
     }
 
-    public boolean putMessage(String pid, String[] msg) {
+    public class putMessageInThread implements Runnable {
+
+        private NetworkEnvironmentPheromoneReplicationNodeFailingChain env;
+        private Node n;
+        private String location;
+        String[] msgnode;
+
+        public putMessageInThread(NetworkEnvironmentPheromoneReplicationNodeFailingChain env, Node n, String location, String[] msgnode) {
+            this.env = env;
+            this.n = n;
+            this.location = location;
+            this.msgnode = msgnode;
+        }
+
+        @Override
+        public void run() {
+            if (env.getNetworkDelays().containsKey(n.getVertex().getName() + location)) {
+                try {
+                    Thread.sleep(env.getNetworkDelays().get(n.getVertex().getName() + location));
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(NetworkNodeMessageBuffer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                System.out.println(n.getVertex().getName() + location + " not found in delay data structure");
+                n.sleep(SimulationParameters.averageDelay);
+            }
+            putMessage(location, msgnode);
+        }
+    }
+
+    public synchronized void putMessageWithNetworkDelay(NetworkEnvironmentPheromoneReplicationNodeFailingChain env, Node n, String location, String[] msg) {
+        Thread t = new Thread(new putMessageInThread(env, n, location, msg));
+        t.start();
+    }
+
+    public synchronized boolean putMessage(String pid, String[] msg) {
         //if (msg[0].equals("departing") || msg[0].equals("arrived") || msg[0].equals("freeresp")) {
-       /* if (msg[0].equals("arrived")) {
+        /* if (msg[0].equals("arrived")) {
             System.out.print("new message to: " + pid + " ");
             for (String x : msg) {
                 System.out.print(" " + x);
@@ -60,17 +100,27 @@ public class NetworkNodeMessageBuffer {
             //System.out.println("Warning!!!! Destination does not exist:" + pid + " msg:" + msg[0] + "from" + msg[1]);
             return false;
         }
-        mbuffer.get(pid).add(msg);
+
+        try {
+            mbuffer.get(pid).add(msg);
+        } catch (NullPointerException ex) {
+            System.out.println("error leyendo buffer:" + pid);        
+        }
         return true;
     }
 
     // Called by Consumer
-    public String[] getMessage(String pid) {
+    public synchronized String[] getMessage(String pid) {
         try {
-            //System.out.println("agent id" + pid + ", mbuffer" + mbuffer.get(pid).toString());
+            //if (pid.equals("p23")) {
+            //System.out.println("Node id" + pid + ", mbuffer size:" + mbuffer.get(pid).size());
+            //}
             return (String[]) (mbuffer.get(pid).poll());
         } catch (NullPointerException ex) {
-            System.out.println("Error reading mbuffer for agent:" + pid + "buffer: " + mbuffer);
+            //System.out.println("Error reading mbuffer for agent:" + pid + "buffer: " + mbuffer);            cs
+            System.out.println("error reading mbuffer " + pid + "... creating new buffer.");
+            //createBuffer(pid);
+            //mbuffer.put(pid, new LinkedBlockingQueue())
             System.exit(1);
         }
         return null;

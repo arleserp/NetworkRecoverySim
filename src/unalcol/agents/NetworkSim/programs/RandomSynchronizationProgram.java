@@ -37,23 +37,29 @@ public class RandomSynchronizationProgram implements AgentProgram {
             return new ActionParameters("die");
         }
 
-        ArrayList<GraphElements.MyVertex> vs = null;
+        
+        //This can happen!
+        if (p.getAttribute("nodedeath") != null) {
+            System.out.println("agent fail because node is not running.");
+            return new ActionParameters("die");
+        }
 
+        ArrayList<GraphElements.MyVertex> vs = null;
+        Collection<GraphElements.MyVertex> c = (Collection<GraphElements.MyVertex>) p.getAttribute("neighbors");
+        Iterator<GraphElements.MyVertex> it = c.iterator();
+        vs = new ArrayList<>();
+        while (it.hasNext()) {
+            GraphElements.MyVertex v = it.next();
+            if (v != null && !v.getStatus().equals("failed")) {
+                vs.add(v);
+            }
+        }
+        
         try {
             boolean isSet = false;
             do {
-
-                Collection<GraphElements.MyVertex> c = (Collection<GraphElements.MyVertex>) p.getAttribute("neighbors");
-                Iterator<GraphElements.MyVertex> it = c.iterator();
-                vs = new ArrayList<>();
-                while (it.hasNext()) {
-                    GraphElements.MyVertex v = it.next();
-                    if (v != null && !v.getStatus().equals("failed")) {
-                        vs.add(v);
-                    }
-                }
                 pos = (int) (Math.random() * vs.size());
-                if (((GraphElements.MyVertex) vs.toArray()[pos]) != null) {
+                if (((GraphElements.MyVertex) vs.toArray()[pos]) != null && !((GraphElements.MyVertex) vs.toArray()[pos]).getStatus().equals("failed")) {
                     act.setAttribute("location", vs.toArray()[pos]);
                     act.setAttribute("pf", pf);
                     isSet = true;

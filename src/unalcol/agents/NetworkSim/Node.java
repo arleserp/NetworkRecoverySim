@@ -6,12 +6,12 @@
 package unalcol.agents.NetworkSim;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
@@ -31,6 +31,7 @@ public class Node extends Agent {
     private int nMsgSend;
     private int nMsgRecv;
     private int rounds;
+    public boolean isProcessing = false;
 
     // private ArrayList<Integer> timeout;
     private int amountRounds;
@@ -44,6 +45,7 @@ public class Node extends Agent {
     private HashMap<String, ConcurrentHashMap<Integer, Integer>> agentsInNeighbors;
 
     private ConcurrentHashMap<Integer, ReplicationStrategyInterface> repStrategy;
+    private LinkedBlockingQueue<String []> networkMessagebuffer;
 
     AtomicInteger c = new AtomicInteger(0);
     protected Hashtable<String, Object> properties = new Hashtable<String, Object>();
@@ -89,9 +91,10 @@ public class Node extends Agent {
         } else {
             for (int i = 1; i <= SimulationParameters.nhops; i++) {
                 repStrategy.put(i, new ReplicationStrategyPAAMS());
-                repStrategy.get(i).setINITIAL_TIMEOUT(repStrategy.get(i).getINITIAL_TIMEOUT());
+                repStrategy.get(i).setINITIAL_TIMEOUT(repStrategy.get(i).getINITIAL_TIMEOUT() * i);
             }
         }
+        networkMessagebuffer = new LinkedBlockingQueue();
     }
 
     public Node(AgentProgram _program, GraphElements.MyVertex ve, ConcurrentHashMap tout) {
@@ -116,7 +119,7 @@ public class Node extends Agent {
                 repStrategy.get(i).initialize();
             }
         }
-
+        networkMessagebuffer = new LinkedBlockingQueue();
     }
 
     public GraphElements.MyVertex getVertex() {
@@ -570,6 +573,28 @@ public class Node extends Agent {
 
     public void setRepStrategy(ConcurrentHashMap<Integer, ReplicationStrategyInterface> repStrategy) {
         this.repStrategy = repStrategy;
+    }
+
+    public synchronized boolean putMessage(String[] msg) {
+        networkMessagebuffer.add(msg);
+        return true;
+    }
+
+    // Called by Consumer
+    public synchronized String[] getMessage() {
+        try {
+            //if (pid.equals("p23")) {
+            //System.out.println("Node id" + getVertex().getName() + ", network buffer size:" + networkMessagebuffer.size());
+            //}
+            return networkMessagebuffer.poll();
+        } catch (NullPointerException ex) {
+            //System.out.println("Error reading mbuffer for agent:" + pid + "buffer: " + mbuffer);            cs
+            System.out.println("error reading networkmbuffer....");
+            //createBuffer(pid);
+            //mbuffer.put(pid, new LinkedBlockingQueue())
+            System.exit(1);
+        }
+        return null;
     }
 
 }

@@ -1,2 +1,2 @@
-java   -classpath dist/NetworkSimulator.jar unalcol.agents.NetworkSim.GenerateNetworkDelays . 30
+java   -classpath dist/NetworkSimulator.jar unalcol.agents.NetworkSim.GenerateNetworkDelays . 50
 pause
