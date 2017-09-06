@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.logging.Logger; 
 import unalcol.agents.NetworkSim.ActionParameters;
 import unalcol.agents.NetworkSim.GraphCreator;
 import unalcol.agents.NetworkSim.GraphElements;
@@ -28,6 +28,12 @@ import static unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplicatio
 import unalcol.agents.NetworkSim.programs.NodeFailingProgram;
 import unalcol.agents.NetworkSim.util.HashMapOperations;
 import unalcol.agents.NetworkSim.util.StringSerializer;
+
+
+/***
+ * This class controls the behaviour of the agents
+ * @author Arles
+ */
 
 public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends NetworkEnvironmentReplication {
 
