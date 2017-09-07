@@ -996,7 +996,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                 ArrayList<Integer> repeatedAgents = n.getDuplicatedAgents();
                                 for (int id : repeatedAgents) {
                                     removeAgent(id);
-                                    System.out.println("deeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeell:" + id);
+                                  //  System.out.println("deeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeell:" + id);
                                     n.deleteAllFollowedReferences(id);
                                 }
                                 if (n.hasFollowedInNodeBefore(agentId)) {
@@ -1233,7 +1233,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                             if (n.getFollowedAgents(hop).get(agentId) == -1) {
 
                                 System.out.println("create new agent instance..." + n.getVertex().getName() + " father: " + agentId);
-                                n.printReplicationHop(hop);
+                                //n.printReplicationHop(hop);
                                 createNewAgents(1, n, agentId);
                                 father = agentId;
 
@@ -1241,7 +1241,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                 int idOrig = n.getFollowedAgents(hop).get(agentId);
                                 createNewAgents(1, n, idOrig);
                                 System.out.println("create new agent instance..." + n.getVertex().getName() + " father: " + idOrig);
-                                n.printReplicationHop(hop);
+                                //n.printReplicationHop(hop);
                                 father = idOrig;
                             }
                             //send message to previous locations
@@ -1269,8 +1269,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                             }*/
                             iter.remove();
                             n.deleteAgentFromRep(hop, agentId);
-                            System.out.println("after removal");
-                            n.printReplicationHop(hop);
+                            //System.out.println("after removal");
+                            //n.printReplicationHop(hop);
                         }
                         //for (int i = 1; i <= SimulationParameters.nhopsChain; i++) {
 //                    n.removeResponsibleAgentsPrevLocations(k, hop);
