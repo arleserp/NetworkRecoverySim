@@ -999,7 +999,13 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                     System.out.println("deeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeell:" + id);
                                     n.deleteAllFollowedReferences(id);
                                 }
-
+                                if (n.hasFollowedInNodeBefore(agentId)) {
+                                    // n.printReplicationHops();
+                                    //System.out.println("ya lo tengo" + n.getVertex().getName() + " agent id:" + agentId);
+                                    //deberia aqui borrar todos los nodos en la cadena
+                                    n.deleteAllFollowedReferences(agentId);
+                                    //n.printReplicationHops();
+                                }
                             }
                             //msgnode: "departing"|agentId|FatherId|newDest
                             if (inbox[0].equals("departing")) {
@@ -1009,15 +1015,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                 int hop = Integer.valueOf(inbox[4]);
                                 StringSerializer s = new StringSerializer();
                                 ArrayList<String> PrevLocations = new ArrayList((ArrayList<String>) s.deserialize(inbox[5]));
-
-                                if (n.hasFollowedInNodeBefore(agentId)) {
-                                    // n.printReplicationHops();
-                                    //System.out.println("ya lo tengo" + n.getVertex().getName() + " agent id:" + agentId);
-                                    //deberia aqui borrar todos los nodos en la cadena
-
-                                    n.deleteAllFollowedReferences(agentId);
-                                    //n.printReplicationHops();
-                                }
 
                                 //hops greater than one means departing messages from other nodes
                                 if (hop > 1) {
@@ -1248,7 +1245,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                 father = idOrig;
                             }
                             //send message to previous locations
-                            ArrayList<String> PrevLocations = n.getResponsibleAgentsPrevLocations(agentId, hop);
+                            /* ArrayList<String> PrevLocations = n.getResponsibleAgentsPrevLocations(agentId, hop);
                             int tmphop = hop;
                             if (PrevLocations != null && PrevLocations.size() - hop > 0) {
                                 String prevPrevLoc = PrevLocations.get(PrevLocations.size() - hop);
@@ -1269,7 +1266,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                     NetworkNodeMessageBuffer.getInstance().putMessage(prevPrevLoc, msgnoder);
                                     System.out.println("Resending free resp agent:" + agentId + "father" + father + ", hop: " + tmphop + " to:" + prevPrevLoc + " key: " + msgnoder[2]);
                                 }
-                            }
+                            }*/
                             iter.remove();
                             n.deleteAgentFromRep(hop, agentId);
                             System.out.println("after removal");
