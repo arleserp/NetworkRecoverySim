@@ -22,10 +22,10 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
 
     @Override
     public void calculateTimeout() {
-        Iterator<Map.Entry<Integer, Integer>> iter = getResponsibleAgents().entrySet().iterator();
+        Iterator<Map.Entry<Integer, Integer>> iter = getFollowedAgents().entrySet().iterator();
         Iterator<Map.Entry<String, Integer>> iterM = getLastMessageFreeResp().entrySet().iterator();
-       // System.out.println("node timeouts" + getNodeTimeouts());
-        
+        // System.out.println("node timeouts" + getNodeTimeouts());
+
         while (iter.hasNext()) {
             //Key: agentId|roundNumber
             Map.Entry<Integer, Integer> Key = iter.next();
@@ -38,7 +38,7 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
                 String nodeId = dataKey[1];
 
                 if (agentId == k && getLastAgentDeparting().containsKey(k) && getLastMessageFreeResp().containsKey(KeyM.getKey())) {
-                    int diff = Math.abs(getLastMessageFreeResp().get(KeyM.getKey()) - getLastAgentDeparting().get(k));
+                    int diff = getLastMessageFreeResp().get(KeyM.getKey()) - getLastAgentDeparting().get(k);
                     //System.out.println("diff" +  diff);
                     // if (diff != 0) {
                     if (!nodeTimeouts.containsKey(nodeId)) {
@@ -49,15 +49,15 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
                     if (getNodeTimeouts().get(nodeId).size() >= WINDOW_SIZE) {
                         nodeTimeouts.put(nodeId, new ArrayList<>(nodeTimeouts.get(nodeId).subList(nodeTimeouts.get(nodeId).size() - WINDOW_SIZE, nodeTimeouts.get(nodeId).size())));
                     }
-
+                    
                     if (diff > 20) {
                         getNodeTimeouts().get(nodeId).add(diff);
                     }
                     //System.out.println("calculatetimeout size getNodeTimeOuts():" + nodeId + "+" + getNodeTimeouts().get(nodeId).size());
                     //}
                     //System.out.println("node:" + getVertex().getName() + ", antes:" + getLastMessageArrival());
-                    iterM.remove();
                     getLastAgentDeparting().remove(k);
+                    iterM.remove();
                 }
             }
         }
@@ -71,7 +71,6 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
     @Override
     public int estimateTimeout() {
         // return INITIAL_TIMEOUT;
-
         int maxMedianTimeout = Integer.MIN_VALUE;
         System.out.println("nodeTimeouts" + getNodeTimeouts());
 
@@ -117,14 +116,14 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
                 dtimeout = new ArrayList<>(dtimeout.subList(dtimeout.size() - WINDOW_SIZE, dtimeout.size()));
             }
 
-           //if (dtimeout.size() > 1) {
+            //if (dtimeout.size() > 1) {
             StatisticsNormalDist st = new StatisticsNormalDist(dtimeout, dtimeout.size());
             if (st.getStdDev() > maxMedianStdTimeout) {
                 maxMedianStdTimeout = (int) st.getStdDevMedian();
             }
         }
-        
-        if(maxMedianStdTimeout == Integer.MIN_VALUE){
+
+        if (maxMedianStdTimeout == Integer.MIN_VALUE) {
             return 0;
         }
         //System.out.println("Max std timeout" + maxMedianStdTimeout);
@@ -150,5 +149,45 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
         StatisticsNormalDist st = new StatisticsNormalDist(dtimeout, dtimeout.size());
         return (int) st.getMedian();
 
+    }
+
+    @Override
+    public boolean containsAgent(int agentId) {
+        return getFollowedAgents().containsKey(agentId);
+    }
+
+    @Override
+    public void removeReferences(int agentId) {
+        getFollowedAgents().remove(agentId);
+        getLastAgentDeparting().remove(agentId);
+        getFollowedAgentsLocation().remove(agentId);
+        getResponsibleAgentsPrevLocations().remove(agentId);
+        Iterator<Map.Entry<String, Integer>> iterM = getLastMessageFreeResp().entrySet().iterator();
+        while (iterM.hasNext()) {
+            Map.Entry<String, Integer> KeyM = iterM.next();
+            String[] dataKey = KeyM.getKey().split("-");
+            int agId = Integer.valueOf(dataKey[0]);
+            if (agId == agentId) {
+                iterM.remove();
+            }
+        }
+        //System.out.println("removeeeeeeeeeeeeeeeeee!!!!!");
+    }
+    
+    @Override
+    public void removeReferencesForCreation(int agentId) {
+        getLastAgentDeparting().remove(agentId);
+        getFollowedAgentsLocation().remove(agentId);
+        getResponsibleAgentsPrevLocations().remove(agentId);
+        Iterator<Map.Entry<String, Integer>> iterM = getLastMessageFreeResp().entrySet().iterator();
+        while (iterM.hasNext()) {
+            Map.Entry<String, Integer> KeyM = iterM.next();
+            String[] dataKey = KeyM.getKey().split("-");
+            int agId = Integer.valueOf(dataKey[0]);
+            if (agId == agentId) {
+                iterM.remove();
+            }
+        }
+        //System.out.println("removeeeeeeeeeeeeeeeeee!!!!!");
     }
 }

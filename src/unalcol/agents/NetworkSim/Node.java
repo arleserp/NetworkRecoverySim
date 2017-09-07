@@ -34,21 +34,19 @@ public class Node extends Agent {
     public boolean isProcessing = false;
 
     // private ArrayList<Integer> timeout;
-    private int amountRounds;
-
     private ArrayList<Integer> nodeTimeoutsArrival;
     private HashMap<String, ArrayList> networkdata;
     private HashMap<Object, ArrayList> pending;
     private HashMap<String, Integer> respAgentsBkp;
-    private HashMap<Integer, String> prevLoc; // Stores <agentId, prevLoc> 
+//    private HashMap<Integer, String> prevLoc; // Stores <agentId, prevLoc> 
     private HashMap<Integer, Integer> followedAgentsCounter; // Stores <agentId, counter>
     private HashMap<String, ConcurrentHashMap<Integer, Integer>> agentsInNeighbors;
 
     private ConcurrentHashMap<Integer, ReplicationStrategyInterface> repStrategy;
-    private LinkedBlockingQueue<String []> networkMessagebuffer;
+    private LinkedBlockingQueue<String[]> networkMessagebuffer;
 
     AtomicInteger c = new AtomicInteger(0);
-    protected Hashtable<String, Object> properties = new Hashtable<String, Object>();
+    protected Hashtable<String, Object> properties = new Hashtable<>();
 
     public void incrementAgentCount() {
         c.incrementAndGet();
@@ -80,7 +78,7 @@ public class Node extends Agent {
         rounds = 0;
         respAgentsBkp = new HashMap<>();
         nodeTimeoutsArrival = new ArrayList<>();
-        prevLoc = new HashMap<>();
+//        prevLoc = new HashMap<>();
         followedAgentsCounter = new HashMap<>();
         agentsInNode = new ConcurrentHashMap<>();
         agentsInNeighbors = new HashMap<>();
@@ -89,7 +87,7 @@ public class Node extends Agent {
         if (!SimulationParameters.simMode.equals("chain")) {
             repStrategy.put(1, new ReplicationStrategyPAAMS());
         } else {
-            for (int i = 1; i <= SimulationParameters.nhops; i++) {
+            for (int i = 1; i <= SimulationParameters.nhopsChain; i++) {
                 repStrategy.put(i, new ReplicationStrategyPAAMS());
                 repStrategy.get(i).setINITIAL_TIMEOUT(repStrategy.get(i).getINITIAL_TIMEOUT() * i);
             }
@@ -106,7 +104,7 @@ public class Node extends Agent {
         rounds = 0;
         respAgentsBkp = new HashMap<>();
         nodeTimeoutsArrival = new ArrayList<>();
-        prevLoc = new HashMap<>();
+//        prevLoc = new HashMap<>();
         followedAgentsCounter = new HashMap<>();
         agentsInNeighbors = new HashMap<>();
 
@@ -115,7 +113,7 @@ public class Node extends Agent {
             repStrategy.get(1).setNodeTimeouts(tout);
         } else {
             setRepStrategy(tout);
-            for (int i = 1; i <= SimulationParameters.nhops; i++) {
+            for (int i = 1; i <= SimulationParameters.nhopsChain; i++) {
                 repStrategy.get(i).initialize();
             }
         }
@@ -199,11 +197,11 @@ public class Node extends Agent {
     }
 
     /**
+     * @param hop
      * @return the responsibleAgents
      */
-    public HashMap<Integer, Integer> getResponsibleAgents(int hop) {
-
-        return repStrategy.get(hop).getResponsibleAgents();
+    public HashMap<Integer, Integer> getFollowedAgents(int hop) {
+        return repStrategy.get(hop).getFollowedAgents();
     }
 
     /**
@@ -294,14 +292,13 @@ public class Node extends Agent {
         }
     }
 
-    public HashMap<Integer, String> getPrevLoc() {
-        return prevLoc;
-    }
-
-    public void setPrevLoc(HashMap<Integer, String> prevLoc) {
-        this.prevLoc = prevLoc;
-    }
-
+//    public HashMap<Integer, String> getPrevLoc() {
+//        return prevLoc;
+//    }
+//
+//    public void setPrevLoc(HashMap<Integer, String> prevLoc) {
+//        this.prevLoc = prevLoc;
+//    }
     /**
      * @param agentId
      * @return the lastAgentArrival
@@ -311,23 +308,12 @@ public class Node extends Agent {
     }
 
     /**
-     * @param lastAgentArrival the lastAgentArrival to set
+     * @param nodeAge current message of arrival
+     * @param hop in the change
      * @param agentId
      */
     public void setLastAgentDeparting(int agentId, int nodeAge, int hop) {
         repStrategy.get(hop).getLastAgentDeparting().put(agentId, nodeAge);
-    }
-
-    /**
-     * @param agentId
-     * @return the lastMessageArrival
-     */
-    public int getLastMessageFreeResp(int agentId, int hop) {
-        if (repStrategy.containsKey(hop) && repStrategy.get(hop).getLastMessageFreeResp().containsKey(agentId)) {
-            return repStrategy.get(hop).getLastMessageFreeResp().get(agentId);
-        }
-        //System.out.println("no last free messages free!");
-        return -1;
     }
 
     /**
@@ -398,10 +384,11 @@ public class Node extends Agent {
     }
 
     /**
+     * @param hop
      * @return the responsibleAgentsLocation
      */
-    public HashMap<Integer, String> getResponsibleAgentsLocation(int hop) {
-        return repStrategy.get(hop).getResponsibleAgentsLocation();
+    public HashMap<Integer, String> getFollowedAgentsLocation(int hop) {
+        return repStrategy.get(hop).getFollowedAgentsLocation();
     }
 
     /**
@@ -563,10 +550,10 @@ public class Node extends Agent {
         return repStrategy.get(hop).getResponsibleAgentsPrevLocations().get(agId);
     }
 
-    public void addResponsibleAgentsPrevLocations(int agId, ArrayList<String> PrevLocations, int hop) {
+    public void addFollowedAgentsPrevLocations(int agId, ArrayList<String> PrevLocations, int hop) {
         repStrategy.get(hop).getResponsibleAgentsPrevLocations().put(agId, PrevLocations);
     }
-
+    
     public ConcurrentHashMap<Integer, ReplicationStrategyInterface> getRepStrategy() {
         return repStrategy;
     }
@@ -597,4 +584,46 @@ public class Node extends Agent {
         return null;
     }
 
+    public boolean hasFollowedInNodeBefore(int agentId) {
+        for (int i = 1; i <= SimulationParameters.nhopsChain; i++) {
+            if (repStrategy.get(i).containsAgent(agentId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int countFollowedInNode(int agentId) {
+        int count = 0;
+        for (int i = 1; i <= SimulationParameters.nhopsChain; i++) {
+            if (repStrategy.get(i).containsAgent(agentId)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public void deleteAllFollowedReferences(int agentId) {
+        for (int i = 1; i <= SimulationParameters.nhopsChain; i++) {
+            if (repStrategy.get(i).containsAgent(agentId)) {
+                repStrategy.get(i).removeReferences(agentId);
+            }
+        }
+//        prevLoc.remove(agentId);
+
+    }
+
+    public void printReplicationHops() {
+        for (int i = 1; i <= SimulationParameters.nhopsChain; i++) {
+            System.out.println("Node" + getVertex().getName() + " - hop " + i + " repl: " + repStrategy.get(i));
+        }
+    }
+
+    public void printReplicationHop(int i) {
+        System.out.println("Node" + getVertex().getName() + " - hop " + i + " repl: " + repStrategy.get(i));
+    }
+    
+    public void deleteAgentFromRep(int hop, int agentId){
+        repStrategy.get(hop).removeReferencesForCreation(agentId);
+    }
 }

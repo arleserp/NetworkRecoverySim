@@ -248,9 +248,9 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                         n.setLastAgentDeparting(agentId, n.getRounds(), hops);
                         n.incMsgRecv();
                         //System.out.println("Node " + n.getVertex().getName() + " recv message: " + inbox[0]);
-                        n.getResponsibleAgents(hops).put(agentId, Integer.valueOf(inbox[2]));
+                        n.getFollowedAgents(hops).put(agentId, Integer.valueOf(inbox[2]));
                         //System.out.println("n" + n.getResponsibleAgents());
-                        n.getResponsibleAgentsLocation(hops).put(agentId, inbox[3]);
+                        n.getFollowedAgentsLocation(hops).put(agentId, inbox[3]);
                         n.calculateTimeout(hops);
                         //System.out.println("departing node age" + n.getRounds());
                         //System.out.println("node " + n.getVertex().getName() + " is responsible for agents:" + n.getResponsibleAgents());
@@ -264,8 +264,8 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                         String newLocation = inbox[2];
                         n.setLastMessageFreeResp(agentId, n.getRounds(), newLocation, hops);
                         n.calculateTimeout(hops);
-                        if (n.getResponsibleAgents(hops).containsKey(agentId)) {
-                            n.getResponsibleAgents(hops).remove(agentId);
+                        if (n.getFollowedAgents(hops).containsKey(agentId)) {
+                            n.getFollowedAgents(hops).remove(agentId);
                         } else {
                             //System.out.println("Delete replica!!!!!!");
                             incrementFalsePossitives();
@@ -296,8 +296,8 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
     public void evaluateAgentCreation(Node n) {
 
         synchronized (NetworkEnvironmentPheromoneReplication.class) {
-            Iterator<Map.Entry<Integer, Integer>> iter = n.getResponsibleAgents(hops).entrySet().iterator();
-            Iterator<Map.Entry<Integer, String>> iterLoc = n.getResponsibleAgentsLocation(hops).entrySet().iterator();
+            Iterator<Map.Entry<Integer, Integer>> iter = n.getFollowedAgents(hops).entrySet().iterator();
+            Iterator<Map.Entry<Integer, String>> iterLoc = n.getFollowedAgentsLocation(hops).entrySet().iterator();
             ///if (!n.getResponsibleAgents().isEmpty()) {
             // System.out.println(n.getVertex().getName() + " hashmap " + n.getResponsibleAgents());
             /*}*/
@@ -309,8 +309,8 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                 //Key: agentId|roundNumber
                 Map.Entry<Integer, Integer> Key = iter.next();
                 int k = Key.getKey();
-                estimatedTimeout = n.estimateExpectedTime(n.getResponsibleAgentsLocation(hops).get(k), hops);
-                stdDevTimeout = (int) n.getStdDevTimeout(n.getResponsibleAgentsLocation(hops).get(k), hops);
+                estimatedTimeout = n.estimateExpectedTime(n.getFollowedAgentsLocation(hops).get(k), hops);
+                stdDevTimeout = (int) n.getStdDevTimeout(n.getFollowedAgentsLocation(hops).get(k), hops);
 
                 if (n.getLastAgentDeparting(hops).containsKey(k) && Math.abs((n.getRounds() - n.getLastAgentDeparting(k, hops))) > (estimatedTimeout + 3 * stdDevTimeout)) { //this is not the expresion
                     /*if (n.getResponsibleAgentsLocation().containsKey(k) && n.getNodeTimeouts().containsKey(n.getResponsibleAgentsLocation().get(k))) {
@@ -331,10 +331,10 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
                     a.setId(newAgentID);
                     a.setData(new ArrayList(n.getVertex().getData()));
 
-                    if (n.getResponsibleAgents(hops).get(k) == -1) {
+                    if (n.getFollowedAgents(hops).get(k) == -1) {
                         a.setIdFather(k);
                     } else {
-                        a.setIdFather(n.getResponsibleAgents(hops).get(k));
+                        a.setIdFather(n.getFollowedAgents(hops).get(k));
                     }
                     a.setRound(super.getAge());
                     this.agents.add(a);

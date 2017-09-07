@@ -37,7 +37,6 @@ public class RandomSynchronizationProgram implements AgentProgram {
             return new ActionParameters("die");
         }
 
-        
         //This can happen!
         if (p.getAttribute("nodedeath") != null) {
             System.out.println("agent fail because node is not running.");
@@ -47,14 +46,21 @@ public class RandomSynchronizationProgram implements AgentProgram {
         ArrayList<GraphElements.MyVertex> vs = null;
         Collection<GraphElements.MyVertex> c = (Collection<GraphElements.MyVertex>) p.getAttribute("neighbors");
         Iterator<GraphElements.MyVertex> it = c.iterator();
-        vs = new ArrayList<>();
-        while (it.hasNext()) {
-            GraphElements.MyVertex v = it.next();
-            if (v != null && !v.getStatus().equals("failed")) {
-                vs.add(v);
+        try {
+            vs = new ArrayList<>();
+            while (it.hasNext()) {
+                GraphElements.MyVertex v = it.next();
+                if (v != null && !v.getStatus().equals("failed")) {
+                    vs.add(v);
+                }
             }
+        } catch (Exception ex) {
+            // System.out.println("this cannot happen!!! agent fail because node is not running or was killed determining new movement." + vs);
+            //return new ActionParameters("die");
+            System.out.println("a node is death while reading perception: " + ex.getLocalizedMessage());
+            return new ActionParameters("die");
         }
-        
+
         try {
             boolean isSet = false;
             do {

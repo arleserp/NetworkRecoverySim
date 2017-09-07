@@ -16,13 +16,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class ReplicationStrategyInterface implements Serializable {
 
-    private HashMap<Integer, Integer> responsibleAgents;
-    private HashMap<Integer, Integer> responsibleAgentsArrival;
-    private HashMap<Integer, String> responsibleAgentsLocation;
+    private HashMap<Integer, Integer> followedAgents;
+    private HashMap<Integer, String> followedAgentsLocation;
     private HashMap<Integer, ArrayList<String>> responsibleAgentsPrevLocations;
-
     private HashMap<Integer, Integer> lastAgentDeparting;
-    private HashMap<Integer, Integer> lastAgentArrival;
     private HashMap<String, Integer> lastMessageFreeResp;
     ConcurrentHashMap<String, ArrayList<Integer>> nodeTimeouts;
 
@@ -38,34 +35,28 @@ public abstract class ReplicationStrategyInterface implements Serializable {
     int WINDOW_SIZE = 5;
 
     public ReplicationStrategyInterface() {
-        responsibleAgents = new HashMap<>();
-        responsibleAgentsLocation = new HashMap<>();
+        followedAgents = new HashMap<>();
+        followedAgentsLocation = new HashMap<>();
         responsibleAgentsPrevLocations = new HashMap<>();
         lastAgentDeparting = new HashMap<>();
-        responsibleAgentsArrival = new HashMap<>();
-        lastAgentArrival = new HashMap<>();
         lastMessageFreeResp = new HashMap<>();
         nodeTimeouts = new ConcurrentHashMap<>();
     }
 
     public ReplicationStrategyInterface(ConcurrentHashMap tout) {
-        responsibleAgents = new HashMap<>();
-        responsibleAgentsLocation = new HashMap<>();
+        followedAgents = new HashMap<>();
+        followedAgentsLocation = new HashMap<>();
         responsibleAgentsPrevLocations = new HashMap<>();
-        lastAgentDeparting = new HashMap<>();
-        responsibleAgentsArrival = new HashMap<>();
-        lastAgentArrival = new HashMap<>();
+        lastAgentDeparting = new HashMap<>();     
         lastMessageFreeResp = new HashMap<>();
         nodeTimeouts = tout;
     }
 
     public void initialize() {
-        responsibleAgents = new HashMap<>();
-        responsibleAgentsLocation = new HashMap<>();
-        responsibleAgentsPrevLocations = new HashMap<>();
+        followedAgents = new HashMap<>();
+        followedAgentsLocation = new HashMap<>();
+        //responsibleAgentsPrevLocations = new HashMap<>();
         lastAgentDeparting = new HashMap<>();
-        responsibleAgentsArrival = new HashMap<>();
-        lastAgentArrival = new HashMap<>();
         lastMessageFreeResp = new HashMap<>();
     }
 
@@ -107,29 +98,29 @@ public abstract class ReplicationStrategyInterface implements Serializable {
     /**
      * @return the responsibleAgents
      */
-    public HashMap<Integer, Integer> getResponsibleAgents() {
-        return responsibleAgents;
+    public HashMap<Integer, Integer> getFollowedAgents() {
+        return followedAgents;
     }
 
     /**
      * @param responsibleAgents the responsibleAgents to set
      */
     public void setResponsibleAgents(HashMap<Integer, Integer> responsibleAgents) {
-        this.responsibleAgents = responsibleAgents;
+        this.followedAgents = responsibleAgents;
     }
 
     /**
      * @return the responsibleAgentsLocation
      */
-    public HashMap<Integer, String> getResponsibleAgentsLocation() {
-        return responsibleAgentsLocation;
+    public HashMap<Integer, String> getFollowedAgentsLocation() {
+        return followedAgentsLocation;
     }
 
     /**
      * @param responsibleAgentsLocation the responsibleAgentsLocation to set
      */
     public void setResponsibleAgentsLocation(HashMap<Integer, String> responsibleAgentsLocation) {
-        this.responsibleAgentsLocation = responsibleAgentsLocation;
+        this.followedAgentsLocation = responsibleAgentsLocation;
     }
 
     /**
@@ -143,4 +134,15 @@ public abstract class ReplicationStrategyInterface implements Serializable {
         this.nodeTimeouts = nodeTimeouts;
     }
 
+    //determines if agent is contained in the followed agents vector
+    public abstract boolean containsAgent(int agentId);
+
+    public abstract void removeReferences(int agentId);
+    
+    public abstract void removeReferencesForCreation(int agentId);
+    
+    @Override
+    public String toString() {
+        return "ReplicationStrategyInterface{" + "followedAgents=" + followedAgents + ", followedAgentsLocation=" + followedAgentsLocation + ", lastAgentDeparting=" + lastAgentDeparting + ", lastMessageFreeResp=" + lastMessageFreeResp + ", nodeTimeouts=" + nodeTimeouts + ", INITIAL_TIMEOUT=" + INITIAL_TIMEOUT + ", WINDOW_SIZE=" + WINDOW_SIZE + '}';
+    }    
 }

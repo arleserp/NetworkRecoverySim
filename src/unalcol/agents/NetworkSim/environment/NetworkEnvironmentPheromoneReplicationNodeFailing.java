@@ -893,8 +893,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                 n.setLastAgentDeparting(agentId, n.getRounds(), hops);
 
                                 n.incMsgRecv();
-                                n.getResponsibleAgents(hops).put(agentId, father);
-                                n.getResponsibleAgentsLocation(hops).put(agentId, inbox[3]);
+                                n.getFollowedAgents(hops).put(agentId, father);
+                                n.getFollowedAgentsLocation(hops).put(agentId, inbox[3]);
                                 n.calculateTimeout(hops);
                                 // System.out.println(n.getVertex().getName() + "departing:" + agentId);
                                 //n.calculateTimeoutArrival();
@@ -917,8 +917,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                                 String newLocation = inbox[2];
                                 n.setLastMessageFreeResp(agentId, n.getRounds(), newLocation, hops);
                                 n.calculateTimeout(hops);
-                                if (n.getResponsibleAgents(hops).containsKey(agentId)) {
-                                    n.getResponsibleAgents(hops).remove(agentId);
+                                if (n.getFollowedAgents(hops).containsKey(agentId)) {
+                                    n.getFollowedAgents(hops).remove(agentId);
                                 } else {
                                     //System.out.println("delete!!!!");
                                     incrementFalsePossitives();
@@ -967,7 +967,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     }
                     break;
                 case 1: //what happens if a node dies?
-                    System.out.println("node " + n.getVertex().getName() + ", n followed agents:" + n.getResponsibleAgents(hops) + ", agents in neighbours:" + n.getAgentsInNeighbors());
+                    System.out.println("node " + n.getVertex().getName() + ", n followed agents:" + n.getFollowedAgents(hops) + ", agents in neighbours:" + n.getAgentsInNeighbors());
                     KillNode(n);
                     /*if (n.getRounds() > 100) {
                         KillNode(n);
@@ -1062,8 +1062,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
     //Example: It is better handshake protocol. J. Gomez
     public void evaluateAgentCreation(Node n) {
         synchronized (NetworkEnvironmentPheromoneReplicationNodeFailing.class) {
-            Iterator<Map.Entry<Integer, Integer>> iter = n.getResponsibleAgents(hops).entrySet().iterator();
-            Iterator<Map.Entry<Integer, String>> iterLoc = n.getResponsibleAgentsLocation(hops).entrySet().iterator();
+            Iterator<Map.Entry<Integer, Integer>> iter = n.getFollowedAgents(hops).entrySet().iterator();
+            Iterator<Map.Entry<Integer, String>> iterLoc = n.getFollowedAgentsLocation(hops).entrySet().iterator();
             /*if (!n.getResponsibleAgents().isEmpty()) {
                 System.out.println("evaluateAgentCreation node" + n.getVertex().getName() + " is responsible for: " + n.getResponsibleAgents());
             }*/
@@ -1076,8 +1076,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                 //Key: agentId|roundNumber
                 Map.Entry<Integer, Integer> Key = iter.next();
                 int k = Key.getKey();
-                estimatedTimeout = n.estimateExpectedTime(n.getResponsibleAgentsLocation(hops).get(k), hops);
-                stdDevTimeout = (int) n.getStdDevTimeout(n.getResponsibleAgentsLocation(hops).get(k), hops);
+                estimatedTimeout = n.estimateExpectedTime(n.getFollowedAgentsLocation(hops).get(k), hops);
+                stdDevTimeout = (int) n.getStdDevTimeout(n.getFollowedAgentsLocation(hops).get(k), hops);
                 if (n.getLastAgentDeparting(hops).containsKey(k) && Math.abs((n.getRounds() - n.getLastAgentDeparting(k, hops))) > (estimatedTimeout + 3 * stdDevTimeout)) { //this is not the expresion
                     /*if (n.getResponsibleAgentsLocation().containsKey(k) && n.getNodeTimeouts().containsKey(n.getResponsibleAgentsLocation().get(k))) {
                         n.getNodeTimeouts().get(n.getResponsibleAgentsLocation().get(k)).add(estimatedTimeout);
@@ -1086,10 +1086,10 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailing extends NetworkEn
                     System.out.println("nodep: " + n.getVertex().getName() + ", estimatedTimeout: " + estimatedTimeout + ", lastAgentDep: " + n.getLastAgentDeparting(k, hops) + ", node rounds: " + n.getRounds());
                     System.out.println("create new agent instance..." + n.getVertex().getName());
 
-                    if (n.getResponsibleAgents(hops).get(k) == -1) {
+                    if (n.getFollowedAgents(hops).get(k) == -1) {
                         createNewAgents(1, n, k);
                     } else {
-                        createNewAgents(1, n, n.getResponsibleAgents(hops).get(k));
+                        createNewAgents(1, n, n.getFollowedAgents(hops).get(k));
                     }
 
                     //System.out.println("Get 0" + );
