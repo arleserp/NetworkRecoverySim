@@ -38,7 +38,7 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
                 String nodeId = dataKey[1];
 
                 if (agentId == k && getLastAgentDeparting().containsKey(k) && getLastMessageFreeResp().containsKey(KeyM.getKey())) {
-                    int diff = getLastMessageFreeResp().get(KeyM.getKey()) - getLastAgentDeparting().get(k);
+                    int diff = Math.abs(getLastMessageFreeResp().get(KeyM.getKey()) - getLastAgentDeparting().get(k));
                     //System.out.println("diff" +  diff);
                     // if (diff != 0) {
                     if (!nodeTimeouts.containsKey(nodeId)) {
