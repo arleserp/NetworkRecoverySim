@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.SortedSet;
@@ -232,24 +233,30 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     isUpdating = true;
 
                     ConcurrentHashMap<String, ConcurrentHashMap<Integer, ReplicationStrategyInterface>> timeouts = new ConcurrentHashMap<>();
+                    n.stop();
 
-                    for (Node node : n.getNodes()) {
-                        timeouts.put(node.getVertex().getName(), node.getRepStrategy());
-                    }
-
-                    if (!SimulationParameters.simMode.equals("broadcast")) {
-                        String timeoutFile = SimulationParameters.genericFilenameTimeouts;
-
-                        File file = new File(timeoutFile);
-
-                        if (file.delete()) {
-                            System.out.println(file.getName() + " is deleted!");
-                        } else {
-                            System.out.println("Delete operation is failed.");
+                    try {
+                        synchronized (n) {
+                            Iterator it = n.getNodes().iterator();
+                            while (it.hasNext()) {
+                                Node node = (Node) it.next();
+                                timeouts.put(node.getVertex().getName(), node.getRepStrategy());
+                            }
+                            if (!SimulationParameters.simMode.equals("broadcast")) {
+                                String timeoutFile = SimulationParameters.genericFilenameTimeouts;
+                                File file = new File(timeoutFile);
+                                if (file.delete()) {
+                                    System.out.println(file.getName() + " is deleted!");
+                                } else {
+                                    System.out.println("Delete operation is failed.");
+                                }
+                                ObjectSerializer.saveSerializedObject(timeoutFile, timeouts);
+                            }
                         }
-                        ObjectSerializer.saveSerializedObject(timeoutFile, timeouts);
+                    } catch (Exception ex) {
+                        System.out.println("error writing timeouts" + ex);
                     }
-
+                    System.out.println("continuuuuueeeee!!!!");
                     String baseFilename = SimulationParameters.genericFilenameTimeouts;
                     baseFilename = baseFilename.replace(".timeout", "");
                     baseFilename = baseFilename.replace("timeout+", "");
@@ -295,7 +302,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
 
                     //ToFix: Statistis
                     sti.printStatistics(n);
-                    n.stop();
+
                     System.out.println("The end" + n.getAge());
                     System.exit(0);
 

@@ -89,7 +89,7 @@ import org.jfree.util.LogContext;
  *
  * @author David Browning
  */
-public class BoxPlotSimilarityVsRound extends ApplicationFrame {
+public class CompiledBoxPlotSimilarityVsRound extends ApplicationFrame {
 
     private static String experimentsDir = ".";
     private static String[] aMode;
@@ -99,7 +99,7 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
     /**
      * Access to logging facilities.
      */
-    private static final LogContext LOGGER = Log.createContext(BoxPlotSimilarityVsRound.class);
+    private static final LogContext LOGGER = Log.createContext(CompiledBoxPlotSimilarityVsRound.class);
     private static int dimensionX = 1600;
     private static int dimensionY = 800;
 
@@ -108,9 +108,9 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
      *
      * @param title the frame title.
      */
-    public BoxPlotSimilarityVsRound(final String title, ArrayList<Double> pf) {
+    public CompiledBoxPlotSimilarityVsRound(final String title, ArrayList<Double> pf) {
         super(title);
-         createSampleDataset(pf);
+        createSampleDataset(pf);
         /*final CategoryAxis xAxis = new CategoryAxis("");
         //final NumberAxis yAxis = new NumberAxis("Round number");
         final NumberAxis yAxis = new NumberAxis("");
@@ -192,11 +192,15 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
 
         File f = new File(experimentsDir);
         File[] files = f.listFiles();
-
+        final DefaultBoxAndWhiskerCategoryDataset dataset
+                = new DefaultBoxAndWhiskerCategoryDataset();
+        int lastRoundReaded = 0;
+        String graphtype = "";
+        String mode = "";
+        HashMap<Integer, ArrayList<Double>> SimilarityVsSimulation = new HashMap<>();
         for (File file : files) {
             if (file.isDirectory() && file.getName().endsWith("similarity")) {
-                final DefaultBoxAndWhiskerCategoryDataset dataset
-                        = new DefaultBoxAndWhiskerCategoryDataset();
+
                 File subdir = new File(file.getName());
                 File[] filesInfo = subdir.listFiles();
 
@@ -226,11 +230,6 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
                     }
                 });
 
-                int lastRoundReaded = 0;
-                String graphtype = "";
-                String mode = "";
-
-                HashMap<Integer, ArrayList<Double>> SimilarityVsSimulation = new HashMap<>();
                 for (File fileInfo : filesInfo) {
                     extension = "";
                     int i = fileInfo.getName().lastIndexOf('.');
@@ -292,6 +291,7 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
                         sc.close();
                     }
                 }
+
                 //String[] aMode = {"random", "levywalk", "sandc", "sandclw"};
                 //String[] aMode = {"levywalk", "lwphevap", "hybrid", "hybrid3", "hybrid4", "sequential"};
                 //if (/*Pf == pf && */isInMode(aMode, mode)) {
@@ -309,69 +309,70 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
                     }
                     //}
                 }
+            }
 
-                final CategoryAxis xAxis = new CategoryAxis("");
-                //final NumberAxis yAxis = new NumberAxis("Round number");
-                final NumberAxis yAxis = new NumberAxis("");
-                yAxis.setAutoRangeIncludesZero(false);
-                final BoxAndWhiskerRenderer renderer = new BoxAndWhiskerRenderer();
-                renderer.setFillBox(false);
-                renderer.setMeanVisible(false);
-                renderer.setToolTipGenerator(new BoxAndWhiskerToolTipGenerator());
-                renderer.setFillBox(true);
-                renderer.setSeriesPaint(0, Color.WHITE);
-                renderer.setSeriesPaint(1, Color.LIGHT_GRAY);
-                renderer.setSeriesOutlinePaint(0, Color.BLACK);
-                renderer.setSeriesOutlinePaint(1, Color.BLACK);
-                renderer.setUseOutlinePaintForWhiskers(true);
-                Font legendFont = new Font("SansSerif", Font.PLAIN, 16);
-                renderer.setLegendTextFont(0, legendFont);
-                renderer.setLegendTextFont(1, legendFont);
-                renderer.setMedianVisible(true);
-                renderer.setMeanVisible(false);
-                final CategoryPlot plot = new CategoryPlot(dataset, xAxis, yAxis, renderer);
+            final CategoryAxis xAxis = new CategoryAxis("");
+            //final NumberAxis yAxis = new NumberAxis("Round number");
+            final NumberAxis yAxis = new NumberAxis("");
+            yAxis.setAutoRangeIncludesZero(false);
+            final BoxAndWhiskerRenderer renderer = new BoxAndWhiskerRenderer();
+            renderer.setFillBox(false);
+            renderer.setMeanVisible(false);
+            renderer.setToolTipGenerator(new BoxAndWhiskerToolTipGenerator());
+            renderer.setFillBox(true);
+            renderer.setSeriesPaint(0, Color.WHITE);
+            renderer.setSeriesPaint(1, Color.LIGHT_GRAY);
+            renderer.setSeriesOutlinePaint(0, Color.BLACK);
+            renderer.setSeriesOutlinePaint(1, Color.BLACK);
+            renderer.setUseOutlinePaintForWhiskers(true);
+            Font legendFont = new Font("SansSerif", Font.PLAIN, 16);
+            renderer.setLegendTextFont(0, legendFont);
+            renderer.setLegendTextFont(1, legendFont);
+            renderer.setMedianVisible(true);
+            renderer.setMeanVisible(false);
+            final CategoryPlot plot = new CategoryPlot(dataset, xAxis, yAxis, renderer);
 
-                Font font = new Font("Dialog", Font.PLAIN, 12);
-                xAxis.setTickLabelFont(font);
-                yAxis.setTickLabelFont(font);
-                yAxis.setLabelFont(font);
-                xAxis.setCategoryLabelPositions(CategoryLabelPositions.STANDARD);
-                xAxis.setMaximumCategoryLabelLines(5);
+            Font font = new Font("Dialog", Font.PLAIN, 12);
+            xAxis.setTickLabelFont(font);
+            yAxis.setTickLabelFont(font);
+            yAxis.setLabelFont(font);
+            xAxis.setCategoryLabelPositions(CategoryLabelPositions.STANDARD);
+            xAxis.setMaximumCategoryLabelLines(5);
 
-                final JFreeChart chart = new JFreeChart(
-                        "Similarity vs Round Number" + getTitle(Pf),
-                        new Font("SansSerif", Font.BOLD, 18),
-                        plot,
-                        true
-                );
+            final JFreeChart chart = new JFreeChart(
+                    "Similarity vs Round Number" + getTitle(Pf),
+                    new Font("SansSerif", Font.BOLD, 18),
+                    plot,
+                    true
+            );
 
-                final ChartPanel chartPanel = new ChartPanel(chart);
-                chartPanel.setPreferredSize(new java.awt.Dimension(dimensionX, dimensionY));
-                setContentPane(chartPanel);
+            final ChartPanel chartPanel = new ChartPanel(chart);
+            chartPanel.setPreferredSize(new java.awt.Dimension(dimensionX, dimensionY));
+            setContentPane(chartPanel);
 
-                TextTitle legendText = null;
-                if (Pf.size() == 1) {
-                    legendText = new TextTitle("Round Number");
-                } else {
-                    legendText = new TextTitle("Round number - Probability of Failure");
-                }
+            TextTitle legendText = null;
+            if (Pf.size() == 1) {
+                legendText = new TextTitle("Round Number");
+            } else {
+                legendText = new TextTitle("Round number - Probability of Failure");
+            }
 
-                legendText.setFont(font);
-                legendText.setPosition(RectangleEdge.BOTTOM);
-                chart.addSubtitle(legendText);
-                chart.getLegend().setItemFont(font);
+            legendText.setFont(font);
+            legendText.setPosition(RectangleEdge.BOTTOM);
+            chart.addSubtitle(legendText);
+            chart.getLegend().setItemFont(font);
 
-                FileOutputStream output;
-                try {
-                    output = new FileOutputStream("Similarity vs round" + Pf + file.getName() + ".jpg");
-                    ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, dimensionX, dimensionY, null);
-                } catch (FileNotFoundException ex) {
-                    Logger.getLogger(BoxPlotSimilarityVsRound.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    Logger.getLogger(BoxPlotSimilarityVsRound.class.getName()).log(Level.SEVERE, null, ex);
-                }
+            FileOutputStream output;
+            try {
+                output = new FileOutputStream("Similarity vs round" + Pf + file.getName() + ".jpg");
+                ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, dimensionX, dimensionY, null);
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(CompiledBoxPlotSimilarityVsRound.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(CompiledBoxPlotSimilarityVsRound.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
         return null;
     }
 
@@ -489,7 +490,7 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
         for (Double pf : failureProbs) {
             ArrayList<Double> pfi = new ArrayList<>();
             pfi.add(pf);
-            final BoxPlotSimilarityVsRound demo = new BoxPlotSimilarityVsRound("Similarity vs Round Number", pfi);
+            final CompiledBoxPlotSimilarityVsRound demo = new CompiledBoxPlotSimilarityVsRound("Similarity vs Round Number", pfi);
         }
 
         /*

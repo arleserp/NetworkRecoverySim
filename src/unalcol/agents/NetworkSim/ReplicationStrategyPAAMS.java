@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import unalcol.agents.NetworkSim.util.StatisticsNormalDist;
+import unalcol.agents.NetworkSim.util.StringNodeChainHelper;
 
 /**
  *
@@ -37,6 +38,11 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
                 int agentId = Integer.valueOf(dataKey[0]);
                 String nodeId = dataKey[1];
 
+                nodeId = StringNodeChainHelper.trimNodeNeighbor(nodeId);
+                
+               // System.out.println("NodeId xxxxxxxxxxxxxxxxxxx" + nodeId);
+
+                
                 if (agentId == k && getLastAgentDeparting().containsKey(k) && getLastMessageFreeResp().containsKey(KeyM.getKey())) {
                     int diff = Math.abs(getLastMessageFreeResp().get(KeyM.getKey()) - getLastAgentDeparting().get(k));
                     //System.out.println("diff" +  diff);

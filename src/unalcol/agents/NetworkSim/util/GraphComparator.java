@@ -7,18 +7,25 @@ package unalcol.agents.NetworkSim.util;
  */
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.UndirectedSparseGraph;
+import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import unalcol.agents.NetworkSim.GraphElements;
+import unalcol.agents.NetworkSim.SimulationParameters;
 
 /**
  *
  * @author Arles Rodriguez <arles.rodriguez@gmail.com>
  */
 public class GraphComparator {
+
     public class CustomComparator implements Comparator<GraphElements.MyVertex> {
 
         @Override
@@ -120,7 +127,46 @@ public class GraphComparator {
         }
 
         similarity /= (Math.sqrt(sumA) * Math.sqrt(sumB));
+
+        if (similarity * 100.0 < 90) {
+            String baseFilename = SimulationParameters.genericFilenameTimeouts;
+            baseFilename = baseFilename.replace(".timeout", "");
+            baseFilename = baseFilename.replace("timeout+", "");
+            //System.out.println("base filename:" + baseFilename);
+            String dir = "cmpgraph";
+            createDir(dir);
+            GraphSerialization.saveSerializedGraph("./" + dir + "/" + getFileName() + "+" + baseFilename + "+Similarity+" + similarity + ".graph", copyB);
+        }
         return similarity * 100.0;
+
         //}
+    }
+
+    private String getFileName() {
+        DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+        Date today = Calendar.getInstance().getTime();
+        String reportDate = df.format(today);
+        return reportDate;
+    }
+
+    private void createDir(String filename) {
+        File theDir = new File(filename);
+
+        // if the directory does not exist, create it
+        if (!theDir.exists()) {
+            System.out.println("creating directory: " + filename);
+            boolean result = false;
+
+            try {
+                theDir.mkdir();
+                result = true;
+            } catch (SecurityException se) {
+                System.out.println("Security Exception!");
+            }
+            if (result) {
+                System.out.println("DIR created");
+            }
+        }
+
     }
 }

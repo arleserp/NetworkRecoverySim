@@ -27,6 +27,7 @@ import unalcol.agents.NetworkSim.SimulationParameters;
 import static unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication.setTotalAgents;
 import unalcol.agents.NetworkSim.programs.NodeFailingProgram;
 import unalcol.agents.NetworkSim.util.HashMapOperations;
+import unalcol.agents.NetworkSim.util.StringNodeChainHelper;
 import unalcol.agents.NetworkSim.util.StringSerializer;
 
 /**
@@ -48,7 +49,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
     HashMap<String, Integer> nametoAdyLocation = new HashMap<>();
     HashMap<Integer, String> locationtoVertexName = new HashMap<>();
 
-    public List<Node> getNodes() {
+    @Override
+    public synchronized List<Node> getNodes() {
         return nodes;
     }
 
@@ -271,8 +273,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
             //System.out.println("adding data to node" + nod.getVertex().getName() + ":" + n.getNetworkdata());
             nod.setNetworkdata(new HashMap(n.getNetworkdata()));
             //System.out.println("adding data to node" + nod.getVertex().getName() + ":" + n.getRespAgentsBkp());
-            nod.setAgentsInNeighbors(new HashMap(n.getAgentsInNeighbors()));
-            nod.getAgentsInNeighbors().remove(d);
+//            nod.setAgentsInNeighbors(new HashMap(n.getAgentsInNeighbors()));
+//            nod.getAgentsInNeighbors().remove(d);
             /* if (n.getAgentsInNeighbors().containsKey(d)) {
                 System.out.println("creating " + n.getAgentsInNeighbors().get(d).size() + " agents in node:" + nod.getVertex().getName());
                 ConcurrentHashMap<Integer, Integer> i = n.getAgentsInNeighbors().get(d);
@@ -385,12 +387,13 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
         }
         //not sure if this is necessary
 
-        synchronized (TopologySingleton.getInstance()) {
+        synchronized (nodes) {
             if (nodes.remove(n)) {
                 System.out.println("removed: " + n.getVertex().getName());
             }
-            removeVertex(n.getVertex());
         }
+        removeVertex(n.getVertex());
+
         n.getVertex().setName(n.getVertex().getName() + " failed");
         n.getVertex().setStatus("failed");
         n.die();
@@ -631,7 +634,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                 while ((inbox = n.getMessage()) != null) {
                     if (inbox[0].equals("networkdata")) {
                         //completes and updates data
-                        StringSerializer s = new StringSerializer();
+                        /*StringSerializer s = new StringSerializer();
                         ArrayList<HashMap<String, Integer>> agentList = (ArrayList<HashMap<String, Integer>>) s.deserialize(inbox[2]);
                         Iterator<HashMap<String, Integer>> itr = agentList.iterator();
 
@@ -643,7 +646,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                 //System.out.println("node " + n.getVertex().getName() + ", Responsible Agents Info:" + n.getRespAgentsBkp());
                             }
                         }
-                        ArrayList<HashMap<String, ConcurrentHashMap<Integer, Integer>>> agentInNeigborsList = (ArrayList<HashMap<String, ConcurrentHashMap<Integer, Integer>>>) s.deserialize(inbox[4]);
+                       /* ArrayList<HashMap<String, ConcurrentHashMap<Integer, Integer>>> agentInNeigborsList = (ArrayList<HashMap<String, ConcurrentHashMap<Integer, Integer>>>) s.deserialize(inbox[4]);
                         Iterator<HashMap<String, ConcurrentHashMap<Integer, Integer>>> itr2 = agentInNeigborsList.iterator();
 
                         while (itr2.hasNext()) {
@@ -653,7 +656,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                 n.getAgentsInNeighbors().put(key, agentBkp.get(key));
                                 //System.out.println("node " + n.getVertex().getName() + ", Responsible Agents Info:" + n.getRespAgentsBkp());
                             }
-                        }
+                        }*/
 
                         //System.out.println("res" + n.getRespAgentsBkp());
                         StringSerializer ss = new StringSerializer();
@@ -739,7 +742,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                             a.setLocalNetwork(nl);
                         }
 
-                        if (a.getLocalAgentsInNetwork().size() > SimulationParameters.nhops) {
+                        /*if (a.getLocalAgentsInNetwork().size() > SimulationParameters.nhops) {
                             List aln = new ArrayList(a.getLocalAgentsInNetwork().subList(a.getLocalAgentsInNetwork().size() - SimulationParameters.nhops, a.getLocalAgentsInNetwork().size()));
                             a.setLocalAgentsInNetwork(aln);
                         }
@@ -747,8 +750,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                         if (a.getLocalAgentsInNetwork().size() > SimulationParameters.nhops) {
                             List aln2 = new ArrayList(a.getLocalAgentsInNetwork().subList(a.getLocalAgentsInNetworkHmap().size() - SimulationParameters.nhops, a.getLocalAgentsInNetworkHmap().size()));
                             a.setLocalAgentsInNetworkHmap(aln2);
-                        }
-
+                        }*/
                         //Sh Send neighbour data to node ex in HashMap format: {p51={p21, p22, p23}, p22={p1, p2}}
                         if (a.status == Action.DIE) {
                             System.out.println("death before network data" + a.getId());
@@ -759,9 +761,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                         msgnet[0] = "networkdata";
                         msgnet[1] = String.valueOf(a.getId());
                         StringSerializer s = new StringSerializer();
-                        msgnet[2] = s.serialize(a.getLocalAgentsInNetwork());
+                        // msgnet[2] = s.serialize(a.getLocalAgentsInNetwork());
                         msgnet[3] = s.serialize(a.getLocalNetwork());
-                        msgnet[4] = s.serialize(a.getLocalAgentsInNetworkHmap());
+                        // msgnet[4] = s.serialize(a.getLocalAgentsInNetworkHmap());
                         if (a.status == Action.DIE) {
                             System.out.println("death before network data" + a.getId());
                             return false;
@@ -993,7 +995,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                 int agentId = Integer.valueOf(inbox[1]);
                                 int father = Integer.valueOf(inbox[2]);
                                 n.addAgentInNode(agentId, father);
-                                /*ArrayList<Integer> repeatedAgents = n.getDuplicatedAgents();
+                                /* ArrayList<Integer> repeatedAgents = n.getDuplicatedAgents();
                                 for (int id : repeatedAgents) {
                                     removeAgent(id);
                                     //  System.out.println("deeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeell:" + id);
@@ -1011,7 +1013,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                             StringSerializer s = new StringSerializer();
                             ArrayList<String> PrevLocations = new ArrayList((ArrayList<String>) s.deserialize(inbox[5]));
 
-                            if (n.hasFollowedInNodeBefore(agentId)) {
+                            /*if (n.hasFollowedInNodeBefore(agentId)) {
                                 // n.printReplicationHops();
                                 //System.out.println("ya lo tengo" + n.getVertex().getName() + " agent id:" + agentId);
                                 //deberia aqui borrar todos los nodos en la cadena
@@ -1031,7 +1033,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                         NetworkNodeMessageBuffer.getInstance().putMessageWithNetworkDelay(this, n, prevPrevLoc, msgnodera);
                                     }
                                 }*/
-                            }
+                            //}
                             //hops greater than one means departing messages from other nodes
                             if (hop > 1) {
                                 n.incMsgRecv();
@@ -1055,7 +1057,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                     msgnode[3] = n.getVertex().getName() + dest;
                                     msgnode[4] = String.valueOf(hop); // hop inicial
                                     msgnode[5] = inbox[5];
-                                    NetworkNodeMessageBuffer.getInstance().putMessageWithNetworkDelay(this, n, prevLoc, msgnode);
+                                    NetworkNodeMessageBuffer.getInstance().putMessageWithNetworkDelay(this, n, prevLoc, msgnode, 1);
                                 }
                             }
                         }
@@ -1093,7 +1095,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                     msgnoder[2] = n.getVertex().getName() + newLocation;
                                     msgnoder[3] = String.valueOf(hop); //first hop
                                     msgnoder[4] = inbox[4]; //Todo: review hops number -> probably this is different
-                                    NetworkNodeMessageBuffer.getInstance().putMessageWithNetworkDelay(this, n, prevPrevLoc, msgnoder);
+                                    NetworkNodeMessageBuffer.getInstance().putMessageWithNetworkDelay(this, n, prevPrevLoc, msgnoder, hop);
                                 }
                             }
 
@@ -1234,10 +1236,14 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                 Map.Entry<Integer, Integer> Key = iter.next();
                 int agentId = Key.getKey();
                 //System.out.println(n.getVertex().getName() + " hashmap " + n.getResponsibleAgents(hop) + "hop:" + hop);
-
+                //n.printReplicationHop(hop);
                 //if (n.getFollowedAgentsLocation(hop).containsKey(agentId)) {
-                estimatedTimeout = n.estimateExpectedTime(n.getFollowedAgentsLocation(hop).get(agentId), hop);
-                stdDevTimeout = (int) n.getStdDevTimeout(n.getFollowedAgentsLocation(hop).get(agentId), hop);
+
+                String nodeId = StringNodeChainHelper.trimNodeNeighbor(n.getFollowedAgentsLocation(hop).get(agentId));
+
+                estimatedTimeout = n.estimateExpectedTime(nodeId, hop);
+                stdDevTimeout = (int) n.getStdDevTimeout(nodeId, hop);
+                //System.out.println("NodeId" + nodeId  + ", hop:" + hop);
                 if (n.getLastAgentDeparting(hop).containsKey(agentId) && (Math.abs((n.getRounds() - n.getLastAgentDeparting(agentId, hop))) > (estimatedTimeout + 3 * stdDevTimeout))) { //this is not the expresion
                     /*if (n.getResponsibleAgentsLocation().containsKey(k) && n.getNodeTimeouts().containsKey(n.getResponsibleAgentsLocation().get(k))) {
                         n.getNodeTimeouts().get(n.getResponsibleAgentsLocation().get(k)).add(estimatedTimeout);

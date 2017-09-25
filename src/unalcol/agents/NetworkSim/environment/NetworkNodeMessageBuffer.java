@@ -54,19 +54,21 @@ public class NetworkNodeMessageBuffer {
         private Node n;
         private String location;
         String[] msgnode;
+        private int MULTIPLIER;
 
-        public putMessageInThread(NetworkEnvironmentPheromoneReplicationNodeFailingChain env, Node n, String location, String[] msgnode) {
+        public putMessageInThread(NetworkEnvironmentPheromoneReplicationNodeFailingChain env, Node n, String location, String[] msgnode, int MULTIPLIER) {
             this.env = env;
             this.n = n;
             this.location = location;
             this.msgnode = msgnode;
+            this.MULTIPLIER = MULTIPLIER;
         }
 
         @Override
         public void run() {
             if (env.getNetworkDelays().containsKey(n.getVertex().getName() + location)) {
                 try {
-                    Thread.sleep(env.getNetworkDelays().get(n.getVertex().getName() + location));
+                    Thread.sleep(env.getNetworkDelays().get(n.getVertex().getName() + location) * MULTIPLIER);
                 } catch (InterruptedException ex) {
                     Logger.getLogger(NetworkNodeMessageBuffer.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -78,8 +80,8 @@ public class NetworkNodeMessageBuffer {
         }
     }
 
-    public synchronized void putMessageWithNetworkDelay(NetworkEnvironmentPheromoneReplicationNodeFailingChain env, Node n, String location, String[] msg) {
-        Thread t = new Thread(new putMessageInThread(env, n, location, msg));
+    public synchronized void putMessageWithNetworkDelay(NetworkEnvironmentPheromoneReplicationNodeFailingChain env, Node n, String location, String[] msg, int MULTIPLIER) {
+        Thread t = new Thread(new putMessageInThread(env, n, location, msg, MULTIPLIER));
         t.start();
     }
 
