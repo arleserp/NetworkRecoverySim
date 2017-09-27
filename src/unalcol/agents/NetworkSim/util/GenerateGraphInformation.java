@@ -685,10 +685,10 @@ public class GenerateGraphInformation extends ApplicationFrame {
                     escribir.println("Average degree: " + GraphStats.averageDegree(g));
                     escribir.println("StdDev Average Path Length: " + GraphStats.computeStdDevAveragePathLength(g));
                     escribir.println("StdDev Degree: " + GraphStats.StdDevDegree(g));
-                    
+
                     PrintWriter escribir2 = new PrintWriter(new BufferedWriter(new FileWriter(rankingsFile, true)));
                     PrintWriter escribir3;
-                    
+
                     BetweennessCentrality ranker = new BetweennessCentrality(g);
                     ranker.step();
                     ranker.setRemoveRankScoresOnFinalize(false);
@@ -710,7 +710,7 @@ public class GenerateGraphInformation extends ApplicationFrame {
                     List<Double> list = new ArrayList<Double>(c);
                     Collections.sort(list);
                     StatisticsNormalDist st = new StatisticsNormalDist((ArrayList<Double>) list, list.size());
-                    escribir.println("skew Betweeness centrality: " +  st.getSkewness());
+                    escribir.println("skew Betweeness centrality: " + st.getSkewness());
                     drawHistogramRank(map, file.getName());
 
                     HashMap<Object, Integer> mapdegree = new HashMap();
@@ -758,6 +758,9 @@ public class GenerateGraphInformation extends ApplicationFrame {
                         break;
                 }
 
+                if (fileImage.contains("smallworld")) {
+                    layout = new CircleLayout<>(g);
+                }
                 BasicVisualizationServer<GraphElements.MyVertex, String> vv = new BasicVisualizationServer<>(layout);
                 vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
                 vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
