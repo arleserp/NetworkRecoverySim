@@ -236,31 +236,57 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     n.stop();
 
                     try {
-                        synchronized (n) {
+                        if (!SimulationParameters.simMode.equals("broadcast")) {
                             Iterator it = n.getNodes().iterator();
                             while (it.hasNext()) {
                                 Node node = (Node) it.next();
                                 timeouts.put(node.getVertex().getName(), node.getRepStrategy());
                             }
-                            if (!SimulationParameters.simMode.equals("broadcast")) {
-                                String timeoutFile = SimulationParameters.genericFilenameTimeouts;
-                                File file = new File(timeoutFile);
-                                if (file.delete()) {
-                                    System.out.println(file.getName() + " is deleted!");
-                                } else {
-                                    System.out.println("Delete operation is failed.");
-                                }
-                                ObjectSerializer.saveSerializedObject(timeoutFile, timeouts);
+                            String timeoutFile = SimulationParameters.genericFilenameTimeouts;
+                            File file = new File(timeoutFile);
+                            if (file.delete()) {
+                                System.out.println(file.getName() + " is deleted!");
+                            } else {
+                                System.out.println("Delete operation is failed.");
                             }
+                            ObjectSerializer.saveSerializedObject(timeoutFile, timeouts);
                         }
                     } catch (Exception ex) {
-                        System.out.println("error writing timeouts" + ex);
+                        System.out.println("error writing timeouts exiting!!! :(" + ex);
+                        System.exit(0);
                     }
                     System.out.println("continuuuuueeeee!!!!");
                     String baseFilename = SimulationParameters.genericFilenameTimeouts;
                     baseFilename = baseFilename.replace(".timeout", "");
                     baseFilename = baseFilename.replace("timeout+", "");
                     System.out.println("base filename:" + baseFilename);
+
+                    if (SimulationParameters.simMode.equals("chain")) {
+                        //Write node agent creation metrics
+                        StatsCreation s = n.getStatAgentCreation();
+                        String nagCreationSimilarity = baseFilename + "+newagbynode";
+                        createDir(nagCreationSimilarity);
+                        String nagSimilarityStats = "./" + nagCreationSimilarity + "/" + baseFilename + "+" + getFileName() + "+newagbynode.csv";
+
+                        PrintWriter writeNag = null;
+                        try {
+                            writeNag = new PrintWriter(new BufferedWriter(new FileWriter(nagSimilarityStats, true)));
+                            SortedSet<String> keysSim = new TreeSet<>(s.getCreationLog().keySet());
+                            for (String x : keysSim) {
+                                String line = x + ",";
+                                for (int val : s.getIds(x)) {
+                                    line += val + "-";
+                                }
+                                line = line.substring(0, line.length() - 1);
+                                
+                                //s.getCreationLog().keySet();
+                                writeNag.println(line);
+                            }
+                            writeNag.close();
+                        } catch (IOException ex) {
+                            Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
 
                     //Write similarity metrics by round by simulation
                     String graphSimilarity = baseFilename + "+similarity";

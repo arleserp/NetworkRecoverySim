@@ -18,6 +18,7 @@ import unalcol.agents.NetworkSim.MotionProgramSimpleFactory;
 import unalcol.agents.NetworkSim.Node;
 import unalcol.agents.NetworkSim.SimulationParameters;
 import static unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication.setTotalAgents;
+import unalcol.agents.NetworkSim.util.StatsCreation;
 
 public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentReplication {
 
@@ -411,6 +412,11 @@ public class NetworkEnvironmentPheromoneReplication extends NetworkEnvironmentRe
 
     @Override
     public List<Node> getNodes() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public StatsCreation getStatAgentCreation() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

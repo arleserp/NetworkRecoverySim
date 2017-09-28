@@ -30,6 +30,7 @@ import unalcol.agents.NetworkSim.SimulationParameters;
 import static unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication.setTotalAgents;
 import unalcol.agents.NetworkSim.programs.NodeFailingProgram;
 import unalcol.agents.NetworkSim.util.HashMapOperations;
+import unalcol.agents.NetworkSim.util.StatsCreation;
 import unalcol.agents.NetworkSim.util.StringSerializer;
 
 public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends NetworkEnvironmentReplication {
@@ -421,6 +422,11 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
             }
 
         }
+    }
+
+    @Override
+    public StatsCreation getStatAgentCreation() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     public class CustomComparator implements Comparator<GraphElements.MyVertex> {

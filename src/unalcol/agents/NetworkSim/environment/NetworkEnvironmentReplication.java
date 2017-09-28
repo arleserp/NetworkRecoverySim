@@ -20,6 +20,7 @@ import unalcol.agents.NetworkSim.ActionParameters;
 import unalcol.agents.NetworkSim.GraphElements;
 import unalcol.agents.NetworkSim.MobileAgent;
 import unalcol.agents.NetworkSim.Node;
+import unalcol.agents.NetworkSim.util.StatsCreation;
 
 public abstract class NetworkEnvironmentReplication extends Environment {
 
@@ -610,4 +611,6 @@ public abstract class NetworkEnvironmentReplication extends Environment {
     public abstract List<Node> getNodes();
     
     public abstract void evaporatePheromone();
+    
+    public abstract StatsCreation getStatAgentCreation();
 }

@@ -27,6 +27,7 @@ import unalcol.agents.NetworkSim.SimulationParameters;
 import static unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication.setTotalAgents;
 import unalcol.agents.NetworkSim.programs.NodeFailingProgram;
 import unalcol.agents.NetworkSim.util.HashMapOperations;
+import unalcol.agents.NetworkSim.util.StatsCreation;
 import unalcol.agents.NetworkSim.util.StringNodeChainHelper;
 import unalcol.agents.NetworkSim.util.StringSerializer;
 
@@ -48,7 +49,12 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
     int[][] adyacenceMatrix;
     HashMap<String, Integer> nametoAdyLocation = new HashMap<>();
     HashMap<Integer, String> locationtoVertexName = new HashMap<>();
+    StatsCreation statAgentCreation = new StatsCreation();
 
+    public StatsCreation getStatAgentCreation() {
+        return statAgentCreation;
+    }
+    
     @Override
     public synchronized List<Node> getNodes() {
         return nodes;
@@ -210,6 +216,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
     private void createNewAgents(Integer number, Node n, int fatherId) {
         System.out.println("create new " + number + " agents in node" + n.getVertex().getName());
         for (int i = 0; i < number; i++) {
+            statAgentCreation.addCreation(n.getVertex().getName(), fatherId);
             createnewAgent(n, fatherId);
         }
     }

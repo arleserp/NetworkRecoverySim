@@ -30,6 +30,7 @@ import unalcol.agents.NetworkSim.SimulationParameters;
 import static unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication.setTotalAgents;
 import unalcol.agents.NetworkSim.programs.NodeFailingProgram;
 import unalcol.agents.NetworkSim.util.HashMapOperations;
+import unalcol.agents.NetworkSim.util.StatsCreation;
 import unalcol.agents.NetworkSim.util.StringSerializer;
 
 public class NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast extends NetworkEnvironmentReplication {
@@ -46,7 +47,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast extends 
     HashMap<Integer, String> locationtoVertexName = new HashMap<>();
 
     @Override
-    public  List<Node> getNodes() {
+    public List<Node> getNodes() {
         return nodes;
     }
 
@@ -423,6 +424,11 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast extends 
         }
     }
 
+    @Override
+    public StatsCreation getStatAgentCreation() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     public class CustomComparator implements Comparator<GraphElements.MyVertex> {
 
         @Override
@@ -627,7 +633,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast extends 
                 if (!NetworkNodeMessageBuffer.getInstance().putMessage(neigbour, msgnet)) {
                     System.out.println("node is down: " + neigbour);
                 }
-            //}
+                //}
             }
 
             /**
@@ -856,7 +862,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast extends 
                 //System.out.println(v.toString() + "after:" + v.getPh());
             }
         }
-    }    
+    }
 
     @Override
     public int getAgentsAlive() {
