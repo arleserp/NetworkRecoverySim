@@ -54,7 +54,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
     public StatsCreation getStatAgentCreation() {
         return statAgentCreation;
     }
-    
+
     @Override
     public synchronized List<Node> getNodes() {
         return nodes;
@@ -1020,12 +1020,12 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                             StringSerializer s = new StringSerializer();
                             ArrayList<String> PrevLocations = new ArrayList((ArrayList<String>) s.deserialize(inbox[5]));
 
-                            /*if (n.hasFollowedInNodeBefore(agentId)) {
-                                // n.printReplicationHops();
+                            if (SimulationParameters.simMode.contains("noloop") && n.hasFollowedInNodeBefore(agentId)) {
+                                //n.printReplicationHops();
                                 //System.out.println("ya lo tengo" + n.getVertex().getName() + " agent id:" + agentId);
                                 //deberia aqui borrar todos los nodos en la cadena
                                 n.deleteAllFollowedReferences(agentId);
-                                /*if (PrevLocations.size() - hop > 0) {
+                                if (PrevLocations.size() - hop > 0) {
                                     String prevPrevLoc = PrevLocations.get(PrevLocations.size() - hop);
                                     int tmphop = hop;
                                     if (tmphop < SimulationParameters.nhopsChain && !prevPrevLoc.equals(n.getVertex().getName())) {
@@ -1037,10 +1037,11 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                         msgnodera[2] = n.getVertex().getName();
                                         msgnodera[3] = String.valueOf(tmphop); //first hop
                                         msgnodera[4] = inbox[5]; //Todo: review hops number -> probably this is different
-                                        NetworkNodeMessageBuffer.getInstance().putMessageWithNetworkDelay(this, n, prevPrevLoc, msgnodera);
+                                        NetworkNodeMessageBuffer.getInstance().putMessageWithNetworkDelay(this, n, prevPrevLoc, msgnodera, tmphop);
                                     }
-                                }*/
-                            //}
+                                }
+                            }
+
                             //hops greater than one means departing messages from other nodes
                             if (hop > 1) {
                                 n.incMsgRecv();

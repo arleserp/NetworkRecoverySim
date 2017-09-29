@@ -261,7 +261,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     baseFilename = baseFilename.replace("timeout+", "");
                     System.out.println("base filename:" + baseFilename);
 
-                    if (SimulationParameters.simMode.equals("chain")) {
+                    if (SimulationParameters.simMode.contains("chain")) {
                         //Write node agent creation metrics
                         StatsCreation s = n.getStatAgentCreation();
                         String nagCreationSimilarity = baseFilename + "+newagbynode";

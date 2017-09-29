@@ -84,7 +84,7 @@ public class Node extends Agent {
         agentsInNeighbors = new HashMap<>();
         repStrategy = new ConcurrentHashMap<>();
 
-        if (!SimulationParameters.simMode.equals("chain")) {
+        if (!SimulationParameters.simMode.contains("chain")) {
             repStrategy.put(1, new ReplicationStrategyPAAMS());
         } else {
             for (int i = 1; i <= SimulationParameters.nhopsChain; i++) {
@@ -108,7 +108,7 @@ public class Node extends Agent {
         followedAgentsCounter = new HashMap<>();
         agentsInNeighbors = new HashMap<>();
 
-        if (!SimulationParameters.simMode.equals("chain")) {
+        if (!SimulationParameters.simMode.contains("chain")) {
             repStrategy.put(1, new ReplicationStrategyPAAMS());
             repStrategy.get(1).setNodeTimeouts(tout);
         } else {

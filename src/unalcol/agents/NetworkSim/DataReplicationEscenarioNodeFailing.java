@@ -194,13 +194,13 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         String fileTimeout;
 
         if (SimulationParameters.nofailRounds == 0) {
-            if (SimulationParameters.simMode.equals("chain")) {
+            if (SimulationParameters.simMode.contains("chain")) {
                 fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+" + SimulationParameters.nhopsChain + "+wsize+" + SimulationParameters.wsize + ".timeout";
             } else {
                 fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+wsize+" + SimulationParameters.wsize + ".timeout";
             }
         } else {
-            if (SimulationParameters.simMode.equals("chain")) {
+            if (SimulationParameters.simMode.contains("chain")) {
                 fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+" + SimulationParameters.nhopsChain + "+wsize+" + SimulationParameters.wsize + "+nofailr+" + SimulationParameters.nofailRounds + ".timeout";
             } else {
                 fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+wsize+" + SimulationParameters.wsize + "+nofailr+" + SimulationParameters.nofailRounds + ".timeout";
@@ -211,14 +211,14 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
 
         ConcurrentHashMap<String, ConcurrentHashMap<Integer, ReplicationStrategyInterface>> nodeTimeout = null;
         //Here we use node pf instead agent pf.
-        if (SimulationParameters.simMode.equals("chain")) {
+        if (SimulationParameters.simMode.contains("chain")) {
             nodeTimeout = (ConcurrentHashMap) ObjectSerializer.loadDeserializedObject(fileTimeout);
         }
 
         for (GraphElements.MyVertex v : g.getVertices()) {
             v.setStatus("alive");
             Node n = null;
-            if (SimulationParameters.simMode.equals("chain") && nodeTimeout != null && nodeTimeout.containsKey(v.getName())) {
+            if (SimulationParameters.simMode.contains("chain") && nodeTimeout != null && nodeTimeout.containsKey(v.getName())) {
                 //System.out.println("load" + nodeTimeout.get(v.getName()));
                 n = new Node(np, v, nodeTimeout.get(v.getName()));
             } else {
@@ -268,6 +268,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                 ((NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast) world).addNodes(nodes);
                 break;
             case "chain":
+            case "chainnoloop":
                 world = new NetworkEnvironmentPheromoneReplicationNodeFailingChain(agents, agentsLanguage, nodeLanguaje, g);
                 ((NetworkEnvironmentPheromoneReplicationNodeFailingChain) world).addNodes(nodes);
                 break;
