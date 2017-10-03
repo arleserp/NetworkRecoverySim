@@ -40,6 +40,7 @@ public class NetworkEnvironmentPheromoneCollection extends NetworkEnvironmentCol
 
         //for each neighbor send a message
         for (Integer idAgent : agentNeighbors) {
+       
             //System.out.println("a" + a.getId() + "send message to" + idAgent);
             NetworkMessageBuffer.getInstance().putMessage(idAgent, message);
             a.incMsgSend();
