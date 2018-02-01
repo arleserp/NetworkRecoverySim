@@ -95,6 +95,7 @@ public class CompiledBoxPlotAgNumbervsRound extends ApplicationFrame {
     private static String[] aMode;
     private static int numberSeries = 0;
     private static int interval = 500;
+    private static int maxRoundValue = -1;
 
     /**
      * Access to logging facilities.
@@ -283,12 +284,13 @@ public class CompiledBoxPlotAgNumbervsRound extends ApplicationFrame {
                             data = line.split(",");
                             int round = Integer.valueOf(data[0]);
                             Double agNumber = Double.valueOf(data[1]);
-
-                            if (!AgNumberVsSimulation.containsKey(round)) {
-                                AgNumberVsSimulation.put(round, new ArrayList<Double>());
+                            if (maxRoundValue == -1 || round <= maxRoundValue) {
+                                if (!AgNumberVsSimulation.containsKey(round)) {
+                                    AgNumberVsSimulation.put(round, new ArrayList<Double>());
+                                }
+                                AgNumberVsSimulation.get(round).add(agNumber);
+                                lastRoundReaded = round;
                             }
-                            AgNumberVsSimulation.get(round).add(agNumber);
-                            lastRoundReaded = round;
                         }
                         sc.close();
                     }
@@ -476,6 +478,9 @@ public class CompiledBoxPlotAgNumbervsRound extends ApplicationFrame {
 
         if (args.length > 3) {
             interval = Integer.valueOf(args[3]);
+        }
+        if (args.length > 4) {
+            maxRoundValue = Integer.valueOf(args[4]);
         }
 
         /*if (args.length > 1) {

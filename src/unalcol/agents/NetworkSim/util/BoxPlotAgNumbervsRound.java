@@ -95,6 +95,7 @@ public class BoxPlotAgNumbervsRound extends ApplicationFrame {
     private static String[] aMode;
     private static int numberSeries = 0;
     private static int interval = 500;
+    private static int maxRoundValue = -1;
 
     /**
      * Access to logging facilities.
@@ -190,14 +191,12 @@ public class BoxPlotAgNumbervsRound extends ApplicationFrame {
         ArrayList<String> filenamesSorted = new ArrayList<>();
         Hashtable<String, File> fileHashtable = new Hashtable<>();
 
-        
-
         File f = new File(experimentsDir);
         File[] files = f.listFiles();
 
         for (File file : files) {
             final DefaultBoxAndWhiskerCategoryDataset dataset
-                = new DefaultBoxAndWhiskerCategoryDataset();
+                    = new DefaultBoxAndWhiskerCategoryDataset();
             if (file.isDirectory() && file.getName().endsWith("agentNumber")) {
 
                 File subdir = new File(file.getName());
@@ -286,11 +285,13 @@ public class BoxPlotAgNumbervsRound extends ApplicationFrame {
                             int round = Integer.valueOf(data[0]);
                             Double agNumber = Double.valueOf(data[1]);
 
-                            if (!AgNumberVsSimulation.containsKey(round)) {
-                                AgNumberVsSimulation.put(round, new ArrayList<Double>());
+                            if (maxRoundValue == -1 || round <= maxRoundValue) {
+                                if (!AgNumberVsSimulation.containsKey(round)) {
+                                    AgNumberVsSimulation.put(round, new ArrayList<Double>());
+                                }
+                                AgNumberVsSimulation.get(round).add(agNumber);
+                                lastRoundReaded = round;
                             }
-                            AgNumberVsSimulation.get(round).add(agNumber);
-                            lastRoundReaded = round;
                         }
                         sc.close();
                     }
@@ -366,7 +367,7 @@ public class BoxPlotAgNumbervsRound extends ApplicationFrame {
 
                 FileOutputStream output;
                 try {
-                    output = new FileOutputStream("Agents vs round" + Pf + file.getName() +".jpg");
+                    output = new FileOutputStream("Agents vs round" + Pf + file.getName() + ".jpg");
                     ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, dimensionX, dimensionY, null);
                 } catch (FileNotFoundException ex) {
                     Logger.getLogger(BoxPlotAgNumbervsRound.class.getName()).log(Level.SEVERE, null, ex);
@@ -479,6 +480,9 @@ public class BoxPlotAgNumbervsRound extends ApplicationFrame {
             interval = Integer.valueOf(args[3]);
         }
 
+        if (args.length > 4) {
+            maxRoundValue = Integer.valueOf(args[4]);
+        }
         /*if (args.length > 1) {
             mazeMode = args[1];
         }
