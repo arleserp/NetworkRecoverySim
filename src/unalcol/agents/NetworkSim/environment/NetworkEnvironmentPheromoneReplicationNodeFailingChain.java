@@ -1244,7 +1244,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                 Map.Entry<Integer, Integer> Key = iter.next();
                 int agentId = Key.getKey();
                 //System.out.println(n.getVertex().getName() + " hashmap " + n.getResponsibleAgents(hop) + "hop:" + hop);
-                //n.printReplicationHop(hop);
+                n.printReplicationHops();
                 //if (n.getFollowedAgentsLocation(hop).containsKey(agentId)) {
 
                 String nodeId = StringNodeChainHelper.trimNodeNeighbor(n.getFollowedAgentsLocation(hop).get(agentId));

@@ -240,7 +240,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                 AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
                 MobileAgent a = new MobileAgent(program, i);
                 GraphElements.MyVertex tmp = getLocation(g);
-                //System.out.println("tmp" + tmp);
+                System.out.println("tmp" + tmp);
                 a.setRound(-1);
                 a.setLocation(tmp);
                 a.setPrevLocation(tmp);

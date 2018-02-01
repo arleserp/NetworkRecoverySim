@@ -372,7 +372,7 @@ public class BoxPlotInfoMessagesNumberNodeFailing extends ApplicationFrame {
                                 wsize = Integer.valueOf(filenamep[l].replace(".csv",""));
                                 dataset.add(list, wsize + "-" + popsize, getTechniqueName(mode) + "\n" + graphtype + "\n" + fn2 + "\n");
                             } else {
-                                dataset.add(list, popsize, getTechniqueName(mode) + "\n" + graphtype + "\n" + fn2 + "\n");
+                                dataset.add(list, file.getName(), getTechniqueName(mode) + "\n" + graphtype + "\n" + fn2 + "\n");
                             }
                         } else {
                             if (sortCriteria.equals("wsize")) {
