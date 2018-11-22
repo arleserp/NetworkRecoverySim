@@ -172,7 +172,7 @@ public class GenerateGraphInformation extends ApplicationFrame {
         numberaxis.setRange(0, 50);
         //numberaxis.setNumberFormatOverride(NumberFormat.getPercentInstance());
 
-        Font font = new Font("SansSerif", Font.ROMAN_BASELINE, 12);
+        Font font = new Font("SansSerif", Font.ROMAN_BASELINE, 14);
         numberaxis.setTickLabelFont(font);
         CategoryAxis axisd = categoryplot.getDomainAxis();
         ValueAxis axisr = categoryplot.getRangeAxis();
@@ -185,7 +185,7 @@ public class GenerateGraphInformation extends ApplicationFrame {
         FileOutputStream output;
         try {
             output = new FileOutputStream(name + "degree.jpg");
-            ChartUtilities.writeChartAsJPEG(output, 1.0f, jfreechart, 650, 370, null);
+            ChartUtilities.writeChartAsJPEG(output, 1.0f, jfreechart, 550, 270, null);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(GenerateGraphInformation.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -616,10 +616,23 @@ public class GenerateGraphInformation extends ApplicationFrame {
                 ArrayList<Double> dataDegree = new ArrayList<>();
                 Collection vertices = g.getVertices();
                 //double sum = 0;
+
+                HashMap<Integer, Integer> hd = new HashMap<>();
+
                 for (Object v : vertices) {
-                    //sum += g.degree((GraphElements.MyVertex) v);
-                    list.add((double) g.degree((GraphElements.MyVertex) v));
+                    if (!hd.containsKey(g.degree((GraphElements.MyVertex) v))) {
+                        hd.put(g.degree((GraphElements.MyVertex) v), 1);
+                    } else {
+                        hd.put(g.degree((GraphElements.MyVertex) v), hd.get(g.degree((GraphElements.MyVertex) v)) + 1);
+                    }
                 }
+                System.out.println("key seeeeeeeeeeeeeeeeeeeeeeeeeeeeeet" + hd);
+                for (int key : hd.keySet()) {
+                    System.out.println(list.add(hd.get(key)));
+                    list.add(hd.get(key));
+                }
+                //sum += g.degree((GraphElements.MyVertex) v);
+                //list.add((double) g.degree((GraphElements.MyVertex) v));
                 String fileImage = file.getName().replace("graph", "");
                 dataset.add(list, 10, fileImage);
                 //dataset.add(list, popsize, getTechniqueName(mode) + graphtype + fn2);
@@ -715,9 +728,18 @@ public class GenerateGraphInformation extends ApplicationFrame {
 
                     HashMap<Object, Integer> mapdegree = new HashMap();
                     Collection vertices = g.getVertices();
+
+                    for (Object v : vertices) {
+                        if (!mapdegree.containsKey(g.degree((GraphElements.MyVertex) v))) {
+                            mapdegree.put(g.degree((GraphElements.MyVertex) v), 1);
+                        } else {
+                            mapdegree.put(g.degree((GraphElements.MyVertex) v), mapdegree.get(g.degree((GraphElements.MyVertex) v)) + 1);
+                        }
+                    }
+/*
                     for (Object v : vertices) {
                         mapdegree.put(v, g.degree((GraphElements.MyVertex) v));
-                    }
+                    }*/
                     drawHistogramDegree(mapdegree, file.getName());
                     escribir.close();
                     escribir2.close();
