@@ -70,6 +70,7 @@ import unalcol.agents.NetworkSim.util.StringSerializer;
 public class DataReplicationEscenarioNodeFailing implements Runnable, ActionListener {
 
     private NetworkEnvironmentReplication world;
+
     public boolean renderAnts = true;
     public boolean renderSeeking = true;
     public boolean renderCarrying = true;
@@ -84,6 +85,14 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     int width;
     int height;
     private Observer graphVisualization;
+
+    public Observer getGraphVisualization() {
+        return graphVisualization;
+    }
+
+    public void setGraphVisualization(Observer graphVisualization) {
+        this.graphVisualization = graphVisualization;
+    }
     ArrayList<GraphElements.MyVertex> locations;
     HashMap<String, Long> networkDelays;
     int indexLoc;
@@ -199,12 +208,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
             } else {
                 fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+wsize+" + SimulationParameters.wsize + ".timeout";
             }
+        } else if (SimulationParameters.simMode.contains("chain")) {
+            fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+" + SimulationParameters.nhopsChain + "+wsize+" + SimulationParameters.wsize + "+nofailr+" + SimulationParameters.nofailRounds + ".timeout";
         } else {
-            if (SimulationParameters.simMode.contains("chain")) {
-                fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+" + SimulationParameters.nhopsChain + "+wsize+" + SimulationParameters.wsize + "+nofailr+" + SimulationParameters.nofailRounds + ".timeout";
-            } else {
-                fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+wsize+" + SimulationParameters.wsize + "+nofailr+" + SimulationParameters.nofailRounds + ".timeout";
-            }
+            fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+wsize+" + SimulationParameters.wsize + "+nofailr+" + SimulationParameters.nofailRounds + ".timeout";
         }
 
         SimulationParameters.genericFilenameTimeouts = fileTimeout;
@@ -541,7 +548,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         System.out.println("net Delays" + networkDelays);
     }
 
-    private GraphElements.MyVertex getLocation(Graph<GraphElements.MyVertex, String> g) {
+    public GraphElements.MyVertex getLocation(Graph<GraphElements.MyVertex, String> g) {
         if (SimulationParameters.filenameLoc.length() > 1) {
             GraphElements.MyVertex tmp = locations.get(indexLoc++);
             for (GraphElements.MyVertex v : g.getVertices()) {
@@ -597,4 +604,11 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         return image;
     }
 
+    public NetworkEnvironmentReplication getWorld() {
+        return world;
+    }
+
+    public void setWorld(NetworkEnvironmentReplication world) {
+        this.world = world;
+    }
 }
