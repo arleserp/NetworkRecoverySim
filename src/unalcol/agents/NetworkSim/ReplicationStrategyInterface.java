@@ -25,6 +25,7 @@ public abstract class ReplicationStrategyInterface implements Serializable {
 
     int INITIAL_TIMEOUT = 50;//50;//100;//better50;// 30;//50
 
+
     public int getINITIAL_TIMEOUT() {
         return INITIAL_TIMEOUT;
     }
@@ -41,15 +42,18 @@ public abstract class ReplicationStrategyInterface implements Serializable {
         lastAgentDeparting = new HashMap<>();
         lastMessageFreeResp = new HashMap<>();
         nodeTimeouts = new ConcurrentHashMap<>();
+      //  idCounter = new HashMap<>();
     }
 
     public ReplicationStrategyInterface(ConcurrentHashMap tout) {
         followedAgents = new HashMap<>();
         followedAgentsLocation = new HashMap<>();
         responsibleAgentsPrevLocations = new HashMap<>();
-        lastAgentDeparting = new HashMap<>();     
+        lastAgentDeparting = new HashMap<>();
         lastMessageFreeResp = new HashMap<>();
         nodeTimeouts = tout;
+      //  idCounter = new HashMap<>();
+
     }
 
     public void initialize() {
@@ -58,6 +62,7 @@ public abstract class ReplicationStrategyInterface implements Serializable {
         //responsibleAgentsPrevLocations = new HashMap<>();
         lastAgentDeparting = new HashMap<>();
         lastMessageFreeResp = new HashMap<>();
+
     }
 
     public abstract void calculateTimeout();
@@ -138,11 +143,20 @@ public abstract class ReplicationStrategyInterface implements Serializable {
     public abstract boolean containsAgent(int agentId);
 
     public abstract void removeReferences(int agentId);
-    
+
     public abstract void removeReferencesForCreation(int agentId);
-    
+
     @Override
     public String toString() {
         return "ReplicationStrategyInterface{" + "followedAgents=" + followedAgents + ", followedAgentsLocation=" + followedAgentsLocation + ", lastAgentDeparting=" + lastAgentDeparting + ", lastMessageFreeResp=" + lastMessageFreeResp + ", nodeTimeouts=" + nodeTimeouts + ", INITIAL_TIMEOUT=" + INITIAL_TIMEOUT + ", WINDOW_SIZE=" + WINDOW_SIZE + '}';
-    }    
+    }
+/*
+    public HashMap<Integer, Integer> getIdCounter() {
+        return idCounter;
+    }
+
+    public void setIdCounter(HashMap<Integer, Integer> idCounter) {
+        this.idCounter = idCounter;
+    }
+*/
 }

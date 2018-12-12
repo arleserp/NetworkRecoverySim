@@ -5,59 +5,28 @@
  */
 package unalcol.agents.NetworkSim;
 
-import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
-import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.visualization.BasicVisualizationServer;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Paint;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.ConcurrentModificationException;
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Observer;
 // unalcol.agent.networkSim.reports.GraphicReportHealingObserver;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 import unalcol.agents.simulate.util.SimpleLanguage;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import org.apache.commons.collections15.Transformer;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.ChartUtilities;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailing;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailingChain;
+import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailingChainv2;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentReplication;
 import unalcol.agents.NetworkSim.environment.NetworkMessageBuffer;
 import unalcol.agents.NetworkSim.environment.NetworkNodeMessageBuffer;
 import unalcol.agents.NetworkSim.environment.ObjectSerializer;
 import unalcol.agents.NetworkSim.programs.NodeFailingProgram;
 import unalcol.agents.NetworkSim.util.DataReplicationNodeFailingObserver;
-import unalcol.agents.NetworkSim.util.GraphComparator;
 import unalcol.agents.NetworkSim.util.GraphStats;
 //import unalcol.agents.NetworkSim.util.GraphStatistics;
 import unalcol.agents.NetworkSim.util.StringSerializer;
@@ -67,7 +36,7 @@ import unalcol.agents.NetworkSim.util.StringSerializer;
  *
  * @author arles.rodriguez
  */
-public class DataReplicationEscenarioNodeFailingv2 extends DataReplicationEscenarioNodeFailing implements Runnable, ActionListener  {   
+public class DataReplicationEscenarioNodeFailingv2 extends DataReplicationEscenarioNodeFailing implements Runnable, ActionListener {
 
     /**
      * Creates a simulation without graphic interface
@@ -76,7 +45,7 @@ public class DataReplicationEscenarioNodeFailingv2 extends DataReplicationEscena
      * @param pf failure probability
      */
     DataReplicationEscenarioNodeFailingv2(int pop, float pf) {
-        super(pop, pf);       
+        super(pop, pf);
     }
 
     /**
@@ -130,12 +99,10 @@ public class DataReplicationEscenarioNodeFailingv2 extends DataReplicationEscena
             } else {
                 fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+wsize+" + SimulationParameters.wsize + ".timeout";
             }
+        } else if (SimulationParameters.simMode.contains("chain")) {
+            fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+" + SimulationParameters.nhopsChain + "+wsize+" + SimulationParameters.wsize + "+nofailr+" + SimulationParameters.nofailRounds + ".timeout";
         } else {
-            if (SimulationParameters.simMode.contains("chain")) {
-                fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+" + SimulationParameters.nhopsChain + "+wsize+" + SimulationParameters.wsize + "+nofailr+" + SimulationParameters.nofailRounds + ".timeout";
-            } else {
-                fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+wsize+" + SimulationParameters.wsize + "+nofailr+" + SimulationParameters.nofailRounds + ".timeout";
-            }
+            fileTimeout = "timeout+exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+wsize+" + SimulationParameters.wsize + "+nofailr+" + SimulationParameters.nofailRounds + ".timeout";
         }
 
         SimulationParameters.genericFilenameTimeouts = fileTimeout;
@@ -212,11 +179,15 @@ public class DataReplicationEscenarioNodeFailingv2 extends DataReplicationEscena
                     n.setNetworkdata(((NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo) world).loadAllTopology());
                 }
                 break;
+            case "chainv2":
+                world = new NetworkEnvironmentPheromoneReplicationNodeFailingChainv2(agents, agentsLanguage, nodeLanguaje, g);
+                ((NetworkEnvironmentPheromoneReplicationNodeFailingChain) world).addNodes(nodes);
+                break;
             default:
                 world = new NetworkEnvironmentPheromoneReplicationNodeFailing(agents, agentsLanguage, nodeLanguaje, g);
                 ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).addNodes(nodes);
                 break;
-        }        
+        }
         world.setNetworkDelays(networkDelays);
         world.addObserver(getGraphVisualization());
         setWorld(world);

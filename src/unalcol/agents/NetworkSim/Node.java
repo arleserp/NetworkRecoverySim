@@ -44,6 +44,8 @@ public class Node extends Agent {
 
     private ConcurrentHashMap<Integer, ReplicationStrategyInterface> repStrategy;
     private LinkedBlockingQueue<String[]> networkMessagebuffer;
+    
+    private HashMap<Integer, Integer> idCounter; //added by arles.rodriguez 12/12/2018
 
     AtomicInteger c = new AtomicInteger(0);
     protected Hashtable<String, Object> properties = new Hashtable<>();
@@ -89,10 +91,11 @@ public class Node extends Agent {
         } else {
             for (int i = 1; i <= SimulationParameters.nhopsChain; i++) {
                 repStrategy.put(i, new ReplicationStrategyPAAMS());
-                repStrategy.get(i).setINITIAL_TIMEOUT(repStrategy.get(i).getINITIAL_TIMEOUT()*i);
+                repStrategy.get(i).setINITIAL_TIMEOUT(repStrategy.get(i).getINITIAL_TIMEOUT() * i);
             }
         }
         networkMessagebuffer = new LinkedBlockingQueue();
+        idCounter = new HashMap<>();
     }
 
     public Node(AgentProgram _program, GraphElements.MyVertex ve, ConcurrentHashMap tout) {
@@ -118,6 +121,7 @@ public class Node extends Agent {
             }
         }
         networkMessagebuffer = new LinkedBlockingQueue();
+        idCounter = new HashMap<>();
     }
 
     public GraphElements.MyVertex getVertex() {
@@ -553,7 +557,7 @@ public class Node extends Agent {
     public void addFollowedAgentsPrevLocations(int agId, ArrayList<String> PrevLocations, int hop) {
         repStrategy.get(hop).getResponsibleAgentsPrevLocations().put(agId, PrevLocations);
     }
-    
+
     public ConcurrentHashMap<Integer, ReplicationStrategyInterface> getRepStrategy() {
         return repStrategy;
     }
@@ -614,6 +618,7 @@ public class Node extends Agent {
     }
 
     public void printReplicationHops() {
+        System.out.println("Node" + getVertex().getName() + "Dictionary{idagent=counter}: " + idCounter);
         for (int i = 1; i <= SimulationParameters.nhopsChain; i++) {
             System.out.println("Node" + getVertex().getName() + " - hop " + i + " repl: " + repStrategy.get(i));
         }
@@ -622,8 +627,16 @@ public class Node extends Agent {
     public void printReplicationHop(int i) {
         System.out.println("Node" + getVertex().getName() + " - hop " + i + " repl: " + repStrategy.get(i));
     }
-    
-    public void deleteAgentFromRep(int hop, int agentId){
+
+    public void deleteAgentFromRep(int hop, int agentId) {
         repStrategy.get(hop).removeReferencesForCreation(agentId);
+    }
+
+    public HashMap<Integer, Integer> getIdCounter() {
+        return idCounter;
+    }
+
+    public void setIdCounter(HashMap<Integer, Integer> idCounter) {
+        this.idCounter = idCounter;
     }
 }
