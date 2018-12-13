@@ -423,7 +423,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
                             //if counter is equal to nhopsChain means that 
                             // there are two references to agent agentId in other nodes
                             // reference can be deleted.
-                            if (n.getIdCounter().get(agentId) == SimulationParameters.nhopsChain) {
+                            if (n.getIdCounter().get(agentId) == SimulationParameters.nhopsChain-1) {
                                 System.out.println("delete agent" + agentId + "from " + n.getVertex());
                                 n.getIdCounter().remove(agentId);
                             }
@@ -610,7 +610,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
 
                 if (n.getFollowedAgentsLocation(hop).containsKey(agentId)) {
                     System.out.println("entra aqui... .. ....");
-                    String nodeId = StringNodeChainHelper.trimNodeNeighbor(n.getFollowedAgentsLocation(hop).get(agentId));
+                    String nodeId = n.getFollowedAgentsLocation(hop).get(agentId); //StringNodeChainHelper.trimNodeNeighbor(n.getFollowedAgentsLocation(hop).get(agentId));
                     estimatedTimeout = n.estimateExpectedTime(nodeId, hop);
                     stdDevTimeout = (int) n.getStdDevTimeout(nodeId, hop);
                     if (n.getLastAgentDeparting(hop).containsKey(agentId) && (Math.abs((n.getRounds() - n.getLastAgentDeparting(agentId, hop))) > (estimatedTimeout + 3 * stdDevTimeout))) {
