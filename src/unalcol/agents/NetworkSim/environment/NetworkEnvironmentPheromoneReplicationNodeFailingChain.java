@@ -1226,7 +1226,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
 
     @Override
     public void evaporatePheromone() {
-        synchronized (NetworkEnvironmentPheromoneReplicationNodeFailingChain.class) {
+        synchronized (this) {
             Iterator<Node> itr = nodes.iterator();
             //ArrayList<GraphElements.MyVertex> evaporateClone = new ArrayList(topology.getVertices());
             while (itr.hasNext()) {
@@ -1241,7 +1241,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
     //Example: It is better handshake protocol. J. Gomez
     public void evaluateAgentCreation(Node n, int hop) {
 
-        synchronized (NetworkEnvironmentPheromoneReplicationNodeFailingChain.class) {
+        synchronized (this) {
             Iterator<Map.Entry<Integer, Integer>> iter = n.getFollowedAgents(hop).entrySet().iterator();
 
             int estimatedTimeout;

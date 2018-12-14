@@ -394,7 +394,7 @@ public class DataReplicationNodeFailingMainV2 {
             }
             System.out.println("MaxIter" + SimulationParameters.maxIter);
 
-            DataReplicationEscenarioNodeFailing w = new DataReplicationEscenarioNodeFailingv2(SimulationParameters.popSize, SimulationParameters.pf);
+            DataReplicationEscenarioNodeFailingV2 w = new DataReplicationEscenarioNodeFailingV2(SimulationParameters.popSize, SimulationParameters.pf);
             w.init();
             w.run();
         } else {

@@ -20,11 +20,12 @@ public class NodeFailingProgram implements AgentProgram {
 
     public NodeFailingProgram(float pf) {
         this.pf = pf;
-        System.out.println("pf: " + pf);
+        System.out.println("Node pf: " + pf);
     }
 
     @Override
     public Action compute(Percept p) {
+        //System.out.println("Node threeeeeeeeeeeeeeeeeead!");
         ActionParameters act = new ActionParameters("communicate");
         //System.out.println("communicate!");
         //Now a node can fail also
