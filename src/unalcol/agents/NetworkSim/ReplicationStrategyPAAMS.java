@@ -1,4 +1,4 @@
-/*
+    /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -23,7 +23,8 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
 
     @Override
     public void calculateTimeout() {
-        Iterator<Map.Entry<Integer, Integer>> iter = getFollowedAgents().entrySet().iterator();
+        
+        Iterator<Map.Entry<Integer, Integer>> iter = getFollowedAgents().entrySet().iterator(); // TODO: Fix arlesrp 2018/14/12
         Iterator<Map.Entry<String, Integer>> iterM = getLastMessageFreeResp().entrySet().iterator();
         // System.out.println("node timeouts" + getNodeTimeouts());
 
@@ -40,9 +41,7 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
 
                 nodeId = StringNodeChainHelper.trimNodeNeighbor(nodeId);
                 
-               // System.out.println("NodeId xxxxxxxxxxxxxxxxxxx" + nodeId);
-
-                
+               // System.out.println("NodeId xxxxxxxxxxxxxxxxxxx" + nodeId);                
                 if (agentId == k && getLastAgentDeparting().containsKey(k) && getLastMessageFreeResp().containsKey(KeyM.getKey())) {
                     int diff = Math.abs(getLastMessageFreeResp().get(KeyM.getKey()) - getLastAgentDeparting().get(k));
                     //System.out.println("diff" +  diff);
