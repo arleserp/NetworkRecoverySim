@@ -44,7 +44,7 @@ public class Node extends Agent {
 
     private ConcurrentHashMap<Integer, ReplicationStrategyInterface> repStrategy;
     private LinkedBlockingQueue<String[]> networkMessagebuffer;
-
+    
     private HashMap<Integer, Integer> idCounter; //added by arles.rodriguez 12/12/2018
 
     AtomicInteger c = new AtomicInteger(0);
@@ -88,8 +88,6 @@ public class Node extends Agent {
 
         if (!SimulationParameters.simMode.contains("chain")) {
             repStrategy.put(1, new ReplicationStrategyPAAMS());
-        } else if (SimulationParameters.simMode.equals("chainv2")) {
-            repStrategy.put(1, new ReplicationStrategyV2());
         } else {
             for (int i = 1; i <= SimulationParameters.nhopsChain; i++) {
                 repStrategy.put(i, new ReplicationStrategyPAAMS());
@@ -640,25 +638,5 @@ public class Node extends Agent {
 
     public void setIdCounter(HashMap<Integer, Integer> idCounter) {
         this.idCounter = idCounter;
-    }
-
-    //used in v2
-    public void setFirstDepartingMsgTime(int agentId, int rounds) {
-        ((ReplicationStrategyV2)repStrategy.get(1)).getFirstDepartingMsgTime().put(agentId, rounds);
-    }
-
-    //used in v2
-    public void setLimitDepartingMsgTime(int agentId, int rounds) {
-        ((ReplicationStrategyV2)repStrategy.get(1)).getLimitDepartingMsgTime().put(agentId, rounds);
-    }
-    
-    //used in v2
-    public int getFirstDepartingMsgTime(int agentId) {
-        return ((ReplicationStrategyV2)repStrategy.get(1)).getFirstDepartingMsgTime().get(agentId);
-    }
-
-    //used in v2
-    public boolean containsFirstDepartingMsgTime(int agentId) {
-        return ((ReplicationStrategyV2)repStrategy.get(1)).getFirstDepartingMsgTime().containsKey(agentId);
     }
 }

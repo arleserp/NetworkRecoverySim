@@ -7,10 +7,7 @@ package unalcol.agents.NetworkSim;
 
 /**
  *
- * @author Arles Rodriguez+
- * Test of new replication strategy version 2.0 
- * Main for the new replication proposal. 
- * 
+ * @author Arles Rodriguez
  */
 public class DataReplicationNodeFailingMainV2 {
 
