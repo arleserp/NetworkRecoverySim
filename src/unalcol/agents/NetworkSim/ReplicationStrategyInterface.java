@@ -16,15 +16,48 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class ReplicationStrategyInterface implements Serializable {
 
-    private HashMap<Integer, Integer> followedAgents;
-    private HashMap<Integer, String> followedAgentsLocation;
-    private HashMap<Integer, ArrayList<String>> responsibleAgentsPrevLocations;
-    private HashMap<Integer, Integer> lastAgentDeparting;
-    private HashMap<String, Integer> lastMessageFreeResp;
-    ConcurrentHashMap<String, ArrayList<Integer>> nodeTimeouts;
+    private HashMap<Integer, Integer> followedAgents; //store ids of agent and fatherId
+    private HashMap<Integer, String> followedAgentsLocation; //current location of agent when departing message is received.
+    private HashMap<Integer, ArrayList<String>> responsibleAgentsPrevLocations; // Store previous locations of agent to resend messages
+    int INITIAL_TIMEOUT = 50;//50;//100;//better50;// 30;//50 //default timeout    
 
-    int INITIAL_TIMEOUT = 50;//50;//100;//better50;// 30;//50
+    /**
+     * Used in PAAMS and chain Protocol
+     *
+     */
+    private HashMap<Integer, Integer> lastAgentDeparting; // Last time of an agent departing <idAgent, nodeAge>
+    private HashMap<String, Integer> lastMessageFreeResp; // Last time of reception of freeResp Message <agentId + "-" + newLocation, nodeAge>
+    ConcurrentHashMap<String, ArrayList<Integer>> nodeTimeouts; // List of timeouts to an specific location <nodeId, timeouts>
+    /**
+     * End PAAMS
+     */
 
+    /**
+     * *
+     * Used in replication based on counter v2
+     */
+    private HashMap<Integer, Integer> firstDepartingMsgTime; // first time of an agent departing <idAgent, nodeAge>
+    private HashMap<Integer, Integer> limitDepartingMsgTime; // used when is time to delete agent reference <idAgent, nodeAge>
+    ArrayList<Integer> timeouts; // this version does not compute the timeout to an specific node
+
+    public HashMap<Integer, Integer> getFirstDepartingMsgTime() {
+        return firstDepartingMsgTime;
+    }
+
+    public void setFirstDepartingMsgTime(HashMap<Integer, Integer> firstDepartingMsgTime) {
+        this.firstDepartingMsgTime = firstDepartingMsgTime;
+    }
+
+    public HashMap<Integer, Integer> getLimitDepartingMsgTime() {
+        return limitDepartingMsgTime;
+    }
+
+    public void setLimitDepartingMsgTime(HashMap<Integer, Integer> limitDepartingMsgTime) {
+        this.limitDepartingMsgTime = limitDepartingMsgTime;
+    }
+    /**
+     * End v2
+     */
 
     public int getINITIAL_TIMEOUT() {
         return INITIAL_TIMEOUT;
@@ -33,16 +66,24 @@ public abstract class ReplicationStrategyInterface implements Serializable {
     public void setINITIAL_TIMEOUT(int INITIAL_TIMEOUT) {
         this.INITIAL_TIMEOUT = INITIAL_TIMEOUT;
     }
+
     int WINDOW_SIZE = 5;
 
     public ReplicationStrategyInterface() {
-        followedAgents = new HashMap<>();
-        followedAgentsLocation = new HashMap<>();
+        
+        followedAgents = new HashMap<>();        
+        followedAgentsLocation = new HashMap<>();                
         responsibleAgentsPrevLocations = new HashMap<>();
+        
+        //PAAMS
         lastAgentDeparting = new HashMap<>();
         lastMessageFreeResp = new HashMap<>();
         nodeTimeouts = new ConcurrentHashMap<>();
-      //  idCounter = new HashMap<>();
+
+        //v2
+        firstDepartingMsgTime = new HashMap<>();
+        limitDepartingMsgTime = new HashMap<>();
+        timeouts = new ArrayList<>();
     }
 
     public ReplicationStrategyInterface(ConcurrentHashMap tout) {
@@ -52,8 +93,6 @@ public abstract class ReplicationStrategyInterface implements Serializable {
         lastAgentDeparting = new HashMap<>();
         lastMessageFreeResp = new HashMap<>();
         nodeTimeouts = tout;
-      //  idCounter = new HashMap<>();
-
     }
 
     public void initialize() {
@@ -83,10 +122,9 @@ public abstract class ReplicationStrategyInterface implements Serializable {
         return responsibleAgentsPrevLocations;
     }
 
-    public void setResponsibleAgentsPrevLocations(HashMap<Integer, ArrayList<String>> responsibleAgentsPrevLocations) {
+    /*public void setResponsibleAgentsPrevLocations(HashMap<Integer, ArrayList<String>> responsibleAgentsPrevLocations) {
         this.responsibleAgentsPrevLocations = responsibleAgentsPrevLocations;
-    }
-
+    }*/
     public void setLastMessageFreeResp(int agentId, int nodeAge, String newLocation) {
         String key = agentId + "-" + newLocation;
         getLastMessageFreeResp().put(key, nodeAge);
@@ -150,7 +188,7 @@ public abstract class ReplicationStrategyInterface implements Serializable {
     public String toString() {
         return "ReplicationStrategyInterface{" + "followedAgents=" + followedAgents + ", followedAgentsLocation=" + followedAgentsLocation + ", lastAgentDeparting=" + lastAgentDeparting + ", lastMessageFreeResp=" + lastMessageFreeResp + ", nodeTimeouts=" + nodeTimeouts + ", INITIAL_TIMEOUT=" + INITIAL_TIMEOUT + ", WINDOW_SIZE=" + WINDOW_SIZE + '}';
     }
-/*
+    /*
     public HashMap<Integer, Integer> getIdCounter() {
         return idCounter;
     }
@@ -158,5 +196,5 @@ public abstract class ReplicationStrategyInterface implements Serializable {
     public void setIdCounter(HashMap<Integer, Integer> idCounter) {
         this.idCounter = idCounter;
     }
-*/
+     */
 }

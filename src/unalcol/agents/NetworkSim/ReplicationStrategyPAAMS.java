@@ -33,15 +33,14 @@ public class ReplicationStrategyPAAMS extends ReplicationStrategyInterface {
             int k = Key.getKey();
 
             while (iterM.hasNext()) {
+                //KeyM: agentId
                 Map.Entry<String, Integer> KeyM = iterM.next();
                 String[] dataKey = KeyM.getKey().split("-");
                 int agentId = Integer.valueOf(dataKey[0]);
                 String nodeId = dataKey[1];
 
                 nodeId = StringNodeChainHelper.trimNodeNeighbor(nodeId);
-                
                // System.out.println("NodeId xxxxxxxxxxxxxxxxxxx" + nodeId);
-
                 
                 if (agentId == k && getLastAgentDeparting().containsKey(k) && getLastMessageFreeResp().containsKey(KeyM.getKey())) {
                     int diff = Math.abs(getLastMessageFreeResp().get(KeyM.getKey()) - getLastAgentDeparting().get(k));
