@@ -7,10 +7,9 @@ package unalcol.agents.NetworkSim;
 
 /**
  *
- * @author Arles Rodriguez+
- * Test of new replication strategy version 2.0 
- * Main for the new replication proposal. 
- * 
+ * @author Arles Rodriguez+ Test of new replication strategy version 2.0 Main
+ * for the new replication proposal.
+ *
  */
 public class DataReplicationNodeFailingMainV2 {
 
@@ -395,7 +394,13 @@ public class DataReplicationNodeFailingMainV2 {
                     SimulationParameters.nofailRounds = Integer.valueOf(args[14]);
                 }
             }
-            System.out.println("MaxIter" + SimulationParameters.maxIter);
+
+            //System.out.println("MaxIter" + SimulationParameters.maxIter);
+            System.out.println("**************************");
+            System.out.println("Parameters of simulation");
+
+            System.out.println(SimulationParameters.printParameters());
+            System.out.println("**************************");
 
             DataReplicationEscenarioNodeFailingv2 w = new DataReplicationEscenarioNodeFailingv2(SimulationParameters.popSize, SimulationParameters.pf);
             w.init();

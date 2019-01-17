@@ -86,10 +86,10 @@ public class Node extends Agent {
         agentsInNeighbors = new HashMap<>();
         repStrategy = new ConcurrentHashMap<>();
 
-        if (!SimulationParameters.simMode.contains("chain")) {
-            repStrategy.put(1, new ReplicationStrategyPAAMS());
-        } else if (SimulationParameters.simMode.equals("chainv2")) {
+        if (SimulationParameters.simMode.equals("chainv2")) {
             repStrategy.put(1, new ReplicationStrategyV2());
+        } else if (!SimulationParameters.simMode.contains("chain")) {
+            repStrategy.put(1, new ReplicationStrategyPAAMS());
         } else {
             for (int i = 1; i <= SimulationParameters.nhopsChain; i++) {
                 repStrategy.put(i, new ReplicationStrategyPAAMS());
@@ -112,8 +112,11 @@ public class Node extends Agent {
 //        prevLoc = new HashMap<>();
         followedAgentsCounter = new HashMap<>();
         agentsInNeighbors = new HashMap<>();
+        repStrategy = new ConcurrentHashMap<>();
 
-        if (!SimulationParameters.simMode.contains("chain")) {
+        if (SimulationParameters.simMode.equals("chainv2")) {
+            repStrategy.put(1, new ReplicationStrategyV2());
+        } else if (!SimulationParameters.simMode.contains("chain")) {
             repStrategy.put(1, new ReplicationStrategyPAAMS());
             repStrategy.get(1).setNodeTimeouts(tout);
         } else {
@@ -621,8 +624,13 @@ public class Node extends Agent {
 
     public void printReplicationHops() {
         System.out.println("Node" + getVertex().getName() + "Dictionary{idagent=counter}: " + idCounter);
-        for (int i = 1; i <= SimulationParameters.nhopsChain; i++) {
-            System.out.println("Node" + getVertex().getName() + " - hop " + i + " repl: " + repStrategy.get(i));
+        if (SimulationParameters.simMode.equals("chainv2")) {
+            System.out.println("Node" + getVertex().getName() + " - hop " + 1 + " repl: " + repStrategy.get(1));
+        } else {
+
+            for (int i = 1; i <= SimulationParameters.nhopsChain; i++) {
+                System.out.println("Node" + getVertex().getName() + " - hop " + i + " repl: " + repStrategy.get(i));
+            }
         }
     }
 
@@ -644,21 +652,21 @@ public class Node extends Agent {
 
     //used in v2
     public void setFirstDepartingMsgTime(int agentId, int rounds) {
-        ((ReplicationStrategyV2)repStrategy.get(1)).getFirstDepartingMsgTime().put(agentId, rounds);
+        ((ReplicationStrategyV2) repStrategy.get(1)).getFirstDepartingMsgTime().put(agentId, rounds);
     }
 
     //used in v2
     public void setLimitDepartingMsgTime(int agentId, int rounds) {
-        ((ReplicationStrategyV2)repStrategy.get(1)).getLimitDepartingMsgTime().put(agentId, rounds);
+        ((ReplicationStrategyV2) repStrategy.get(1)).getLimitDepartingMsgTime().put(agentId, rounds);
     }
-    
+
     //used in v2
     public int getFirstDepartingMsgTime(int agentId) {
-        return ((ReplicationStrategyV2)repStrategy.get(1)).getFirstDepartingMsgTime().get(agentId);
+        return ((ReplicationStrategyV2) repStrategy.get(1)).getFirstDepartingMsgTime().get(agentId);
     }
 
     //used in v2
     public boolean containsFirstDepartingMsgTime(int agentId) {
-        return ((ReplicationStrategyV2)repStrategy.get(1)).getFirstDepartingMsgTime().containsKey(agentId);
+        return ((ReplicationStrategyV2) repStrategy.get(1)).getFirstDepartingMsgTime().containsKey(agentId);
     }
 }

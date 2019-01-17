@@ -55,10 +55,10 @@ public abstract class ReplicationStrategyInterface implements Serializable {
     public void setLimitDepartingMsgTime(HashMap<Integer, Integer> limitDepartingMsgTime) {
         this.limitDepartingMsgTime = limitDepartingMsgTime;
     }
+
     /**
      * End v2
      */
-
     public int getINITIAL_TIMEOUT() {
         return INITIAL_TIMEOUT;
     }
@@ -70,11 +70,11 @@ public abstract class ReplicationStrategyInterface implements Serializable {
     int WINDOW_SIZE = 5;
 
     public ReplicationStrategyInterface() {
-        
-        followedAgents = new HashMap<>();        
-        followedAgentsLocation = new HashMap<>();                
+
+        followedAgents = new HashMap<>();
+        followedAgentsLocation = new HashMap<>();
         responsibleAgentsPrevLocations = new HashMap<>();
-        
+
         //PAAMS
         lastAgentDeparting = new HashMap<>();
         lastMessageFreeResp = new HashMap<>();
@@ -186,7 +186,11 @@ public abstract class ReplicationStrategyInterface implements Serializable {
 
     @Override
     public String toString() {
-        return "ReplicationStrategyInterface{" + "followedAgents=" + followedAgents + ", followedAgentsLocation=" + followedAgentsLocation + ", lastAgentDeparting=" + lastAgentDeparting + ", lastMessageFreeResp=" + lastMessageFreeResp + ", nodeTimeouts=" + nodeTimeouts + ", INITIAL_TIMEOUT=" + INITIAL_TIMEOUT + ", WINDOW_SIZE=" + WINDOW_SIZE + '}';
+        if (SimulationParameters.simMode.equals("chainv2")) {
+            return "ReplicationStrategyInterface{" + "followedAgents=" + followedAgents + ", followedAgentsLocation=" + followedAgentsLocation + ", firstDepartingMsgTime=" + firstDepartingMsgTime + ", limitDepartingMsgTime=" + limitDepartingMsgTime + ", nodeTimeouts=" + timeouts + ", INITIAL_TIMEOUT=" + INITIAL_TIMEOUT + ", WINDOW_SIZE=" + WINDOW_SIZE + '}';
+        } else {
+            return "ReplicationStrategyInterface{" + "followedAgents=" + followedAgents + ", followedAgentsLocation=" + followedAgentsLocation + ", lastAgentDeparting=" + lastAgentDeparting + ", lastMessageFreeResp=" + lastMessageFreeResp + ", nodeTimeouts=" + nodeTimeouts + ", INITIAL_TIMEOUT=" + INITIAL_TIMEOUT + ", WINDOW_SIZE=" + WINDOW_SIZE + '}';
+        }
     }
     /*
     public HashMap<Integer, Integer> getIdCounter() {

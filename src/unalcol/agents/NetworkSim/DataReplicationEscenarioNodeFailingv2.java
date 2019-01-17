@@ -14,7 +14,7 @@ import java.util.Map;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 import unalcol.agents.simulate.util.SimpleLanguage;
-import java.util.Vector;
+import java.util.Vector; 
 import java.util.concurrent.ConcurrentHashMap;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailing;
 import unalcol.agents.NetworkSim.environment.NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo;
@@ -188,6 +188,7 @@ public class DataReplicationEscenarioNodeFailingv2 extends DataReplicationEscena
                 ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).addNodes(nodes);
                 break;
         }
+        
         world.setNetworkDelays(networkDelays);
         world.addObserver(getGraphVisualization());
         setWorld(world);

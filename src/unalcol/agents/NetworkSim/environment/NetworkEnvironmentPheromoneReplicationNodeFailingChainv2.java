@@ -8,7 +8,6 @@ import java.util.Vector;
 import edu.uci.ics.jung.graph.*;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -19,8 +18,6 @@ import unalcol.agents.NetworkSim.GraphElements;
 import unalcol.agents.NetworkSim.MobileAgent;
 import unalcol.agents.NetworkSim.Node;
 import unalcol.agents.NetworkSim.SimulationParameters;
-import unalcol.agents.NetworkSim.util.StatsCreation;
-import unalcol.agents.NetworkSim.util.StringNodeChainHelper;
 import unalcol.agents.NetworkSim.util.StringSerializer;
 
 /**
@@ -51,6 +48,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
             agent.sleep(50);
             boolean flag = (action != null);
             MobileAgent a = (MobileAgent) agent;
+
+            currentNode = a.getLocation();
+            currentNode.setStatus("v");
 
             try {
                 if (a.status == Action.DIE) {
@@ -383,39 +383,37 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
                             StringSerializer s = new StringSerializer();
                             ArrayList<String> PrevLocations = new ArrayList((ArrayList<String>) s.deserialize(inbox[5]));
 
-                            if (SimulationParameters.simMode.contains("noloop") && n.hasFollowedInNodeBefore(agentId)) {
-                                //n.printReplicationHops();
-                                //System.out.println("ya lo tengo" + n.getVertex().getName() + " agent id:" + agentId);
-                                //deberia aqui borrar todos los nodos en la cadena
-                                n.deleteAllFollowedReferences(agentId);
-                                if (PrevLocations.size() - hop > 0) {
-                                    String prevPrevLoc = PrevLocations.get(PrevLocations.size() - hop);
-                                    int tmphop = hop;
-                                    if (tmphop < SimulationParameters.nhopsChain && !prevPrevLoc.equals(n.getVertex().getName())) {
-                                        //System.out.println(n.getVertex().getName() + "resending freeresp to prevprev" + prevPrevLoc);
-                                        tmphop++;
-                                        String[] msgnodera = new String[5];
-                                        msgnodera[0] = "freeresp";
-                                        msgnodera[1] = String.valueOf(agentId);
-                                        msgnodera[2] = n.getVertex().getName();
-                                        msgnodera[3] = String.valueOf(tmphop); //first hop
-                                        msgnodera[4] = inbox[5]; //Todo: review hops number -> probably this is different
-                                        NetworkNodeMessageBuffer.getInstance().putMessageWithNetworkDelay(this, n, prevPrevLoc, msgnodera, tmphop);
-                                    }
-                                }
-                            }
-
+//                            if (SimulationParameters.simMode.contains("noloop") && n.hasFollowedInNodeBefore(agentId)) {
+//                                //n.printReplicationHops();
+//                                //System.out.println("ya lo tengo" + n.getVertex().getName() + " agent id:" + agentId);
+//                                //deberia aqui borrar todos los nodos en la cadena
+//                                n.deleteAllFollowedReferences(agentId);
+//                                if (PrevLocations.size() - hop > 0) {
+//                                    String prevPrevLoc = PrevLocations.get(PrevLocations.size() - hop);
+//                                    int tmphop = hop;
+//                                    if (tmphop < SimulationParameters.nhopsChain && !prevPrevLoc.equals(n.getVertex().getName())) {
+//                                        //System.out.println(n.getVertex().getName() + "resending freeresp to prevprev" + prevPrevLoc);
+//                                        tmphop++;
+//                                        String[] msgnodera = new String[5];
+//                                        msgnodera[0] = "freeresp";
+//                                        msgnodera[1] = String.valueOf(agentId);
+//                                        msgnodera[2] = n.getVertex().getName();
+//                                        msgnodera[3] = String.valueOf(tmphop); //first hop
+//                                        msgnodera[4] = inbox[5]; //Todo: review hops number -> probably this is different
+//                                        NetworkNodeMessageBuffer.getInstance().putMessageWithNetworkDelay(this, n, prevPrevLoc, msgnodera, tmphop);
+//                                    }
+//                                }
+//                            }
                             //hops greater than one means departing messages from other nodes
                             if (hop > 1) {
                                 n.incMsgRecv();
                             }
 
-                            n.setLastAgentDeparting(agentId, n.getRounds(), hop); //set last agent depart message in a given hop.
-                            n.getFollowedAgents(hop).put(agentId, father); //add agent to followed agents vector
-
                             // increase counter 
                             if (!n.getIdCounter().containsKey(agentId)) {
                                 n.getIdCounter().put(agentId, 0);
+                                n.setFirstDepartingMsgTime(agentId, n.getRounds()); //set last agent depart message in a given hop.
+                                n.getFollowedAgents(1).put(agentId, father); //add agent to followed agents vector
                             } else {
                                 n.getIdCounter().put(agentId, n.getIdCounter().get(agentId) + 1);
                             }
@@ -423,14 +421,20 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
                             //if counter is equal to nhopsChain means that 
                             // there are two references to agent agentId in other nodes
                             // reference can be deleted.
-                            if (n.getIdCounter().get(agentId) == SimulationParameters.nhopsChain-1) {
+                            if (n.getIdCounter().get(agentId) == SimulationParameters.nhopsChain - 1) {
                                 System.out.println("delete agent" + agentId + "from " + n.getVertex());
                                 n.getIdCounter().remove(agentId);
+                                n.calculateTimeout(1);
+                                if (n.getFollowedAgents(1).containsKey(agentId)) {
+                                    n.getFollowedAgents(1).remove(agentId);
+                                }
+                                n.setLimitDepartingMsgTime(agentId, n.getRounds());
+
                             }
 
-                            n.getFollowedAgentsLocation(hop).put(agentId, inbox[3]); //set as location the current location of agent                                
-                            n.addFollowedAgentsPrevLocations(agentId, PrevLocations, hop); // Add previous locations of agents to resend messages
-                            n.calculateTimeout(hop);
+                            n.getFollowedAgentsLocation(1).put(agentId, inbox[3]); //set as location the current location of agent                                
+                            n.addFollowedAgentsPrevLocations(agentId, PrevLocations, 1); // Add previous locations of agents to resend messages
+                            n.calculateTimeout(1);
                             n.deleteAgentInNode(agentId);
 
                             if (PrevLocations.size() - hop > 0) {
@@ -449,42 +453,42 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
                             }
                         }
                         if (inbox[0].equals("freeresp")) {
-                            int agentId = Integer.valueOf(inbox[1]);
-                            String newLocation = inbox[2];
-                            int hop = Integer.valueOf(inbox[3]);
-                            StringSerializer s = new StringSerializer();
-                            ArrayList<String> PrevLocations = (ArrayList<String>) s.deserialize(inbox[4]);
-                            incrementACKAmount();
-                            n.incMsgRecv();
-                            n.setLastMessageFreeResp(agentId, n.getRounds(), newLocation, hop);
-
-                            //for (int i = 1; i <= SimulationParameters.nhops; i++) {
-                            n.calculateTimeout(hop);
-                            //}
-                            if (n.getFollowedAgents(hop).containsKey(agentId)) {
-                                //  n.deleteAllFollowedReferences(agentId);
-                                n.getFollowedAgents(hop).remove(agentId);
-                                //     n.deleteAgentFromRep(hop, agentId);
-//                                    n.removeResponsibleAgentsPrevLocations(agentId, hop);
-                            }
-                            //} else {
-                            //    incrementFalsePossitives();
-                            //}
-                            if (PrevLocations.size() - hop > 0) {
-                                String prevPrevLoc = PrevLocations.get(PrevLocations.size() - hop);
-
-                                if (hop < SimulationParameters.nhopsChain && !prevPrevLoc.equals(n.getVertex().getName())) {
-                                    //System.out.println(n.getVertex().getName() + "resending freeresp to prevprev" + prevPrevLoc);
-                                    hop++;
-                                    String[] msgnoder = new String[5];
-                                    msgnoder[0] = "freeresp";
-                                    msgnoder[1] = String.valueOf(agentId);
-                                    msgnoder[2] = n.getVertex().getName() + newLocation;
-                                    msgnoder[3] = String.valueOf(hop); //first hop
-                                    msgnoder[4] = inbox[4]; //Todo: review hops number -> probably this is different
-                                    NetworkNodeMessageBuffer.getInstance().putMessageWithNetworkDelay(this, n, prevPrevLoc, msgnoder, hop);
-                                }
-                            }
+//                            int agentId = Integer.valueOf(inbox[1]);
+//                            String newLocation = inbox[2];
+//                            int hop = Integer.valueOf(inbox[3]);
+//                            StringSerializer s = new StringSerializer();
+//                            ArrayList<String> PrevLocations = (ArrayList<String>) s.deserialize(inbox[4]);
+//                            incrementACKAmount();
+//                            n.incMsgRecv();
+//                            n.setLastMessageFreeResp(agentId, n.getRounds(), newLocation, hop);
+//
+//                            //for (int i = 1; i <= SimulationParameters.nhops; i++) {
+//                            n.calculateTimeout(hop);
+//                            //}
+//                            if (n.getFollowedAgents(hop).containsKey(agentId)) {
+//                                //  n.deleteAllFollowedReferences(agentId);
+//                                n.getFollowedAgents(hop).remove(agentId);
+//                                //     n.deleteAgentFromRep(hop, agentId);
+////                                    n.removeResponsibleAgentsPrevLocations(agentId, hop);
+//                            }
+//                            //} else {
+//                            //    incrementFalsePossitives();
+//                            //}
+//                            if (PrevLocations.size() - hop > 0) {
+//                                String prevPrevLoc = PrevLocations.get(PrevLocations.size() - hop);
+//
+//                                if (hop < SimulationParameters.nhopsChain && !prevPrevLoc.equals(n.getVertex().getName())) {
+//                                    //System.out.println(n.getVertex().getName() + "resending freeresp to prevprev" + prevPrevLoc);
+//                                    hop++;
+//                                    String[] msgnoder = new String[5];
+//                                    msgnoder[0] = "freeresp";
+//                                    msgnoder[1] = String.valueOf(agentId);
+//                                    msgnoder[2] = n.getVertex().getName() + newLocation;
+//                                    msgnoder[3] = String.valueOf(hop); //first hop
+//                                    msgnoder[4] = inbox[4]; //Todo: review hops number -> probably this is different
+//                                    NetworkNodeMessageBuffer.getInstance().putMessageWithNetworkDelay(this, n, prevPrevLoc, msgnoder, hop);
+//                                }
+//                            }
 
                         }
                         if (inbox[0].equals("connect")) {
@@ -499,12 +503,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
                     //System.out.println("sale node name:" + n.getVertex().getName());
 
                     if (SimulationParameters.activateReplication.equals("replalgon")) {
-                        for (int i = 1; i <= SimulationParameters.nhopsChain; i++) {
-                            n.calculateTimeout(i);
-                            evaluateAgentCreation(n, i);
-                        }
-                        // n.calculateTimeoutArrival();
-                        //evaluateAgentCreationArrival(n);
+                        n.calculateTimeout(1);
+                        evaluateAgentCreation(n, 1);
+
                     }
                     // Do some stuff
                     //System.out.println("continuaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa?");
@@ -591,37 +592,91 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
                 n.getVertex().setPh((n.getVertex().getPh() - n.getVertex().getPh() * 0.001f));
             }
         }
-
+        //System.out.println("jojojojojojo");
         return false;
     }
 
     //Example: It is better handshake protocol. J. Gomez
     @Override
     public void evaluateAgentCreation(Node n, int hop) {
-        synchronized (NetworkEnvironmentPheromoneReplicationNodeFailingChainv2.class) {
-            Iterator<Integer> iter = n.getIdCounter().keySet().iterator();
+        synchronized (this) {
+            Iterator<Map.Entry<Integer, Integer>> iter = n.getFollowedAgents(hop).entrySet().iterator();
             int estimatedTimeout;
             int stdDevTimeout;
+
+            //Replication hops
+            if (!n.getFollowedAgents(hop).isEmpty()) {
+                n.printReplicationHops();
+            }
             //for each followed agent
             while (iter.hasNext()) {
-                //Key: agentId                
-                int agentId = iter.next();
-                n.printReplicationHops();
+                //Key: agentId
+                Map.Entry<Integer, Integer> Key = iter.next();
+                int agentId = Key.getKey();
+                //System.out.println(n.getVertex().getName() + " hashmap " + n.getResponsibleAgents(hop) + "hop:" + hop);
 
-                if (n.getFollowedAgentsLocation(hop).containsKey(agentId)) {
-                    System.out.println("entra aqui... .. ....");
-                    String nodeId = n.getFollowedAgentsLocation(hop).get(agentId); //StringNodeChainHelper.trimNodeNeighbor(n.getFollowedAgentsLocation(hop).get(agentId));
-                    estimatedTimeout = n.estimateExpectedTime(nodeId, hop);
-                    stdDevTimeout = (int) n.getStdDevTimeout(nodeId, hop);
-                    if (n.getLastAgentDeparting(hop).containsKey(agentId) && (Math.abs((n.getRounds() - n.getLastAgentDeparting(agentId, hop))) > (estimatedTimeout + 3 * stdDevTimeout))) {
-                        System.out.println("nodep: " + n.getVertex().getName() + ", estimatedTimeout: " + estimatedTimeout + ", 3*stdvTimeout" + 3 * stdDevTimeout + ", lastAgentDep: " + n.getLastAgentDeparting(agentId, hop) + ", node rounds: " + n.getRounds() + ", hops:" + hop);
-                        //by now not storing original father id
-                        System.out.println("create new agent instance v2..." + n.getVertex().getName() + " father: " + agentId);
-                        createNewAgents(1, n, agentId);
+                //if (n.getFollowedAgentsLocation(hop).containsKey(agentId)) {
+                estimatedTimeout = n.estimateExpectedTime(null, hop);
+                stdDevTimeout = (int) n.getStdDevTimeout(null, hop);
+                //System.out.println("NodeId" + nodeId  + ", hop:" + hop);
+                if (n.containsFirstDepartingMsgTime(agentId) && (Math.abs((n.getRounds() - n.getFirstDepartingMsgTime(agentId))) > (estimatedTimeout + 3 * stdDevTimeout))) { //this is not the expresion
+                    /*if (n.getResponsibleAgentsLocation().containsKey(k) && n.getNodeTimeouts().containsKey(n.getResponsibleAgentsLocation().get(k))) {
+                        n.getNodeTimeouts().get(n.getResponsibleAgentsLocation().get(k)).add(estimatedTimeout);
+                        //n.addTimeout(estimatedTimeout);
+                    }*/
+                    System.out.println("nodep: " + n.getVertex().getName() + ", estimatedTimeout: " + estimatedTimeout + ", 3*stdvTimeout" + 3 * stdDevTimeout + ", lastAgentDep: " + n.getFirstDepartingMsgTime(agentId) + ", node rounds: " + n.getRounds() + ", hops:" + hop);
+                    //int father;
+                    if (n.getFollowedAgents(hop).containsKey(agentId)) {
+                        if (n.getFollowedAgents(hop).get(agentId) == -1) {
+                            System.out.println("create new agent instance..." + n.getVertex().getName() + " father: " + agentId);
+                            //n.printReplicationHop(hop);
+                            createNewAgents(1, n, agentId);
+                            // father = agentId;
+                        } else {
+                            int idOrig = n.getFollowedAgents(hop).get(agentId);
+                            createNewAgents(1, n, idOrig);
+                            System.out.println("create new agent instance..." + n.getVertex().getName() + " father: " + idOrig);
+                            //n.printReplicationHop(hop);
+                            //father = idOrig;
+                        }
+                        //send message to previous locations
+                        /*ArrayList<String> PrevLocations = n.getResponsibleAgentsPrevLocations(agentId, hop);
+                            int tmphop = hop;
+                           /* if (PrevLocations != null && PrevLocations.size() - hop > 0) {
+                                String prevPrevLoc = PrevLocations.get(PrevLocations.size() - hop);
+                                StringSerializer s = new StringSerializer();
+
+                                String sPrevLocations = (String) s.serialize(PrevLocations);
+                                if (tmphop < SimulationParameters.nhopsChain && !prevPrevLoc.equals(n.getVertex().getName())) {
+                                    //System.out.println(n.getVertex().getName() + "resending freeresp to prevprev" + prevPrevLoc);
+                                    tmphop++;
+                                    String[] msgnoder = new String[5];
+                                    msgnoder[0] = "freeresp";
+                                    msgnoder[1] = String.valueOf(agentId);
+                                    StringSerializer sd = new StringSerializer();
+                                    msgnoder[2] = sd.serialize(PrevLocations);
+                                    msgnoder[3] = String.valueOf(tmphop); //first hop
+                                    msgnoder[4] = sPrevLocations; //Todo: review hops number -> probably this is different                                
+                                    //System.out.println("xxx:" + msgnoder[2]);
+                                    NetworkNodeMessageBuffer.getInstance().putMessage(prevPrevLoc, msgnoder);
+                                    //System.out.println("Resending free resp agent:" + agentId + "father" + father + ", hop: " + tmphop + " to:" + prevPrevLoc + " key: " + msgnoder[2]);
+                                }
+                            }*/
                         iter.remove();
                         n.deleteAgentFromRep(hop, agentId);
+                        //System.out.println("after removal");
+                        //n.printReplicationHop(hop);
                     }
+                    //for (int i = 1; i <= SimulationParameters.nhopsChain; i++) {
+//                    n.removeResponsibleAgentsPrevLocations(k, hop);
+                    //}
+                    //System.out.println("node after: " + n.getVertex().getName() + " - " + n.getResponsibleAgents());
+                    //System.out.println("end creation of agent" + newAgentID);
                 }
+                //}
+                /*else {
+                    System.out.println("not contains locations!");
+                }*/
             }
         }
     }
