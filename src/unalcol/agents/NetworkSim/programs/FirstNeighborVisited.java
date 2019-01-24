@@ -50,7 +50,7 @@ public class FirstNeighborVisited implements AgentProgram {
             GraphElements.MyVertex v = it.next();
             tt.add(v);
             if (v != null) {
-                if (v.getStatus() != "v") {
+                if (v.getStatus() != "visited") {
                     vs.add(v);
                 }
             }

@@ -50,7 +50,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
             MobileAgent a = (MobileAgent) agent;
 
             currentNode = a.getLocation();
-            currentNode.setStatus("v");
+            //currentNode.setStatus("v");
 
             try {
                 if (a.status == Action.DIE) {
@@ -337,6 +337,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
         if (agent instanceof Node) {
             agent.sleep(50);
             Node n = (Node) agent;
+
             //System.out.println("thread of node " + n.getVertex().getName() + "ph: " + n.getVertex().getPh());
             n.incRounds();
             //System.out.println("node thread:" + n.getVertex().getName());
@@ -411,10 +412,18 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
 
                             // increase counter 
                             if (!n.getIdCounter().containsKey(agentId)) {
+                                //Print Replication hops
+//                                if (!n.getFollowedAgents(1).isEmpty()) {
+//                                    n.printReplicationHops();
+//                                }
                                 n.getIdCounter().put(agentId, 0);
                                 n.setFirstDepartingMsgTime(agentId, n.getRounds()); //set last agent depart message in a given hop.
                                 n.getFollowedAgents(1).put(agentId, father); //add agent to followed agents vector
                             } else {
+//                                //Print Replication hops
+//                                if (!n.getFollowedAgents(1).isEmpty()) {
+//                                    n.printReplicationHops();
+//                                }
                                 n.getIdCounter().put(agentId, n.getIdCounter().get(agentId) + 1);
                             }
 
@@ -422,14 +431,16 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
                             // there are two references to agent agentId in other nodes
                             // reference can be deleted.
                             if (n.getIdCounter().get(agentId) == SimulationParameters.nhopsChain - 1) {
-                                System.out.println("delete agent" + agentId + "from " + n.getVertex());
-                                n.getIdCounter().remove(agentId);
-                                n.calculateTimeout(1);
-                                if (n.getFollowedAgents(1).containsKey(agentId)) {
-                                    n.getFollowedAgents(1).remove(agentId);
-                                }
-                                n.setLimitDepartingMsgTime(agentId, n.getRounds());
 
+//                                //Print Replication hops
+//                                if (!n.getFollowedAgents(1).isEmpty()) {
+//                                    n.printReplicationHops();
+//                                }
+                                //System.out.println("delete agent" + agentId + "from " + n.getVertex());
+                                n.getIdCounter().remove(agentId);                               
+                                n.setLimitDepartingMsgTime(agentId, n.getRounds());
+                                n.calculateTimeout(1);
+                                n.deleteAgentFromRep(1, agentId);
                             }
 
                             n.getFollowedAgentsLocation(1).put(agentId, inbox[3]); //set as location the current location of agent                                
@@ -440,6 +451,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
                             if (PrevLocations.size() - hop > 0) {
                                 String prevLoc = PrevLocations.get(PrevLocations.size() - hop);
                                 if (hop < SimulationParameters.nhopsChain && !prevLoc.equals(n.getVertex().getName())) {
+                                    //System.out.println("Node " + n.getVertex().getName() +  " departing resent " + hop +  " to " + prevLoc);
                                     hop++;
                                     String[] msgnode = new String[6];
                                     msgnode[0] = "departing";
@@ -599,15 +611,12 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
     //Example: It is better handshake protocol. J. Gomez
     @Override
     public void evaluateAgentCreation(Node n, int hop) {
+        
         synchronized (this) {
             Iterator<Map.Entry<Integer, Integer>> iter = n.getFollowedAgents(hop).entrySet().iterator();
             int estimatedTimeout;
             int stdDevTimeout;
-
-            //Replication hops
-            if (!n.getFollowedAgents(hop).isEmpty()) {
-                n.printReplicationHops();
-            }
+            //System.out.println("node " + n.getVertex().getName() + "followed Agents" + n.getFollowedAgents(hop));
             //for each followed agent
             while (iter.hasNext()) {
                 //Key: agentId
@@ -663,7 +672,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
                                 }
                             }*/
                         iter.remove();
+                        System.out.println("node"  + n.getVertex().getName() + " following before: " + n.getFollowedAgents(hop));
                         n.deleteAgentFromRep(hop, agentId);
+                        System.out.println("node"  + n.getVertex().getName() + " following now: " + n.getFollowedAgents(hop));
                         //System.out.println("after removal");
                         //n.printReplicationHop(hop);
                     }

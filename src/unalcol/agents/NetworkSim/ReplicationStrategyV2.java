@@ -118,6 +118,7 @@ public class ReplicationStrategyV2 extends ReplicationStrategyInterface {
 
     @Override
     public void removeReferencesForCreation(int agentId) {
+        getFollowedAgents().remove(agentId);        
         getFirstDepartingMsgTime().remove(agentId);
         getFollowedAgentsLocation().remove(agentId);
         getResponsibleAgentsPrevLocations().remove(agentId);

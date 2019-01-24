@@ -623,7 +623,7 @@ public class Node extends Agent {
     }
 
     public void printReplicationHops() {
-        System.out.println("Node" + getVertex().getName() + "Dictionary{idagent=counter}: " + idCounter);
+        System.out.println("Node: " + getVertex().getName() + " Dictionary{idagent=counter}: " + idCounter);
         if (SimulationParameters.simMode.equals("chainv2")) {
             System.out.println("Node" + getVertex().getName() + " - hop " + 1 + " repl: " + repStrategy.get(1));
         } else {

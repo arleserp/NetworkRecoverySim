@@ -914,6 +914,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                     }
                                      */
                                     a.setLocation(v);
+                                    
+
                                     a.getLocation().setStatus("visited");
                                     if (SimulationParameters.activateReplication.equals("replalgon")) {
                                         String[] msgarrived = new String[4];
