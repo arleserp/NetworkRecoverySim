@@ -409,6 +409,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
                             if (hop > 1) {
                                 n.incMsgRecv();
                             }
+                            System.out.println("Node" + n.getVertex().getName() + " counter :" + n.getIdCounter());
 
                             // increase counter 
                             if (!n.getIdCounter().containsKey(agentId)) {
@@ -416,7 +417,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
 //                                if (!n.getFollowedAgents(1).isEmpty()) {
 //                                    n.printReplicationHops();
 //                                }
-                                n.getIdCounter().put(agentId, 0);
+                                n.getIdCounter().put(agentId, dest);
                                 n.setFirstDepartingMsgTime(agentId, n.getRounds()); //set last agent depart message in a given hop.
                                 n.getFollowedAgents(1).put(agentId, father); //add agent to followed agents vector
                             } else {
@@ -424,13 +425,13 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
 //                                if (!n.getFollowedAgents(1).isEmpty()) {
 //                                    n.printReplicationHops();
 //                                }
-                                n.getIdCounter().put(agentId, n.getIdCounter().get(agentId) + 1);
+                                n.getIdCounter().put(agentId, n.getIdCounter().get(agentId) + "-" + dest);
                             }
 
                             //if counter is equal to nhopsChain means that 
                             // there are two references to agent agentId in other nodes
                             // reference can be deleted.
-                            if (n.getIdCounter().get(agentId) == SimulationParameters.nhopsChain - 1) {
+                            if (n.getIdCounter().get(agentId).split("p").length == SimulationParameters.nhopsChain - 1) {
 
 //                                //Print Replication hops
 //                                if (!n.getFollowedAgents(1).isEmpty()) {
@@ -637,14 +638,14 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
                     //int father;
                     if (n.getFollowedAgents(hop).containsKey(agentId)) {
                         if (n.getFollowedAgents(hop).get(agentId) == -1) {
-                            System.out.println("create new agent instance..." + n.getVertex().getName() + " father: " + agentId);
+                            System.out.println("create new agent instance..." + n.getVertex().getName() + " father: " + agentId + " prevLocs:" + n.getResponsibleAgentsPrevLocations(agentId, hop));
                             //n.printReplicationHop(hop);
                             createNewAgents(1, n, agentId);
                             // father = agentId;
                         } else {
                             int idOrig = n.getFollowedAgents(hop).get(agentId);
                             createNewAgents(1, n, idOrig);
-                            System.out.println("create new agent instance..." + n.getVertex().getName() + " father: " + idOrig);
+                            System.out.println("create new agent instance..." + n.getVertex().getName() + " father: " + idOrig + " prevLocs:" + n.getResponsibleAgentsPrevLocations(agentId, hop));
                             //n.printReplicationHop(hop);
                             //father = idOrig;
                         }
@@ -672,7 +673,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChainv2 extends Ne
                                 }
                             }*/
                         iter.remove();
-                        System.out.println("node"  + n.getVertex().getName() + " following before: " + n.getFollowedAgents(hop));
+                        //System.out.println("node"  + n.getVertex().getName() + " following before: " + n.getFollowedAgents(hop) + );
                         n.deleteAgentFromRep(hop, agentId);
                         System.out.println("node"  + n.getVertex().getName() + " following now: " + n.getFollowedAgents(hop));
                         //System.out.println("after removal");

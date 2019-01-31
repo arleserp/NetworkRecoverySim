@@ -45,7 +45,7 @@ public class Node extends Agent {
     private ConcurrentHashMap<Integer, ReplicationStrategyInterface> repStrategy;
     private LinkedBlockingQueue<String[]> networkMessagebuffer;
 
-    private HashMap<Integer, Integer> idCounter; //added by arles.rodriguez 12/12/2018
+    private HashMap<Integer, String> idCounter; //added by arles.rodriguez 12/12/2018
 
     AtomicInteger c = new AtomicInteger(0);
     protected Hashtable<String, Object> properties = new Hashtable<>();
@@ -642,11 +642,11 @@ public class Node extends Agent {
         repStrategy.get(hop).removeReferencesForCreation(agentId);
     }
 
-    public HashMap<Integer, Integer> getIdCounter() {
+    public HashMap<Integer, String> getIdCounter() {
         return idCounter;
     }
 
-    public void setIdCounter(HashMap<Integer, Integer> idCounter) {
+    public void setIdCounter(HashMap<Integer, String> idCounter) {
         this.idCounter = idCounter;
     }
 
