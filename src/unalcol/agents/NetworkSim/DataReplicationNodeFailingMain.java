@@ -391,8 +391,13 @@ public class DataReplicationNodeFailingMain {
                 if (args.length > 14) {
                     SimulationParameters.nofailRounds = Integer.valueOf(args[14]);
                 }
+                if(args.length > 15){
+                    SimulationParameters.failureProfile = String.valueOf(args[15]);
+                    SimulationParameters.failureProfile = SimulationParameters.failureProfile.trim();
+                }
             }
-            System.out.println("MaxIter" + SimulationParameters.maxIter);
+            //            System.out.println("MaxIter" + SimulationParameters.maxIter);
+            System.out.println(SimulationParameters.printParameters());
 
             DataReplicationEscenarioNodeFailing w = new DataReplicationEscenarioNodeFailing(SimulationParameters.popSize, SimulationParameters.pf);
             w.init();

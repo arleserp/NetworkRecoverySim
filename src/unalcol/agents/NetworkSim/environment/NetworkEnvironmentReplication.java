@@ -20,6 +20,7 @@ import unalcol.agents.NetworkSim.ActionParameters;
 import unalcol.agents.NetworkSim.GraphElements;
 import unalcol.agents.NetworkSim.MobileAgent;
 import unalcol.agents.NetworkSim.Node;
+import unalcol.agents.NetworkSim.util.StatisticsNormalDist;
 import unalcol.agents.NetworkSim.util.StatsCreation;
 
 public abstract class NetworkEnvironmentReplication extends Environment {
@@ -45,7 +46,6 @@ public abstract class NetworkEnvironmentReplication extends Environment {
     public static int agentsDie = 0;
     private static int totalAgents = 0;
     private static HashMap<String, Long> networkDelays;
-    
 
     /**
      * @return the totalAgents
@@ -537,6 +537,10 @@ public abstract class NetworkEnvironmentReplication extends Environment {
             //System.out.println("age:" + average);
             this.setAge(average);
         }*/
+        //when age is incremented observers must be notified
+        setChanged();
+        notifyObservers();
+
     }
 
     /**
@@ -609,8 +613,31 @@ public abstract class NetworkEnvironmentReplication extends Environment {
     public abstract void validateNodesAlive();
 
     public abstract List<Node> getNodes();
-    
+
     public abstract void evaporatePheromone();
-    
+
     public abstract StatsCreation getStatAgentCreation();
+
+    public StatisticsNormalDist getAmountOfNeighbourInfo() {
+        double avgInfo = 0.0;
+        ArrayList<Double> data = new ArrayList<>();
+        int n=0;
+        synchronized (NetworkEnvironmentReplication.class) {
+            Vector cloneAgents = (Vector) this.getAgents().clone();
+            Iterator itr = cloneAgents.iterator();
+            while (itr.hasNext()) {
+                Agent a = (Agent) itr.next();
+                if (a instanceof Node) {
+                    if (((Node) a).status != Action.DIE) {
+                        Node t = (Node)a;
+                        n++;
+                        data.add((double)t.getNetworkdata().size());
+                        
+                    }
+                }
+            }
+        }
+        StatisticsNormalDist st = new StatisticsNormalDist(data, data.size());
+        return st;
+    }
 }

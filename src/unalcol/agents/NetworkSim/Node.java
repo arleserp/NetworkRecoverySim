@@ -669,4 +669,12 @@ public class Node extends Agent {
     public boolean containsFirstDepartingMsgTime(int agentId) {
         return ((ReplicationStrategyV2) repStrategy.get(1)).getFirstDepartingMsgTime().containsKey(agentId);
     }
+
+    @Override
+    public String toString() {
+        return "Node{" + "v=" + v + ", rounds=" + rounds + '}';
+    }
+    
+    
+    
 }

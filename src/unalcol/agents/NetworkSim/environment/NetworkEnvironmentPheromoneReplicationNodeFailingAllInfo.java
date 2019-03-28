@@ -141,21 +141,25 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
     }
 
     private void connect(GraphElements.MyVertex vertex, String nodetoConnect) {
-        synchronized (NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo.class) {
-            GraphElements.MyVertex nodeTo = findVertex(nodetoConnect);
-            if (nodeTo != null) {
-                if (!getTopology().isNeighbor(vertex, nodeTo)) {
+        synchronized (TopologySingleton.class) {
+            try {
+                GraphElements.MyVertex nodeTo = findVertex(nodetoConnect);
+                if (nodeTo != null) {
+                    //if (!getTopology().isNeighbor(vertex, nodeTo)) {
                     if (getTopology().containsEdge("e" + vertex.getName() + nodeTo.getName())) {
                         System.out.println("creating extra name while cleaning vertex");
                         getTopology().addEdge("eb" + vertex.getName() + nodeTo.getName(), vertex, nodeTo);
                     } else {
                         getTopology().addEdge("e" + vertex.getName() + nodeTo.getName(), vertex, nodeTo);
                     }
+                    //}
+                    adyacenceMatrix[nametoAdyLocation.get(vertex.getName())][nametoAdyLocation.get(nodetoConnect)] = 1;
+                    adyacenceMatrix[nametoAdyLocation.get(nodetoConnect)][nametoAdyLocation.get(vertex.getName())] = 1;
+                } else {
+                    System.out.println("node to connect is null:" + nodetoConnect);
                 }
-                adyacenceMatrix[nametoAdyLocation.get(vertex.getName())][nametoAdyLocation.get(nodetoConnect)] = 1;
-                adyacenceMatrix[nametoAdyLocation.get(nodetoConnect)][nametoAdyLocation.get(vertex.getName())] = 1;
-            } else {
-                System.out.println("node to connect is null:" + nodetoConnect);
+            } catch (Exception ex) {
+                System.out.println("Error trying to connect nodes " + ex.getMessage());
             }
         }
     }
@@ -206,20 +210,25 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
     }
 
     void addConnection(GraphElements.MyVertex dvertex, Node n) {
-        synchronized (NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo.class) {
-            if (getTopology().containsVertex(dvertex) && getTopology().containsVertex(n.getVertex()) && !getTopology().isNeighbor(dvertex, n.getVertex())) {
-                // if (topology.containsEdge("e" + dvertex.getName() + n.getVertex().getName())) {
-                //      topology.removeEdge("e" + dvertex.getName() + n.getVertex().getName());
-                // }
-                if (getTopology().containsEdge("e" + dvertex + n.getVertex().getName())) {
-                    System.out.println("creating extra name while cleaning vertex");
-                    getTopology().addEdge("eb" + dvertex.getName() + n.getVertex().getName(), n.getVertex(), n.getVertex());
-                } else {
-                    getTopology().addEdge("e" + dvertex.getName() + n.getVertex().getName(), dvertex, n.getVertex());
+
+        try {
+            synchronized (NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo.class) {
+                if (getTopology().containsVertex(dvertex) && getTopology().containsVertex(n.getVertex()) && !getTopology().isNeighbor(dvertex, n.getVertex())) {
+                    // if (topology.containsEdge("e" + dvertex.getName() + n.getVertex().getName())) {
+                    //      topology.removeEdge("e" + dvertex.getName() + n.getVertex().getName());
+                    // }
+                    if (getTopology().containsEdge("e" + dvertex + n.getVertex().getName())) {
+                        System.out.println("creating extra name while cleaning vertex");
+                        getTopology().addEdge("eb" + dvertex.getName() + n.getVertex().getName(), n.getVertex(), n.getVertex());
+                    } else {
+                        getTopology().addEdge("e" + dvertex.getName() + n.getVertex().getName(), dvertex, n.getVertex());
+                    }
                 }
+                adyacenceMatrix[nametoAdyLocation.get(n.getVertex().getName())][nametoAdyLocation.get(dvertex.getName())] = 1;
+                adyacenceMatrix[nametoAdyLocation.get(dvertex.getName())][nametoAdyLocation.get(n.getVertex().getName())] = 1;
             }
-            adyacenceMatrix[nametoAdyLocation.get(n.getVertex().getName())][nametoAdyLocation.get(dvertex.getName())] = 1;
-            adyacenceMatrix[nametoAdyLocation.get(dvertex.getName())][nametoAdyLocation.get(n.getVertex().getName())] = 1;
+        } catch (Exception ex) {
+            System.out.println("Trying to connect to fail node :(");
         }
     }
 
@@ -245,9 +254,24 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
             //}
             addConnection(vv, n);
             //NodeFailingProgram np = new NodeFailingProgram(SimulationParameters.npf);
-            NodeFailingProgram np = new NodeFailingProgram((float) SimulationParameters.npf);
-            NetworkNodeMessageBuffer.getInstance().createBuffer(d);
+            //NodeFailingProgram np = new NodeFailingProgram((float) SimulationParameters.npf);
 
+            NodeFailingProgram np;
+
+            if (SimulationParameters.failureProfile.equals("backtolowpf")) {
+                np = new NodeFailingProgram(0); //using this option reduces failure prob to zero
+            } else if (SimulationParameters.failureProfile.contains("backtolowpf")) {
+                double rNoFail = Double.parseDouble(SimulationParameters.failureProfile.replaceAll("backtolowpf", ""));
+                if (this.getAge() >= rNoFail) {
+                    np = new NodeFailingProgram(0); //using this option reduces failure prob to zero
+                } else {
+                    np = new NodeFailingProgram((float) SimulationParameters.npf);
+                }
+            } else {
+                np = new NodeFailingProgram((float) SimulationParameters.npf);
+            }
+
+            NetworkNodeMessageBuffer.getInstance().createBuffer(d);
             Node nod;
             nod = new Node(np, vv);
             nod.setVertex(vv);
@@ -341,9 +365,14 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
                 adyacenceMatrix[nametoAdyLocation.get(vertex.getName())][i] = 0;
                 adyacenceMatrix[i][nametoAdyLocation.get(vertex.getName())] = 0;
             }
-            if (!getTopology().removeVertex(vertex)) {
-                System.out.println("cannot remove vertex " + vertex);
+            try {
+                if (!getTopology().removeVertex(vertex)) {
+                    System.out.println("cannot remove vertex " + vertex);
+                }
+            } catch (Exception ex) {
+                System.out.println("removeVertex: Error trying to remove vertex" + ex.getMessage());
             }
+
             return true;
         }
     }
@@ -751,7 +780,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
                                  * n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(),
                                  * recvData)); System.out.println("n" +
                                  * n.getNetworkdata()); end or recv part
-                                 */
+                             */
                             //}
                             if (inbox[0].equals("connect")) {
                                 //message msgnodediff: connect|level|nodeid|nodetoconnect
@@ -879,6 +908,31 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
         for (GraphElements.MyVertex v : getTopology().getVertices()) {
             networkInfo.put(v.getName(), new ArrayList<>(getTopologyNames(v)));
         }
+        return networkInfo;
+    }
+
+    private void loadNeighboursRecursively(ArrayList<GraphElements.MyVertex> neighbours, int nhopsChain, GraphElements.MyVertex v) {
+        if(nhopsChain == 0){
+            return;
+        }            
+        List<GraphElements.MyVertex> list = new ArrayList<>(getTopology().getNeighbors(v));
+        Iterator<GraphElements.MyVertex> itr = list.iterator();
+        while (itr.hasNext()) {
+            GraphElements.MyVertex ne = itr.next();
+            neighbours.add(ne);
+            loadNeighboursRecursively(neighbours, nhopsChain-1, ne);
+        }
+    }
+
+    public HashMap<String, ArrayList> loadPartialNetwork(int nhopsChain, Node n) {
+        HashMap<String, ArrayList> networkInfo = new HashMap<>();
+        ArrayList<GraphElements.MyVertex> neighbours = new ArrayList<>();
+        loadNeighboursRecursively(neighbours, nhopsChain, n.getVertex());
+        System.out.println("node" + n + "neigh: "  + neighbours);
+        for (GraphElements.MyVertex v : neighbours) {
+            networkInfo.put(v.getName(), new ArrayList<>(getTopologyNames(v)));
+        }
+        System.out.println("node" + n  + "info = " + networkInfo);
         return networkInfo;
     }
 

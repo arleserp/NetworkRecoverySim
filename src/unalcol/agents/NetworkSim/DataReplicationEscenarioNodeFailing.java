@@ -176,9 +176,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         String[] nodePercepts = {"data", "neighbors"};
         String[] nodeActions = {"communicate", "die"};
         SimpleLanguage nodeLanguaje = new SimpleLanguage(nodePercepts, nodeActions);
-        NodeFailingProgram np = new NodeFailingProgram(SimulationParameters.npf);
-        // NodeFailingProgram np = new NodeFailingProgram((float)Math.random()*SimulationParameters.npf);
 
+        // NodeFailingProgram np = new NodeFailingProgram((float)Math.random()*SimulationParameters.npf);
         //report = new reportHealingProgram(population, probFailure, this);
         //greport = new GraphicReportHealingObserver(probFailure);
         //Create graph
@@ -225,6 +224,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         for (GraphElements.MyVertex v : g.getVertices()) {
             v.setStatus("alive");
             Node n = null;
+            NodeFailingProgram np = new NodeFailingProgram(SimulationParameters.npf);
             if (SimulationParameters.simMode.contains("chain") && nodeTimeout != null && nodeTimeout.containsKey(v.getName())) {
                 //System.out.println("load" + nodeTimeout.get(v.getName()));
                 n = new Node(np, v, nodeTimeout.get(v.getName()));
@@ -285,6 +285,14 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                 for (Node n : world.getNodes()) {
                     //System.out.println("enerooooooooooooooooooo");
                     n.setNetworkdata(((NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo) world).loadAllTopology());
+                }
+                break;
+            case "nhopsinfo":
+                world = new NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo(agents, nodeLanguaje, nodeLanguaje, g);
+                ((NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo) world).addNodes(nodes);
+                for (Node n : world.getNodes()) {
+                    //System.out.println("enerooooooooooooooooooo")                    ;
+                    n.setNetworkdata(((NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo) world).loadPartialNetwork(SimulationParameters.nhopsChain, n));
                 }
                 break;
             default:
@@ -370,7 +378,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                             break;
                         } else if (n != null) {
 
-                            if (n.getAge() % 50 == 0) {
+                            if (n.getAge() % 50 == 0){ //SimulationParameters.maxIter > 500 && n.getAge() % 50 == 0) || (SimulationParameters.maxIter <= 500 && n.getAge() % 50 == 0)) { //backwards compatibility
                                 agentsLive.add(n.getAge(), agentsAlive);
                                 nodesLive.add(n.getAge(), nodesAlive);
                                 //call comparator here!
@@ -487,22 +495,25 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     public void run() {
         //try {
         while (true) {
-            try {
-                //!world.isFinished()) {
-                Thread.sleep(50);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(DataReplicationEscenarioNodeFailing.class
-                        .getName()).log(Level.SEVERE, null, ex);
-            }
+
             if (fgup == null) {
                 fgup = new FrameGraphUpdater(world.getTopology(), frame, world);
                 fgup.start();
+            }
+            try {
+                //!world.isFinished()) {
+                Thread.sleep(50);
+
+            } catch (InterruptedException ex) {
+                Logger.getLogger(DataReplicationEscenarioNodeFailing.class
+                        .getName()).log(Level.SEVERE, null, ex);
             }
             //System.out.println("go");
             //System.out.println("halo");
             /* world.updateSandC();
             world.calculateGlobalInfo();
 
+            
             if (world.getAge() % 2 == 0 || world.getAgentsDie() == world.getAgents().size() || world.getRoundGetInfo() != -1) {
                 world.nObservers();
             }

@@ -56,6 +56,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
     HashMap<Integer, Double> globalInfo = new HashMap();
     HashMap<Integer, Integer> agentsNumber = new HashMap<>();
     HashMap<Integer, Integer> nodesComplete = new HashMap<>();
+    HashMap<Integer, StatisticsNormalDist> roundVsInfoAvg = new HashMap<>();
 
     public static int lastagentsAlive = -1;
     public static int lastnodesAlive = -1;
@@ -205,6 +206,12 @@ public class DataReplicationNodeFailingObserver implements Observer {
             if (!agentsNumber.containsKey(n.getAge())) {
                 agentsNumber.put(n.getAge(), n.getAgentsLive());
             }
+
+            if (SimulationParameters.simMode.equals("nhopsinfo")) {
+                if (!roundVsInfoAvg.containsKey(n.getAge())) {
+                    roundVsInfoAvg.put(n.getAge(), n.getAmountOfNeighbourInfo());
+                }
+            }
             /*
             if (!nodesComplete.containsKey(n.getAge())) {
                 nodesComplete.put(n.getAge(), n.getCompletionPercentage());
@@ -226,7 +233,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                 lastagentsAlive = agentsAlive;
             }
 
-            // System.out.println("maxIter:" + SimulationParameters.maxIter  + ", " + n.getAge());
+//            System.out.println("maxIter:" + SimulationParameters.maxIter  + ", " + n.getAge());
             if (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter || nodesAlive == 0) {
                 if (!isUpdating) {
                     System.out.println("stopping simulation");
@@ -278,7 +285,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                                     line += val + "-";
                                 }
                                 line = line.substring(0, line.length() - 1);
-                                
+
                                 //s.getCreationLog().keySet();
                                 writeNag.println(line);
                             }
@@ -286,6 +293,25 @@ public class DataReplicationNodeFailingObserver implements Observer {
                         } catch (IOException ex) {
                             Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                         }
+                    }
+
+                    if (SimulationParameters.simMode.equals("nhopsinfo")) {
+                        String roundVsInfoFileName = baseFilename + "+nhopsInfo+" + SimulationParameters.nhopsChain + "+roundVsInfo";
+                        createDir(roundVsInfoFileName);
+                        String roundVsInfoStats = "./" + roundVsInfoFileName + "/" + baseFilename + "+" + getFileName() + "+roundVsInfo.csv";
+                        PrintWriter writeRoundVsInfo = null;
+                        try {
+                            writeRoundVsInfo = new PrintWriter(new BufferedWriter(new FileWriter(roundVsInfoStats, true)));
+
+                            SortedSet<Integer> keysAg = new TreeSet<>(roundVsInfoAvg.keySet());
+                            for (int x : keysAg) {
+                                writeRoundVsInfo.println(x + "," + roundVsInfoAvg.get(x).getMean() + "," + roundVsInfoAvg.get(x).getStdDev());
+                            }
+                            writeRoundVsInfo.close();
+                        } catch (IOException ex) {
+                            Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+
                     }
 
                     //Write similarity metrics by round by simulation

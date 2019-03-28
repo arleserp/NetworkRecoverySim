@@ -269,7 +269,13 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
             //}
             addConnection(vv, n);
             //NodeFailingProgram np = new NodeFailingProgram(SimulationParameters.npf);
-            NodeFailingProgram np = new NodeFailingProgram((float) SimulationParameters.npf);
+
+            NodeFailingProgram np;            
+            if (SimulationParameters.failureProfile.equals("backtolowpf")) { 
+                np = new NodeFailingProgram(0); //using this option reduces failure prob to zero
+            } else {
+                np = new NodeFailingProgram((float) SimulationParameters.npf);
+            }
             NetworkNodeMessageBuffer.getInstance().createBuffer(d);
 
             Node nod;
@@ -563,6 +569,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
             }
         }
         if (nodesAlive.isEmpty()) {
+            System.out.println("This must be impossible!");
+            System.exit(0);
             return "none";
         }
         String min = Collections.min(nodesAlive, new CustomComparatorNode());
@@ -914,7 +922,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                     }
                                      */
                                     a.setLocation(v);
-                                    
 
                                     a.getLocation().setStatus("visited");
                                     if (SimulationParameters.activateReplication.equals("replalgon")) {
@@ -1207,7 +1214,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                                             msgnodediff[2] = n.getVertex().getName();
                                             msgnodediff[3] = d;
                                             NetworkNodeMessageBuffer.getInstance().putMessage(neig, msgnodediff);
-                                            //n.getPending().get(dif.toString()).add(neig);
+                                            //n.getPending().get(dif.toStrin g()).add(neig);
                                         }
                                     }
                                 }

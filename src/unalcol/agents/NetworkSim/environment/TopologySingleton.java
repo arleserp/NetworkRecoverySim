@@ -16,6 +16,7 @@ public class TopologySingleton {
     private Graph<GraphElements.MyVertex, String> topology;
 
     public Graph<GraphElements.MyVertex, String> getTopology() {
+        
         return topology;
     }
     

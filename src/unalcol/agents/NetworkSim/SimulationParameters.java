@@ -42,9 +42,10 @@ public class SimulationParameters {
     public static String genericFilenameTimeouts = "";
     public static int wsize = 5;
     public static int nofailRounds = 0;
+    public static String failureProfile = "default";
 
     public static String printParameters() {
-        return "SimulationParameters{" + "graphMode=" + graphMode + "\n, popSize=" + popSize + "\n, channelNumber=" + channelNumber + "\n, vertexNumber=" + vertexNumber + "\n, pf=" + pf + "\n, beta=" + beta + "\n, rows=" + rows + "\n, columns=" + columns + "\n, motionAlg=" + motionAlg + "\n, filename=" + filename + "\n, maxIter=" + maxIter + "\n, clusters=" + clusters + "\n, startNodesScaleFree=" + startNodesScaleFree + "\n, edgesToAttachScaleFree=" + edgesToAttachScaleFree + "\n, numSteps=" + numSteps + "\n, degree=" + degree + "\n, filenameLoc=" + filenameLoc + "\n, globalData=" + globalData + "\n, activateReplication=" + activateReplication + "\n, nodeDelay=" + nodeDelay + "\n, npf=" + npf + "\n, nhops=" + nhops + "\n, simMode=" + simMode + "\n, nhopsChain=" + nhopsChain + "\n, averageDelay=" + averageDelay + "\n, filenameDelays=" + filenameDelays + "\n, genericFilenameTimeouts=" + genericFilenameTimeouts + "\n, wsize=" + wsize + "\n, nofailRounds=" + nofailRounds + '}';
+        return "SimulationParameters{" + "graphMode=" + graphMode + "\n, popSize=" + popSize + "\n, channelNumber=" + channelNumber + "\n, vertexNumber=" + vertexNumber + "\n, pf=" + pf + "\n, beta=" + beta + "\n, rows=" + rows + "\n, columns=" + columns + "\n, motionAlg=" + motionAlg + "\n, filename=" + filename + "\n, maxIter=" + maxIter + "\n, clusters=" + clusters + "\n, startNodesScaleFree=" + startNodesScaleFree + "\n, edgesToAttachScaleFree=" + edgesToAttachScaleFree + "\n, numSteps=" + numSteps + "\n, degree=" + degree + "\n, filenameLoc=" + filenameLoc + "\n, globalData=" + globalData + "\n, activateReplication=" + activateReplication + "\n, nodeDelay=" + nodeDelay + "\n, npf=" + npf + "\n, nhops=" + nhops + "\n, simMode=" + simMode + "\n, nhopsChain=" + nhopsChain + "\n, averageDelay=" + averageDelay + "\n, filenameDelays=" + filenameDelays + "\n, genericFilenameTimeouts=" + genericFilenameTimeouts + "\n, wsize=" + wsize + "\n, nofailRounds=" + nofailRounds + "\n failureProfile=" + failureProfile +"}";
     }
 
 }

@@ -23,6 +23,10 @@ public class NodeFailingProgram implements AgentProgram {
         System.out.println("Node pf: " + pf);
     }
 
+    public void setPf(float pf) {
+        this.pf = pf;
+    }   
+    
     @Override
     public Action compute(Percept p) {
         //System.out.println("Node threeeeeeeeeeeeeeeeeead!");
