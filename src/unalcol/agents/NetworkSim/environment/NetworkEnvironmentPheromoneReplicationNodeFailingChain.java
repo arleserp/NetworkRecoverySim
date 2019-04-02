@@ -1071,6 +1071,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingChain extends Netw
                             n.calculateTimeout(hop);
                             n.deleteAgentInNode(agentId);
 
+                            
+                            
                             if (PrevLocations.size() - hop > 0) {
                                 String prevLoc = PrevLocations.get(PrevLocations.size() - hop);
                                 if (hop < SimulationParameters.nhopsChain && !prevLoc.equals(n.getVertex().getName())) {

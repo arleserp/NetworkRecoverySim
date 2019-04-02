@@ -713,6 +713,16 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
                     String[] inbox;
                     while ((inbox = NetworkNodeMessageBuffer.getInstance().getMessage(n.getVertex().getName())) != null) {
                         if (SimulationParameters.activateReplication.equals("replalgon")) {
+                            if (SimulationParameters.simMode.equals("nhopsinfo") && inbox[0].equals("networkdatanode")) {
+                                String source = inbox[1];
+                                StringSerializer s = new StringSerializer();
+                                HashMap<String, ArrayList> ndata = (HashMap) s.deserialize(inbox[2]);                                                                                                                               
+                                System.out.println(n.getVertex().getName() + "recv networkdatanode from " + source  + " nd:" + ndata);
+                                System.out.println("network data before: " + n.getNetworkdata());
+                                n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), ndata));
+                                System.out.println("network data after: " + n.getNetworkdata());
+                            }
+
                             //receives data
                             /*if (inbox[0].equals("networkdata")) {
                                 //completes and updates data
@@ -782,14 +792,26 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
                                  * n.getNetworkdata()); end or recv part
                              */
                             //}
-                            if (inbox[0].equals("connect")) {
-                                //message msgnodediff: connect|level|nodeid|nodetoconnect
-                                int level = Integer.valueOf(inbox[1]);
+                            if (inbox[0].equals("connect")) { //receive connect message from other node
+                                //message msgnodediff: connect|level|nodeid|nodetoconnect                                
                                 //String ndet = String.valueOf(inbox[2]);
                                 String nodetoConnect = inbox[3];
                                 connect(n.getVertex(), nodetoConnect);
+
+                                //When n connects to nodetoConnect I also send its network topology
+                                // if simulation mode is nhopsinfo
+                                if (SimulationParameters.simMode.equals("nhopsinfo")) {
+                                    String[] msgdatanode = new String[3];
+                                    msgdatanode[0] = "networkdatanode";
+                                    msgdatanode[1] = String.valueOf(n.getVertex().getName());
+                                    StringSerializer s = new StringSerializer();
+                                    msgdatanode[2] = s.serialize(n.getNetworkdata());
+                                    NetworkNodeMessageBuffer.getInstance().putMessage(nodetoConnect, msgdatanode);
+                                    System.out.println(n.getVertex().getName() + "send networkdatanode to " + nodetoConnect);
+                                }
                                 //createNewAgents(5, n);
                             }
+
                         }
                     }
                     /*if (SimulationParameters.activateReplication.equals("replalgon")) {
@@ -912,15 +934,15 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
     }
 
     private void loadNeighboursRecursively(ArrayList<GraphElements.MyVertex> neighbours, int nhopsChain, GraphElements.MyVertex v) {
-        if(nhopsChain == 0){
+        if (nhopsChain == 0) {
             return;
-        }            
+        }
         List<GraphElements.MyVertex> list = new ArrayList<>(getTopology().getNeighbors(v));
         Iterator<GraphElements.MyVertex> itr = list.iterator();
         while (itr.hasNext()) {
             GraphElements.MyVertex ne = itr.next();
             neighbours.add(ne);
-            loadNeighboursRecursively(neighbours, nhopsChain-1, ne);
+            loadNeighboursRecursively(neighbours, nhopsChain - 1, ne);
         }
     }
 
@@ -928,11 +950,11 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
         HashMap<String, ArrayList> networkInfo = new HashMap<>();
         ArrayList<GraphElements.MyVertex> neighbours = new ArrayList<>();
         loadNeighboursRecursively(neighbours, nhopsChain, n.getVertex());
-        System.out.println("node" + n + "neigh: "  + neighbours);
+        System.out.println("node" + n + "neigh: " + neighbours);
         for (GraphElements.MyVertex v : neighbours) {
             networkInfo.put(v.getName(), new ArrayList<>(getTopologyNames(v)));
         }
-        System.out.println("node" + n  + "info = " + networkInfo);
+        System.out.println("node" + n + "info = " + networkInfo);
         return networkInfo;
     }
 
