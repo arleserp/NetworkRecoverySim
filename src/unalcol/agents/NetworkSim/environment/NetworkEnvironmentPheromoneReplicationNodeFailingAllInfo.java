@@ -720,7 +720,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
                                 System.out.println(n.getVertex().getName() + "recv networkdatanode from " + source  + " nd:" + ndata);
                                 System.out.println("network data before: " + n.getNetworkdata());
                                 n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), ndata));
-                                System.out.println("network data after: " + n.getNetworkdata());
+                                n.pruneInformation(SimulationParameters.nhops); //use nhops to prune data
+                                System.out.println(n.getVertex().getName() + "network data after: " + n.getNetworkdata());
                             }
 
                             //receives data
@@ -931,7 +932,10 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
             networkInfo.put(v.getName(), new ArrayList<>(getTopologyNames(v)));
         }
         return networkInfo;
+
     }
+    
+    
 
     private void loadNeighboursRecursively(ArrayList<GraphElements.MyVertex> neighbours, int nhopsChain, GraphElements.MyVertex v) {
         if (nhopsChain == 0) {

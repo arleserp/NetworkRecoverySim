@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -673,8 +674,41 @@ public class Node extends Agent {
     @Override
     public String toString() {
         return "Node{" + "v=" + v + ", rounds=" + rounds + '}';
+
     }
-    
-    
-    
+
+    private void getListNeighboursHop(ArrayList<String> neighbours, int nhopsChain, String nodeName) {
+        if (nhopsChain == 0) {
+            return;
+        }
+
+        if (getNetworkdata().containsKey(nodeName) && getNetworkdata().get(nodeName) != null) {
+            List<String> list = new ArrayList<>(getNetworkdata().get(nodeName));
+            Iterator<String> itr = list.iterator();
+            while (itr.hasNext()) {
+                String ne = itr.next();
+                neighbours.add(ne);
+                getListNeighboursHop(neighbours, nhopsChain - 1, ne);
+            }
+        }
+    }
+
+    public void pruneInformation(int nhops) {
+        //System.out.println("nhops" + nhops);
+        ArrayList<String> neighbours = new ArrayList<>();
+        neighbours.add(this.getVertex().getName());
+        getListNeighboursHop(neighbours, nhops, this.getVertex().getName());
+        System.out.println("neighbours size:" + neighbours.size() + " networkdata.size=" + networkdata.size());
+        if (neighbours.size() != networkdata.size()) {
+            HashMap<String, ArrayList> networkDatatmp = new HashMap<>();
+            for (String s : neighbours) {
+                if (networkdata.containsKey(s)) {
+                    networkDatatmp.put(s, networkdata.get(s));
+                }
+            }
+            networkdata = networkDatatmp;
+        }
+
+    }
+
 }
