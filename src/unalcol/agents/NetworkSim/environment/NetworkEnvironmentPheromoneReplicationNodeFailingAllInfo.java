@@ -230,13 +230,14 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
         } catch (Exception ex) {
             System.out.println("Trying to connect to fail node :(");
         }
+
     }
 
     void createNewNode(Node n, String d) {
-        System.out.print("creating new node " + d);
+        System.out.print("node" + n + "is creating new node " + d);
         GraphElements.MyVertex dvertex = findVertex(d);
         if (dvertex != null) { //can ping node and discover
-            System.out.println("Node " + d + " is alive connecting instead create...[" + dvertex + "," + n.getVertex() + "]");
+            System.out.println("Node " + d + " is alive connecting instead create...[" + dvertex + ", " + n.getVertex().getName() + "]");            
             addConnection(dvertex, n);
         } else {
             GraphCreator.VertexFactory v = new GraphCreator.VertexFactory();
@@ -716,8 +717,8 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
                             if (SimulationParameters.simMode.equals("nhopsinfo") && inbox[0].equals("networkdatanode")) {
                                 String source = inbox[1];
                                 StringSerializer s = new StringSerializer();
-                                HashMap<String, ArrayList> ndata = (HashMap) s.deserialize(inbox[2]);                                                                                                                               
-                                System.out.println(n.getVertex().getName() + "recv networkdatanode from " + source  + " nd:" + ndata);
+                                HashMap<String, ArrayList> ndata = (HashMap) s.deserialize(inbox[2]);
+                                System.out.println(n.getVertex().getName() + "recv networkdatanode from " + source + " nd:" + ndata);
                                 System.out.println("network data before: " + n.getNetworkdata());
                                 n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), ndata));
                                 n.pruneInformation(SimulationParameters.nhops); //use nhops to prune data
@@ -842,7 +843,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
                 if (n.getNetworkdata().containsKey(n.getVertex().getName())) {
                     List<String> nd = new ArrayList((Collection) n.getNetworkdata().get(n.getVertex().getName())); //Store data given by agents
 
-                    //System.out.println("node" + n.getVertex().getName() +" nd:" + nd + "vs  topologyData:" + topologyData);
+                    
                     //dif = nd - topologyData
                     List<String> dif = new ArrayList<>(nd);
                     dif.removeAll(topologyData);
@@ -856,11 +857,12 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
 
                     //System.out.println("node 2 nd" + nd);
                     if (!dif.isEmpty()) {
+                        System.out.println("node" + n.getVertex().getName() +" nd:" + nd + " vs  topologyData:" + topologyData);
                         int level = 0;
                         level++;
                         for (String d : dif) {
                             //without neigbor data of d is impossible create d ?
-                            if (n.getNetworkdata().containsKey(d)) {
+                            if (n.getNetworkdata().containsKey(d)) { 
                                 List<String> neigdiff = (ArrayList) n.getNetworkdata().get(d);
 
                                 String min;
@@ -934,8 +936,6 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
         return networkInfo;
 
     }
-    
-    
 
     private void loadNeighboursRecursively(ArrayList<GraphElements.MyVertex> neighbours, int nhopsChain, GraphElements.MyVertex v) {
         if (nhopsChain == 0) {
@@ -953,7 +953,9 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
     public HashMap<String, ArrayList> loadPartialNetwork(int nhopsChain, Node n) {
         HashMap<String, ArrayList> networkInfo = new HashMap<>();
         ArrayList<GraphElements.MyVertex> neighbours = new ArrayList<>();
+        neighbours.add(n.getVertex());
         loadNeighboursRecursively(neighbours, nhopsChain, n.getVertex());
+        
         System.out.println("node" + n + "neigh: " + neighbours);
         for (GraphElements.MyVertex v : neighbours) {
             networkInfo.put(v.getName(), new ArrayList<>(getTopologyNames(v)));
