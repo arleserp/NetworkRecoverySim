@@ -18,6 +18,7 @@ import unalcol.agents.NetworkSim.util.CommunityNetworkGenerator;
 import unalcol.agents.NetworkSim.util.ForestHubAnsSpokeGenerator;
 import unalcol.agents.NetworkSim.util.HubAndSpokeGraphGenerator;
 import unalcol.agents.NetworkSim.util.LineGraphGenerator;
+import unalcol.agents.NetworkSim.util.LongHubAndSpokeGraphGenerator;
 import unalcol.agents.NetworkSim.util.WattsBetaSmallWorldGenerator;
 
 /**
@@ -101,6 +102,9 @@ public class graphSimpleFactorySave {
                 g = new Lattice2DGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.rows, graphGenerator.columns, false).create();
                 //layout = new CircleLayout<>(g);
                 break;
+            case "longhubandspoke":
+                g = new LongHubAndSpokeGraphGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.vertexNumber, graphGenerator.length, false).generateGraph();
+                break;                          
             default:
                 g = new EppsteinPowerLawGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.rows, graphGenerator.columns, 5).create();
                 break;

@@ -30,6 +30,7 @@ public class graphGenerator {
     public static int startNodesScaleFree = 4;
     public static int edgesToAttachScaleFree = 4;
     public static int numSteps = 100;
+    public static int length = 1;
 
     // Perform simulation
     public static void main(String[] args) {
@@ -72,7 +73,7 @@ public class graphGenerator {
                 vertexNumber = Integer.valueOf(args[1]);
                 filename += "+v+" + vertexNumber;
             }
-            
+
             if (graphMode.equals("foresthubandspoke")) {
                 vertexNumber = Integer.valueOf(args[1]);
                 clusters = Integer.valueOf(args[2]);
@@ -95,6 +96,13 @@ public class graphGenerator {
                 rows = Integer.valueOf(args[1]);
                 columns = Integer.valueOf(args[2]);
                 filename += "+r+" + rows + "+c+" + columns;
+            }
+
+            if (graphMode.equals("longhubandspoke")) {
+                vertexNumber = Integer.valueOf(args[1]);                
+                filename += "+v+" + vertexNumber;               
+                length = Integer.valueOf(args[2]);
+                filename += "+l+" +length;
             }
 
             filename += ".graph";
