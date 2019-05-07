@@ -16,12 +16,17 @@ import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -58,6 +63,7 @@ import unalcol.agents.NetworkSim.environment.ObjectSerializer;
 import unalcol.agents.NetworkSim.programs.NodeFailingProgram;
 import unalcol.agents.NetworkSim.util.DataReplicationNodeFailingObserver;
 import unalcol.agents.NetworkSim.util.GraphComparator;
+import unalcol.agents.NetworkSim.util.GraphSerialization;
 import unalcol.agents.NetworkSim.util.GraphStats;
 //import unalcol.agents.NetworkSim.util.GraphStatistics;
 import unalcol.agents.NetworkSim.util.StringSerializer;
@@ -110,7 +116,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     private final JButton redraw;
     Graph<GraphElements.MyVertex, String> initialNetwork;
     HashMap<Integer, Double> similarity;
-
+    boolean alreadyPainted = false;
+    
     /**
      * Creates a simulation without graphic interface
      *
@@ -378,7 +385,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                             break;
                         } else if (n != null) {
 
-                            if (n.getAge() % 50 == 0){ //SimulationParameters.maxIter > 500 && n.getAge() % 50 == 0) || (SimulationParameters.maxIter <= 500 && n.getAge() % 50 == 0)) { //backwards compatibility
+                            if (n.getAge() % 50 == 0) { //SimulationParameters.maxIter > 500 && n.getAge() % 50 == 0) || (SimulationParameters.maxIter <= 500 && n.getAge() % 50 == 0)) { //backwards compatibility
                                 agentsLive.add(n.getAge(), agentsAlive);
                                 nodesLive.add(n.getAge(), nodesAlive);
                                 //call comparator here!
@@ -390,7 +397,20 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                                 neighborMatchingSim.add(n.getAge(), sim);
                                 similarity.put(n.getAge(), sim);
                                 frame2.repaint();
+
+                                if (n.getAge() >= 5900 && !alreadyPainted) {
+                                    String baseFilename = SimulationParameters.genericFilenameTimeouts;
+                                    baseFilename = baseFilename.replace(".timeout", "");
+                                    baseFilename = baseFilename.replace("timeout+", "");
+                                    //System.out.println("base filename:" + baseFilename);
+                                    String dir = "cmpgraph";
+                                    createDir(dir);
+                                    GraphSerialization.saveSerializedGraph("./" + dir + "/" + getFileName() + "+" + baseFilename + "+round+" + n.getAge() + ".graph", g);
+                                    alreadyPainted = true;
+                                }
+
                             }
+
                         } // System.out.println("entra:" + n.getAge());
 
                         //frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
@@ -622,4 +642,35 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     public void setWorld(NetworkEnvironmentReplication world) {
         this.world = world;
     }
+
+   private void createDir(String filename) {
+        File theDir = new File(filename);
+
+        // if the directory does not exist, create it
+        if (!theDir.exists()) {
+            System.out.println("creating directory: " + filename);
+            boolean result = false;
+
+            try {
+                theDir.mkdir();
+                result = true;
+            } catch (SecurityException se) {
+                System.out.println("Security Exception!");
+            }
+            if (result) {
+                System.out.println("DIR created");
+            }
+        }
+
+    }
+   
+   
+       private String getFileName() {
+        DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+        Date today = Calendar.getInstance().getTime();
+        String reportDate = df.format(today);
+        return reportDate;
+    }
+
+
 }
