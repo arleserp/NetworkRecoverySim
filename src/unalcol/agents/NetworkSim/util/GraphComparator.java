@@ -128,7 +128,7 @@ public class GraphComparator {
 
         similarity /= (Math.sqrt(sumA) * Math.sqrt(sumB));
 
-        if (similarity * 100.0 < 90) {
+        /*if (similarity * 100.0 < 90) {
             String baseFilename = SimulationParameters.genericFilenameTimeouts;
             baseFilename = baseFilename.replace(".timeout", "");
             baseFilename = baseFilename.replace("timeout+", "");
@@ -136,7 +136,7 @@ public class GraphComparator {
             String dir = "cmpgraph";
             createDir(dir);
             GraphSerialization.saveSerializedGraph("./" + dir + "/" + getFileName() + "+" + baseFilename + "+Similarity+" + similarity + ".graph", copyB);
-        }
+        }*/
         return similarity * 100.0;
 
         //}

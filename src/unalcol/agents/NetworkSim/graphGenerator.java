@@ -31,6 +31,8 @@ public class graphGenerator {
     public static int edgesToAttachScaleFree = 4;
     public static int numSteps = 100;
     public static int length = 1;
+    public static String communitySrc = "";
+    public static int spokes = 5;
 
     // Perform simulation
     public static void main(String[] args) {
@@ -99,10 +101,28 @@ public class graphGenerator {
             }
 
             if (graphMode.equals("longhubandspoke")) {
-                vertexNumber = Integer.valueOf(args[1]);                
-                filename += "+v+" + vertexNumber;               
+                vertexNumber = Integer.valueOf(args[1]);
+                filename += "+v+" + vertexNumber;
                 length = Integer.valueOf(args[2]);
-                filename += "+l+" +length;
+                filename += "+l+" + length;
+            }
+
+            if (graphMode.equals("circlelonghubandspoke")) {
+                vertexNumber = Integer.valueOf(args[1]);
+                filename += "+v+" + vertexNumber;
+                length = Integer.valueOf(args[2]);
+                filename += "+l+" + length;
+            }
+
+            if (graphMode.equals("comunityspokegraph")) {
+                communitySrc = args[1];
+                System.out.println("loading... " + communitySrc);
+                spokes = Integer.parseInt(args[2]);
+                String filenamesp = "spoke" + communitySrc;
+                filenamesp = filenamesp.replace(".graph", "");
+                filename = filenamesp;
+                filename += "sp";
+                filename += spokes;
             }
 
             filename += ".graph";

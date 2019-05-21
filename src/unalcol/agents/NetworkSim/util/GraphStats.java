@@ -5,6 +5,7 @@
  */
 package unalcol.agents.NetworkSim.util;
 
+import edu.uci.ics.jung.algorithms.shortestpath.DistanceStatistics;
 import edu.uci.ics.jung.algorithms.shortestpath.UnweightedShortestPath;
 import edu.uci.ics.jung.graph.Graph;
 import java.util.ArrayList;
@@ -118,5 +119,10 @@ public class GraphStats {
         StatisticsNormalDist st = new StatisticsNormalDist(dataDegree, dataDegree.size());
         return st.getStdDev();
     }
+
+    static double getDiameter(Graph g) {        
+        return DistanceStatistics.diameter(g);
+    }
+    
     
 }

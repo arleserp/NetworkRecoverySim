@@ -13,6 +13,7 @@ import edu.uci.ics.jung.algorithms.shortestpath.UnweightedShortestPath;
 import edu.uci.ics.jung.graph.Graph;
 import java.util.HashSet;
 import java.util.Set;
+import unalcol.agents.NetworkSim.util.CircleLongHubAndSpokeGraphGenerator;
 import unalcol.agents.NetworkSim.util.CommunityCircleNetworkGenerator;
 import unalcol.agents.NetworkSim.util.CommunityNetworkGenerator;
 import unalcol.agents.NetworkSim.util.ForestHubAnsSpokeGenerator;
@@ -104,7 +105,14 @@ public class graphSimpleFactorySave {
                 break;
             case "longhubandspoke":
                 g = new LongHubAndSpokeGraphGenerator(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.vertexNumber, graphGenerator.length, false).generateGraph();
-                break;                          
+                break; 
+                
+            case "circlelonghubandspoke":
+                g = new CircleLongHubAndSpokeGraphGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.vertexNumber, graphGenerator.length, false).generateGraph();
+                break; 
+            case "comunityspokegraph":
+                g = CommunitySpokeGraphGenerator.createGraph(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.communitySrc, graphGenerator.spokes);
+                break;
             default:
                 g = new EppsteinPowerLawGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.rows, graphGenerator.columns, 5).create();
                 break;

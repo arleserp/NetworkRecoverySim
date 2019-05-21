@@ -698,6 +698,7 @@ public class GenerateGraphInformation extends ApplicationFrame {
                     escribir.println("Average degree: " + GraphStats.averageDegree(g));
                     escribir.println("StdDev Average Path Length: " + GraphStats.computeStdDevAveragePathLength(g));
                     escribir.println("StdDev Degree: " + GraphStats.StdDevDegree(g));
+                    escribir.println("Diameter: " + GraphStats.getDiameter(g));
 
                     PrintWriter escribir2 = new PrintWriter(new BufferedWriter(new FileWriter(rankingsFile, true)));
                     PrintWriter escribir3;
@@ -847,6 +848,7 @@ public class GenerateGraphInformation extends ApplicationFrame {
         g.GenerateAvgDegreeGraphInformation();
         g.GenerateAvgDistanceGraphInformation();
         g.GenerateAvgClusterGraphInformation();
+        
 
     }
 
