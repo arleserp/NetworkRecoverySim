@@ -687,13 +687,16 @@ public class Node extends Agent {
             Iterator<String> itr = list.iterator();
             while (itr.hasNext()) {
                 String ne = itr.next();
-                neighbours.add(ne);
+                if (!neighbours.contains(ne)) {
+                    neighbours.add(ne);
+                }
                 getListNeighboursHop(neighbours, nhopsChain - 1, ne);
             }
         }
     }
 
     public void pruneInformation(int nhops) {
+        //System.out.println("prune!");
         //System.out.println("nhops" + nhops);
         ArrayList<String> neighbours = new ArrayList<>();
         neighbours.add(this.getVertex().getName());

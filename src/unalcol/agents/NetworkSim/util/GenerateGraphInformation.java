@@ -699,6 +699,7 @@ public class GenerateGraphInformation extends ApplicationFrame {
                     escribir.println("StdDev Average Path Length: " + GraphStats.computeStdDevAveragePathLength(g));
                     escribir.println("StdDev Degree: " + GraphStats.StdDevDegree(g));
                     escribir.println("Diameter: " + GraphStats.getDiameter(g));
+                    //escribir.println("Maximum average Distance:");
 
                     PrintWriter escribir2 = new PrintWriter(new BufferedWriter(new FileWriter(rankingsFile, true)));
                     PrintWriter escribir3;
