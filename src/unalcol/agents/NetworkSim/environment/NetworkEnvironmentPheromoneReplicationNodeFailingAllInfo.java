@@ -10,17 +10,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Observer;
+import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jdk.nashorn.internal.runtime.arrays.ArrayLikeIterator;
-import unalcol.agents.NetworkSim.ActionParameters;
 import unalcol.agents.NetworkSim.GraphCreator;
 import unalcol.agents.NetworkSim.GraphElements;
 import unalcol.agents.NetworkSim.MobileAgent;
@@ -45,6 +43,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
     int[][] adyacenceMatrix;
     HashMap<String, Integer> nametoAdyLocation = new HashMap<>();
     HashMap<Integer, String> locationtoVertexName = new HashMap<>();
+    
 
     @Override
     public List<Node> getNodes() {
@@ -936,26 +935,69 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
 
     }
 
+    private void loadNeighboursBFS(ArrayList<GraphElements.MyVertex> neighbours, int nhopsChain, GraphElements.MyVertex v, HashMap<GraphElements.MyVertex, Integer> distances) {
+        //System.out.println("nopsChain:" + nhopsChain);
+        int lvls = 1;
+        Deque<GraphElements.MyVertex> q = new LinkedList<>();
+        distances.put(v, 0);
+        if (nhopsChain == 0) {
+            return;
+        }
+        while (v != null) {
+            List<GraphElements.MyVertex> list = new ArrayList<>(getTopology().getNeighbors(v));
+            Iterator<GraphElements.MyVertex> itr = list.iterator();
+            while (itr.hasNext()) {
+                GraphElements.MyVertex ne = itr.next();
+                if (!distances.containsKey(ne)) {
+                    distances.put(ne, distances.get(v) + 1);
+                    q.add(ne);
+                }
+                //loadNeighboursRecursively(neighbours, nhopsChain - 1, ne);
+            }
+            v = q.poll();
+            //System.out.println("leveeeel" + lvls);
+            //Scanner sc = new Scanner(System.in);
+            //sc.nextInt();
+        }
+        //System.out.println(v.getName() + "distances hashmap: " + distances + "vecis: " + neighbours);
+    }
+
     private void loadNeighboursRecursively(ArrayList<GraphElements.MyVertex> neighbours, int nhopsChain, GraphElements.MyVertex v) {
         if (nhopsChain == 0) {
             return;
         }
+
         List<GraphElements.MyVertex> list = new ArrayList<>(getTopology().getNeighbors(v));
         Iterator<GraphElements.MyVertex> itr = list.iterator();
+        int oldSize = neighbours.size();
         while (itr.hasNext()) {
             GraphElements.MyVertex ne = itr.next();
             if (!neighbours.contains(ne)) {
                 neighbours.add(ne);
             }
-            loadNeighboursRecursively(neighbours, nhopsChain - 1, ne);
+
         }
+        for (int i = oldSize; i < neighbours.size(); i++) {
+            loadNeighboursRecursively(neighbours, nhopsChain - 1, neighbours.get(i));
+        }
+
     }
 
     public HashMap<String, ArrayList> loadPartialNetwork(int nhopsChain, Node n) {
         HashMap<String, ArrayList> networkInfo = new HashMap<>();
+        HashMap<GraphElements.MyVertex, Integer> distances = new HashMap<>();
         ArrayList<GraphElements.MyVertex> neighbours = new ArrayList<>();
         neighbours.add(n.getVertex());
-        loadNeighboursRecursively(neighbours, nhopsChain, n.getVertex());
+        int initialPos = 0;
+        //loadNeighboursRecursively(neighbours, nhopsChain, n.getVertex()); //slow!
+        loadNeighboursBFS(neighbours, nhopsChain, n.getVertex(), distances);
+
+        n.setDistancesToNode(distances);
+        for (GraphElements.MyVertex v : distances.keySet()) {
+            if (!neighbours.contains(v) && distances.get(v) <= nhopsChain) {
+                neighbours.add(v);
+            }
+        }
 
         System.out.println("node" + n + "neigh: " + neighbours + " neigh size:" + neighbours.size());
         System.out.println("");
@@ -963,6 +1005,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
             networkInfo.put(v.getName(), new ArrayList<>(getTopologyNames(v)));
         }
         System.out.println("node" + n + "info = " + networkInfo);
+        
         return networkInfo;
     }
 

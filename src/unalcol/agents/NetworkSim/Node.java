@@ -6,9 +6,11 @@
 package unalcol.agents.NetworkSim;
 
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,6 +49,16 @@ public class Node extends Agent {
     private LinkedBlockingQueue<String[]> networkMessagebuffer;
 
     private HashMap<Integer, String> idCounter; //added by arles.rodriguez 12/12/2018
+
+    private HashMap<GraphElements.MyVertex, Integer> distancesToNode;
+
+    public HashMap<GraphElements.MyVertex, Integer> getDistancesToNode() {
+        return distancesToNode;
+    }
+
+    public void setDistancesToNode(HashMap<GraphElements.MyVertex, Integer> distancesToNode) {
+        this.distancesToNode = distancesToNode;
+    }
 
     AtomicInteger c = new AtomicInteger(0);
     protected Hashtable<String, Object> properties = new Hashtable<>();
@@ -677,11 +689,38 @@ public class Node extends Agent {
 
     }
 
-    private void getListNeighboursHop(ArrayList<String> neighbours, int nhopsChain, String nodeName) {
+    private void getListNeighboursHop(ArrayList<String> neighbours, int nhopsChain, String nodeName, HashMap<String, Integer> distances) {
+        int lvls = 1;
+        Deque<String> q = new LinkedList<>();
+        distances.put(nodeName, 0);
         if (nhopsChain == 0) {
             return;
         }
 
+        while (nodeName != null) {
+            if (getNetworkdata().containsKey(nodeName) && getNetworkdata().get(nodeName) != null) {
+                List<String> list = new ArrayList<>(getNetworkdata().get(nodeName));
+                Iterator<String> itr = list.iterator();
+                while (itr.hasNext()) {
+                    String ne = itr.next();
+                    //System.out.println(ne);
+                    if (!distances.containsKey(ne)) {
+                        distances.put(ne, distances.get(nodeName) + 1);
+                        q.add(ne);
+                    }
+                    //loadNeighboursRecursively(neighbours, nhopsChain - 1, ne);
+                }
+            }
+            nodeName = q.poll();
+            //System.out.println("leveeeel" + lvls);
+            //Scanner sc = new Scanner(System.in);
+            //sc.nextInt();
+        }
+
+        /*
+        if (nhopsChain == 0) {
+            return;
+        }
         if (getNetworkdata().containsKey(nodeName) && getNetworkdata().get(nodeName) != null) {
             List<String> list = new ArrayList<>(getNetworkdata().get(nodeName));
             Iterator<String> itr = list.iterator();
@@ -692,15 +731,23 @@ public class Node extends Agent {
                 }
                 getListNeighboursHop(neighbours, nhopsChain - 1, ne);
             }
-        }
+        }*/
     }
 
     public void pruneInformation(int nhops) {
+        System.out.println("begin prune" + this.getVertex().getName());
         //System.out.println("prune!");
         //System.out.println("nhops" + nhops);
         ArrayList<String> neighbours = new ArrayList<>();
         neighbours.add(this.getVertex().getName());
-        getListNeighboursHop(neighbours, nhops, this.getVertex().getName());
+        HashMap<String, Integer> distances = new HashMap<>();
+        getListNeighboursHop(neighbours, nhops, this.getVertex().getName(), distances);
+        for (String neig : distances.keySet()) {
+            if (!neighbours.contains(neig) && distances.get(neig) <= nhops) {
+                neighbours.add(neig);
+            }
+        }
+        //getListNeighboursHop(neighbours, nhops, this.getVertex().getName());
         System.out.println("neighbours size:" + neighbours.size() + " networkdata.size=" + networkdata.size());
         if (neighbours.size() != networkdata.size()) {
             HashMap<String, ArrayList> networkDatatmp = new HashMap<>();
@@ -711,7 +758,7 @@ public class Node extends Agent {
             }
             networkdata = networkDatatmp;
         }
-
+        System.out.println("end prune" + this.getVertex().getName());
     }
 
 }
