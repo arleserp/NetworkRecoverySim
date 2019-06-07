@@ -92,8 +92,8 @@ public class GephiExportGraph {
                             .getName()).log(Level.SEVERE, null, ex);
                 }
                 System.out.println("graph" + g.toString());
-                String nodeCSV = file.getName().replace("graph", "node");
-                String edgeCSV = file.getName().replace("graph", "edge");
+                String nodeCSV = file.getName().replace("graph", "node.csv");
+                String edgeCSV = file.getName().replace("graph", "edge.csv");
 
                 try {
                     //node file
@@ -108,11 +108,12 @@ public class GephiExportGraph {
                         //System.out.println();                        
                     }
 
-                    nodeCSVFile.println("Source,Target,Type");
+                    
                     PrintWriter edgeCSVFile = new PrintWriter(new BufferedWriter(new FileWriter(edgeCSV, true)));
+                    edgeCSVFile.println("Source,Target,Type");
                     for (String ed : g.getEdges()) {
                         Pair<GraphElements.MyVertex> endpoints = g.getEndpoints(ed);
-                        edgeCSVFile.println(dictIds.get(endpoints.getFirst().getName()) + "," + dictIds.get(endpoints.getSecond().getName()) + ", Directed");
+                        edgeCSVFile.println(dictIds.get(endpoints.getFirst().getName()) + "," + dictIds.get(endpoints.getSecond().getName()) + ",Directed");
                     }
                     nodeCSVFile.close();
                     edgeCSVFile.close();
