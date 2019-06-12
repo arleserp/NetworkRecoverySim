@@ -5,6 +5,7 @@
  */
 package unalcol.agents.NetworkSim;
 
+import unalcol.agents.NetworkSim.util.CommunitySpokeGraphGenerator;
 import edu.uci.ics.jung.algorithms.generators.Lattice2DGenerator;
 import edu.uci.ics.jung.algorithms.generators.random.BarabasiAlbertGenerator;
 import edu.uci.ics.jung.algorithms.generators.random.EppsteinPowerLawGenerator;
@@ -111,7 +112,7 @@ public class graphSimpleFactorySave {
                 g = new CircleLongHubAndSpokeGraphGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.vertexNumber, graphGenerator.length, false).generateGraph();
                 break; 
             case "comunityspokegraph":
-                g = CommunitySpokeGraphGenerator.createGraph(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.communitySrc, graphGenerator.spokes);
+                g = CommunitySpokeGraphGenerator.createGraph(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.communitySrc, graphGenerator.spokes, graphGenerator.length);
                 break;
             default:
                 g = new EppsteinPowerLawGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), graphGenerator.rows, graphGenerator.columns, 5).create();

@@ -118,11 +118,14 @@ public class graphGenerator {
                 communitySrc = args[1];
                 System.out.println("loading... " + communitySrc);
                 spokes = Integer.parseInt(args[2]);
+                length = Integer.parseInt(args[3]);
                 String filenamesp = "spoke" + communitySrc;
                 filenamesp = filenamesp.replace(".graph", "");
                 filename = filenamesp;
-                filename += "sp";
+                filename += "+sp+";                
                 filename += spokes;
+                filename += "+length+";
+                filename += length;
             }
 
             filename += ".graph";

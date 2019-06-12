@@ -1,1 +1,0 @@
-java  -classpath dist/NetworkSimulator.jar unalcol.agents.NetworkSim.util.BoxPlotAgNumbervsRound . 1200 800 1000
