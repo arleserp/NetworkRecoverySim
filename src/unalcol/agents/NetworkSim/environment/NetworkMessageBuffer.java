@@ -43,10 +43,12 @@ public class NetworkMessageBuffer {
     public String[] getMessage(Integer pid) {
         try {
             //System.out.println("agent id" + pid + ", mbuffer" + mbuffer.get(pid).toString());
-            return (String[]) (mbuffer.get(pid).poll());
+            if (!mbuffer.get(pid).isEmpty()) {
+                return (String[]) (mbuffer.get(pid).poll());
+            }
         } catch (NullPointerException ex) {
             System.out.println("Error reading mbuffer for agent:" + pid + "buffer: " + mbuffer);
-            System.exit(1);
+            //System.exit(1);
         }
         return null;
     }

@@ -595,13 +595,15 @@ public class Node extends Agent {
             //if (pid.equals("p23")) {
             //System.out.println("Node id" + getVertex().getName() + ", network buffer size:" + networkMessagebuffer.size());
             //}
-            return networkMessagebuffer.poll();
+            if (!networkMessagebuffer.isEmpty()) {
+                return networkMessagebuffer.poll();
+            }
         } catch (NullPointerException ex) {
             //System.out.println("Error reading mbuffer for agent:" + pid + "buffer: " + mbuffer);            cs
             System.out.println("error reading networkmbuffer....");
             //createBuffer(pid);
             //mbuffer.put(pid, new LinkedBlockingQueue())
-            System.exit(1);
+            //System.exit(1);
         }
         return null;
     }

@@ -106,7 +106,7 @@ public class NetworkNodeMessageBuffer {
         try {
             mbuffer.get(pid).add(msg);
         } catch (NullPointerException ex) {
-            System.out.println("error leyendo buffer:" + pid);        
+            System.out.println("error leyendo buffer:" + pid);
         }
         return true;
     }
@@ -117,13 +117,15 @@ public class NetworkNodeMessageBuffer {
             //if (pid.equals("p23")) {
             //System.out.println("Node id" + pid + ", mbuffer size:" + mbuffer.get(pid).size());
             //}
-            return (String[]) (mbuffer.get(pid).poll());
+            if (!mbuffer.get(pid).isEmpty()) {
+                return (String[]) (mbuffer.get(pid).poll());
+            }
         } catch (NullPointerException ex) {
             //System.out.println("Error reading mbuffer for agent:" + pid + "buffer: " + mbuffer);            cs
             System.out.println("error reading mbuffer " + pid + "... creating new buffer.");
             //createBuffer(pid);
             //mbuffer.put(pid, new LinkedBlockingQueue())
-            System.exit(1);
+            //System.exit(1);
         }
         return null;
     }

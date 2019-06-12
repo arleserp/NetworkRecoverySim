@@ -117,7 +117,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     Graph<GraphElements.MyVertex, String> initialNetwork;
     HashMap<Integer, Double> similarity;
     boolean alreadyPainted = false;
-    
+
     /**
      * Creates a simulation without graphic interface
      *
@@ -363,13 +363,9 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                     frame2.setVisible(true);
 
                     while (true) {
-
-                        try {
-                            //!world.isFinished()) {
-                            Thread.sleep(10);
-                        } catch (InterruptedException ex) {
-                            Logger.getLogger(DataReplicationEscenarioNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                        //!world.isFinished()) {
+                        Thread.sleep(50);
+                       // Logger.getLogger(DataReplicationEscenarioNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
 
                         //System.out.println("n visited nodes size" + n.visitedNodes.size());
                         // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
@@ -384,7 +380,6 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                             System.out.println("no nodes alive.");
                             break;
                         } else if (n != null) {
-
                             if (n.getAge() % 50 == 0) { //SimulationParameters.maxIter > 500 && n.getAge() % 50 == 0) || (SimulationParameters.maxIter <= 500 && n.getAge() % 50 == 0)) { //backwards compatibility
                                 agentsLive.add(n.getAge(), agentsAlive);
                                 nodesLive.add(n.getAge(), nodesAlive);
@@ -408,11 +403,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                                     GraphSerialization.saveSerializedGraph("./" + dir + "/" + getFileName() + "+" + baseFilename + "+round+" + n.getAge() + ".graph", g);
                                     alreadyPainted = true;
                                 }
-
                             }
-
                         } // System.out.println("entra:" + n.getAge());
-
                         //frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
                     }
                 } catch (NullPointerException ex) {
@@ -423,6 +415,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                     System.out.println("exception calculating similarity graph: " + ex.getLocalizedMessage());
                     isDrawing = false;
                     fgup = null;
+                } catch (Exception ex) {
+                    System.out.println("Unexpected error: " + ex.getLocalizedMessage());
                 }
             }
         }
@@ -643,7 +637,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         this.world = world;
     }
 
-   private void createDir(String filename) {
+    private void createDir(String filename) {
         File theDir = new File(filename);
 
         // if the directory does not exist, create it
@@ -663,14 +657,12 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         }
 
     }
-   
-   
-       private String getFileName() {
+
+    private String getFileName() {
         DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
         Date today = Calendar.getInstance().getTime();
         String reportDate = df.format(today);
         return reportDate;
     }
-
 
 }
