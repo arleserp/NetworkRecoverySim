@@ -737,20 +737,21 @@ public class Node extends Agent {
     }
 
     public void pruneInformation(int nhops) {
-        System.out.println("begin prune" + this.getVertex().getName());
+        System.out.println("begin prune" + this.getVertex().getName() + "hops" + nhops);
         //System.out.println("prune!");
         //System.out.println("nhops" + nhops);
         ArrayList<String> neighbours = new ArrayList<>();
         neighbours.add(this.getVertex().getName());
         HashMap<String, Integer> distances = new HashMap<>();
         getListNeighboursHop(neighbours, nhops, this.getVertex().getName(), distances);
+        
         for (String neig : distances.keySet()) {
             if (!neighbours.contains(neig) && distances.get(neig) <= nhops) {
                 neighbours.add(neig);
             }
         }
         //getListNeighboursHop(neighbours, nhops, this.getVertex().getName());
-        System.out.println("neighbours size:" + neighbours.size() + " networkdata.size=" + networkdata.size());
+        System.out.println(this.getVertex().getName() + " neighbours size:" + neighbours.size() + " networkdata.size=" + networkdata.size() + " data=" + networkdata);
         if (neighbours.size() != networkdata.size()) {
             HashMap<String, ArrayList> networkDatatmp = new HashMap<>();
             for (String s : neighbours) {
@@ -760,6 +761,8 @@ public class Node extends Agent {
             }
             networkdata = networkDatatmp;
         }
+        System.out.println(this.getVertex().getName() + " after prune neighbours size=" + neighbours.size() + " networkdata.size=" + networkdata.size() + " data=" + networkdata);
+        
         System.out.println("end prune" + this.getVertex().getName());
     }
 

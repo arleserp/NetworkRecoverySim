@@ -10,6 +10,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -63,6 +64,7 @@ public class GraphSerialization {
 
     public static void saveSerializedGraph(String filename, Graph g) {
         try {
+            
             OutputStream file = new FileOutputStream(filename);
             OutputStream buffer = new BufferedOutputStream(file);
             ObjectOutputStream oos;
@@ -85,9 +87,9 @@ public class GraphSerialization {
         try {
             file = new FileInputStream(filename);
             InputStream buffer = new BufferedInputStream(file);
-            ObjectInput input = new ObjectInputStream(buffer);
-            h = (Graph) input.readObject();
-
+            ObjectInputStream input = new ObjectInputStream(buffer);
+                h = (Graph) input.readObject();
+            
         } catch (FileNotFoundException ex) {
             Logger.getLogger(GraphSerialization.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {

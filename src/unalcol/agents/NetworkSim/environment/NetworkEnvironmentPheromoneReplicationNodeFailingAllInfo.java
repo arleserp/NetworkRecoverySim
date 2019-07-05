@@ -614,7 +614,7 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
         if (agent instanceof Node) {
             agent.sleep(50);
             Node n = (Node) agent;
-
+            System.out.println("Node thread: " + ((Node)agent).getVertex().getName() + " node status " + ((Node)agent).status);
             /**
              * M.raynal Protocol: Apply for computing global functions, however
              * close the channel if no new information is received so it does
@@ -717,11 +717,11 @@ public class NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo extends Ne
                                 String source = inbox[1];
                                 StringSerializer s = new StringSerializer();
                                 HashMap<String, ArrayList> ndata = (HashMap) s.deserialize(inbox[2]);
-                                //System.out.println(n.getVertex().getName() + "recv networkdatanode from " + source + " nd:" + ndata);
-                                //System.out.println("network data before: " + n.getNetworkdata());
+                                System.out.println(n.getVertex().getName() + "recv networkdatanode from " + source + " nd:" + ndata);
+                                System.out.println(n.getVertex().getName() + "network data before: " + n.getNetworkdata());
                                 n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), ndata));
                                 n.pruneInformation(SimulationParameters.nhops); //use nhops to prune data
-                                //System.out.println(n.getVertex().getName() + "network data after: " + n.getNetworkdata());
+                                System.out.println(n.getVertex().getName() + "network data after: " + n.getNetworkdata());
                             }
 
                             //receives data

@@ -394,6 +394,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                                 frame2.repaint();
 
                                 if (n.getAge() >= 5900 && !alreadyPainted) {
+                                    System.out.println("saving serialized graph");
+                                    alreadyPainted = true;
                                     String baseFilename = SimulationParameters.genericFilenameTimeouts;
                                     baseFilename = baseFilename.replace(".timeout", "");
                                     baseFilename = baseFilename.replace("timeout+", "");
@@ -401,7 +403,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                                     String dir = "cmpgraph";
                                     createDir(dir);
                                     GraphSerialization.saveSerializedGraph("./" + dir + "/" + getFileName() + "+" + baseFilename + "+round+" + n.getAge() + ".graph", g);
-                                    alreadyPainted = true;
+                                    
                                 }
                             }
                         } // System.out.println("entra:" + n.getAge());
