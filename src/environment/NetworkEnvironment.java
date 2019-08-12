@@ -1,33 +1,34 @@
 package environment;
 
-import java.util.Hashtable;
-import unalcol.agents.simulate.util.*;
 import unalcol.agents.*;
 import unalcol.agents.simulate.*;
 import java.util.Vector;
 import edu.uci.ics.jung.graph.*;
+import graphutil.GraphCreator;
 import graphutil.MyVertex;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import mobileagents.MobileAgent;
+import networkrecoverysim.SimulationParameters;
+import staticagents.NetworkNodeMessageBuffer;
 import staticagents.Node;
+import staticagents.NodeFailingProgram;
+import unalcol.agents.simulate.util.SimpleLanguage;
 
 public abstract class NetworkEnvironment extends Environment {
 
-    public List<MyVertex> visitedNodes = Collections.synchronizedList(new ArrayList());
-    public HashMap<MobileAgent, MyVertex> locationAgents = null;
-    private HashMap<MyVertex, ArrayList<Agent>> nodesAgents = null;
-    private boolean finished = false;
-    private AtomicInteger round = new AtomicInteger(0);
-    public static int agentsDie = 0;
-    private static int totalMobileAgents = 0;
+    protected static SimpleLanguage nodeLanguage;
+    protected final ConcurrentHashMap<String, Node> nodes; // Map of name and vs nodes
 
-    private static HashMap<String, Long> networkDelays; //used to administrate delays in messages
+    protected int[][] adyacenceMatrix; //network as a adyacence matrix   
+    protected HashMap<String, Integer> nametoAdyLocation = new HashMap<>();  //dictionary of vertexname: id
+    protected HashMap<Integer, String> locationtoVertexName = new HashMap<>(); // dictionary of id: vertexname
+    private AtomicInteger round = new AtomicInteger(0);
+    private HashMap<String, Long> networkDelays; //used to administrate delays in messages
 
     /**
      *
@@ -35,36 +36,272 @@ public abstract class NetworkEnvironment extends Environment {
      * @param _language
      * @param gr
      */
-    public NetworkEnvironment(Vector<Agent> _agents, Graph gr) {
+    public NetworkEnvironment(Vector<Agent> _agents, SimpleLanguage _nlanguage, Graph gr) {
         super(_agents);
-        for (Agent a : this.getAgents()) {
-            if (a instanceof MobileAgent) {
-                totalMobileAgents++;
-            }
-        }
         TopologySingleton.getInstance().init(gr);
-        locationAgents = new HashMap<>();
-    }
 
-    /**
-     * @return the totalAgents
-     */
-    public int getTotalAgents() {
-        totalMobileAgents = 0;
-        Vector<Agent> agents1 = (Vector<Agent>) this.getAgents().clone();
-        for (Agent a : agents1) {
-            if (a instanceof MobileAgent) {
-                totalMobileAgents++;
+        int size = gr.getVertexCount();
+        adyacenceMatrix = new int[size][size];
+        //mapVertex =  new ConcurrentHashMap<>();T
+
+        ArrayList<MyVertex> av = new ArrayList<>(gr.getVertices());
+        Collections.sort(av);
+        Iterator<MyVertex> it = av.iterator();
+
+        int i = 0;
+        while (it.hasNext()) {
+            MyVertex va = it.next();
+            nametoAdyLocation.put(va.getName(), i);
+            locationtoVertexName.put(i, va.getName());
+            i++;
+        }
+
+        for (int k = 0; k < adyacenceMatrix.length; k++) {
+            for (int l = 0; l < adyacenceMatrix.length; l++) {
+                adyacenceMatrix[k][l] = 0;
+                adyacenceMatrix[k][l] = 0;
             }
         }
-        return totalMobileAgents;
+
+        it = gr.getVertices().iterator();
+        while (it.hasNext()) {
+            MyVertex va = it.next();
+            ArrayList<MyVertex> na = new ArrayList<>(gr.getNeighbors(va));
+            Iterator<MyVertex> itn = na.iterator();
+            while (itn.hasNext()) {
+                adyacenceMatrix[nametoAdyLocation.get(va.getName())][nametoAdyLocation.get(itn.next().getName())] = 1;
+            }
+        }
+        nodes = new ConcurrentHashMap<>();
     }
 
     /**
-     * @param aTotalAgents the totalAgents to set
+     * Find a vertex in a network. Return null if a node is nor alive
+     *
+     * @param nodename
+     * @return
      */
-    public static void setTotalAgents(int aTotalAgents) {
-        totalMobileAgents = aTotalAgents;
+    MyVertex findVertex(String nodename) {
+        if (nodes.contains(nodename)) {
+            Node n = nodes.get(nodename);
+            if (!n.getVertex().getStatus().equals("failed")) {
+                return n.getVertex();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Connect two nodes
+     *
+     * @param vertex current node
+     * @param nodetoConnect reference to node
+     */
+    public void connect(MyVertex vertex, String nodetoConnect) {
+        synchronized (TopologySingleton.class) {
+            try {
+                MyVertex nodeTo = findVertex(nodetoConnect);
+                if (nodeTo != null) {
+                    if (getTopology().containsEdge("e" + vertex.getName() + nodeTo.getName())) {
+                        System.out.println("creating extra name while cleaning vertex");
+                        getTopology().addEdge("eb" + vertex.getName() + nodeTo.getName(), vertex, nodeTo);
+                    } else {
+                        getTopology().addEdge("e" + vertex.getName() + nodeTo.getName(), vertex, nodeTo);
+                    }
+                    //}
+                    adyacenceMatrix[nametoAdyLocation.get(vertex.getName())][nametoAdyLocation.get(nodetoConnect)] = 1;
+                    adyacenceMatrix[nametoAdyLocation.get(nodetoConnect)][nametoAdyLocation.get(vertex.getName())] = 1;
+                } else {
+                    System.out.println("node to connect is null:" + nodetoConnect);
+                }
+            } catch (Exception ex) {
+                System.out.println("Error trying to connect nodes " + ex.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Add a connection between a vertex and a node
+     *
+     * @param dvertex vertex to connect
+     * @param n node to connect
+     */
+    void addConnection(MyVertex dvertex, Node n) {
+        try {
+            synchronized (NetworkEnvironmentNodeFailingAllInfo.class) {
+                if (getTopology().containsVertex(dvertex) && getTopology().containsVertex(n.getVertex()) && !getTopology().isNeighbor(dvertex, n.getVertex())) {
+                    if (getTopology().containsEdge("e" + dvertex + n.getVertex().getName())) {
+                        System.out.println("creating extra name while cleaning vertex");
+                        getTopology().addEdge("eb" + dvertex.getName() + n.getVertex().getName(), n.getVertex(), n.getVertex());
+                    } else {
+                        getTopology().addEdge("e" + dvertex.getName() + n.getVertex().getName(), dvertex, n.getVertex());
+                    }
+                }
+                adyacenceMatrix[nametoAdyLocation.get(n.getVertex().getName())][nametoAdyLocation.get(dvertex.getName())] = 1;
+                adyacenceMatrix[nametoAdyLocation.get(dvertex.getName())][nametoAdyLocation.get(n.getVertex().getName())] = 1;
+            }
+        } catch (Exception ex) {
+            System.out.println("Trying to connect " + dvertex + " with node " + n.getName() + " failed.");
+        }
+    }
+
+    /**
+     * Get list of ids of neighbours of node
+     *
+     * @param node
+     * @return list of id
+     */
+    List<String> getTopologyNames(MyVertex node) {
+        List<String> names = new ArrayList();
+        for (int i = 0; i < adyacenceMatrix.length; i++) {
+            if (adyacenceMatrix[nametoAdyLocation.get(node.getName())][i] == 1) {
+                names.add(locationtoVertexName.get(i));
+            }
+        }
+        return names;
+    }
+
+    /**
+     * Get a node given its id
+     *
+     * @param name
+     * @return
+     */
+    Node getNode(String name) {
+        if (nodes.contains(name)) {
+            Node n = nodes.get(name);
+            if (!n.getVertex().getStatus().equals("failed") && getTopology().containsVertex(n.getVertex())) {
+                return n;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Obtain minimum id from a list of neighbours
+     *
+     * @param neigdiff
+     * @return id of the minimum
+     */
+    public String getMinimumId(List<String> neigdiff) {
+        List<String> nodesAlive = new ArrayList();
+        for (String s : neigdiff) {
+            if (getNode(s) != null) {
+                nodesAlive.add(s);
+            }
+        }
+        //if (nodesAlive.isEmpty()) {
+        //    return "none";
+        //}
+        String min = Collections.min(nodesAlive, (o1, o2)
+                -> Integer.valueOf(o1.substring(1)).compareTo(Integer.valueOf(o2.substring(1))));
+        return min;
+    }
+
+    /**
+     * Creation of a node with name d
+     *
+     * @param n
+     * @param d
+     */
+    void createNewNode(Node n, String d) {
+        System.out.print("node" + n + "is creating new node " + d);
+        MyVertex dvertex = findVertex(d);
+        if (dvertex != null) { //can ping node and avoid creation
+            System.out.println("Node " + d + " is alive connecting instead create...[" + dvertex + ", " + n.getVertex().getName() + "]");
+            if (!getTopology().isNeighbor(dvertex, n.getVertex())) {
+                addConnection(dvertex, n);
+            }
+        } else {
+            GraphCreator.VertexFactory v = new GraphCreator.VertexFactory();
+            MyVertex vv = v.create();
+            vv.setName(d);
+            vv.setStatus("alive");
+            synchronized (TopologySingleton.getInstance()) {
+                getTopology().addVertex(vv);
+            }
+            addConnection(vv, n);
+            NodeFailingProgram np;
+
+            if (SimulationParameters.failureProfile.equals("backtolowpf")) { //after fail node will not fail again
+                np = new NodeFailingProgram(0); // set node pf = 0
+            } else if (SimulationParameters.failureProfile.contains("backtolowpf")) { //after some round number ####, backtolowpf#### sets node pf in zero
+                double rNoFail = Double.parseDouble(SimulationParameters.failureProfile.replaceAll("backtolowpf", ""));
+                if (this.getAge() >= rNoFail) {
+                    np = new NodeFailingProgram(0); //using this option reduces failure prob to zero
+                } else {
+                    np = new NodeFailingProgram((float) SimulationParameters.npf);
+                }
+            } else {
+                np = new NodeFailingProgram((float) SimulationParameters.npf);
+            }
+
+            NetworkNodeMessageBuffer.getInstance().createBuffer(d);
+            Node nod;
+            nod = new Node(np, vv);
+            nod.setVertex(vv);
+            nod.setArchitecture(this);
+
+            this.agents.add(nod);
+            nod.live();
+            Thread t = new Thread(nod);
+            nod.setThread(t);
+
+            nodes.put(nod.getName(), nod); //nodes.add(nod);
+            t.start();
+
+            //System.out.println("adding data to node" + nod.getVertex().getName() + ":" + n.getNetworkdata());
+            nod.setNetworkdata(new HashMap(n.getNetworkdata()));
+            setChanged();
+            notifyObservers();
+        }
+    }
+
+    /**
+     * Remove a vertex
+     *
+     * @param vertex
+     * @return
+     */
+    public boolean removeVertex(MyVertex vertex) {
+        synchronized (TopologySingleton.getInstance()) {
+            //copy to avoid concurrent modification in removeEdge
+            for (int i = 0; i < adyacenceMatrix.length; i++) {
+                adyacenceMatrix[nametoAdyLocation.get(vertex.getName())][i] = 0;
+                adyacenceMatrix[i][nametoAdyLocation.get(vertex.getName())] = 0;
+            }
+            try {
+                if (!getTopology().removeVertex(vertex)) {
+                    System.out.println("cannot remove vertex " + vertex);
+                }
+            } catch (Exception ex) {
+                System.out.println("removeVertex: Error trying to remove vertex" + ex.getMessage());
+            }
+            return true;
+        }
+    }
+
+    /**
+     * Kill process of node n
+     *
+     * @param n
+     */
+    public void KillNode(Node n) {
+        System.out.println("Node " + n.getVertex().getName() + " has failed.");
+        //clear buffer of node n
+        NetworkNodeMessageBuffer.getInstance().deleteBuffer(n.getVertex().getName());
+        synchronized (TopologySingleton.getInstance()) {
+            if (nodes.contains(n.getName())) {
+                nodes.remove(n.getName());
+                System.out.println("removed: " + n.getVertex().getName());
+            }
+            removeVertex(n.getVertex());
+        }
+        n.getVertex().setName(n.getVertex().getName() + " failed");
+        n.getVertex().setStatus("failed");
+        n.die();
+        setChanged();
+        notifyObservers();
     }
 
     public abstract boolean act(Agent agent, Action action);
@@ -72,74 +309,7 @@ public abstract class NetworkEnvironment extends Environment {
     @Override
     public Percept sense(Agent agent) {
         Percept p = new Percept();
-
-        if (agent instanceof MobileAgent) {
-            MobileAgent a = (MobileAgent) agent;
-
-            if (a.status != Action.DIE && getTopology().containsVertex(a.getLocation())) {
-                p.setAttribute("neighbors", getTopology().getNeighbors(a.getLocation()));
-                a.getData().removeAll(a.getLocation().getData());
-                a.getData().addAll(a.getLocation().getData());
-                a.getLocation().saveAgentInfo(a.getData(), a.getId(), a.getRound(), getAge());
-            } else {
-                System.out.println("Agent is removed from node that failed before:" + a.getId() + " status is dead: " + (a.status == Action.DIE) + ", loc" + a.getLocation());
-                p.setAttribute("nodedeath", a.getLocation());
-            }
-        }
-        if (agent instanceof Node) {
-            Node n = (Node) agent;
-            try {
-                ArrayList<Agent> agentNode = new ArrayList<>();
-                synchronized (NetworkEnvironment.class) {
-                    ArrayList<Agent> agentsCopy = new ArrayList(getAgents());
-                    for (Agent a : agentsCopy) {
-                        if (a instanceof MobileAgent) {
-                            MobileAgent ma = (MobileAgent) a;
-                            if (ma.getLocation() != null && ma.getLocation().getName().equals(n.getVertex().getName())) {
-                                agentNode.add(ma);
-                            }
-                        }
-                    }
-                }
-                n.setCurrentAgents(agentNode);
-            } catch (Exception e) {
-                System.out.println("Exception loading agents in this location" + e.getMessage() + " node:" + n.getVertex().getName());
-            }
-        }
         return p;
-    }
-
-    /**
-     * increases the number of agents with failures
-     */
-    public void increaseAgentsDie() {
-        synchronized (NetworkEnvironment.class) {
-            NetworkEnvironment.agentsDie++;
-        }
-    }
-
-    /**
-     * @return number of agents with failures
-     */
-    public int getAgentsDie() {
-        synchronized (NetworkEnvironment.class) {
-            return agentsDie;
-        }
-    }
-
-    public int getAgentsLive() {
-        int agentsLive = 0;
-        synchronized (NetworkEnvironment.class) {
-            Vector<Agent> agentsClone = (Vector) this.getAgents().clone();
-            for (Agent a : agentsClone) {
-                if (a instanceof MobileAgent) {
-                    if (((MobileAgent) a).status != Action.DIE) {
-                        agentsLive++;
-                    }
-                }
-            }
-        }
-        return agentsLive;
     }
 
     @Override
@@ -152,72 +322,6 @@ public abstract class NetworkEnvironment extends Environment {
      */
     public Graph<MyVertex, String> getTopology() {
         return TopologySingleton.getInstance().getTopology();
-    }
-
-    /**
-     * @param topology the topology to set
-     */
-    /*public void setTopology(Graph<MyVertex, String> topology) {
-        this.topology = topology;
-    }*/
-    /**
-     * @return the visitedNodes
-     */
-    public List<MyVertex> getVisitedNodes() {
-        return visitedNodes;
-    }
-
-    /**
-     * @param visitedNodes the visitedNodes to set
-     */
-    public void setVisitedNodes(ArrayList<MyVertex> visitedNodes) {
-        this.visitedNodes = visitedNodes;
-    }
-
-    public void not() {
-        setChanged();
-        notifyObservers();
-    }
-
-    /**
-     * @return the locationAgents
-     */
-    public HashMap<MobileAgent, MyVertex> getLocationAgents() {
-        synchronized (NetworkEnvironment.class) {
-            return locationAgents;
-        }
-    }
-
-    /**
-     * @param locationAgents the locationAgents to set
-     */
-    public void setLocationAgents(HashMap<MobileAgent, MyVertex> locationAgents) {
-        this.locationAgents = locationAgents;
-    }
-
-    public ArrayList<Integer> getAgentNeighbors(MobileAgent x) {
-        ArrayList n = new ArrayList();
-        System.out.println("getLoc sizeeeeeeeeeee:" + getLocationAgents().size());
-        for (int i = 0; i < getLocationAgents().size(); i++) {
-            if (i != x.getId() && x.getLocation() != null && x.getLocation().equals(getLocationAgents().get(i))) {
-                n.add(i);
-            }
-        }
-        return n;
-    }
-
-    /**
-     * @return the finished
-     */
-    public boolean isFinished() {
-        return finished;
-    }
-
-    /**
-     * @param finished the finished to set
-     */
-    public void setFinished(boolean finished) {
-        this.finished = finished;
     }
 
     public synchronized void updateWorldAge() {
@@ -233,54 +337,8 @@ public abstract class NetworkEnvironment extends Environment {
         return round.get();
     }
 
-    /**
-     * @return the nodesAgents
-     */
-    public HashMap<MyVertex, ArrayList<Agent>> getNodesAgents() {
-        return nodesAgents;
-    }
-
-    /**
-     * @param nodesAgents the nodesAgents to set
-     */
-    public void setNodesAgents(HashMap<MyVertex, ArrayList<Agent>> nodesAgents) {
-        this.nodesAgents = nodesAgents;
-    }
-
-    public boolean areAllAgentsDead() {
-        synchronized (NetworkEnvironment.class) {
-            Vector cloneAgents = (Vector) this.getAgents().clone();
-            Iterator itr = cloneAgents.iterator();
-            while (itr.hasNext()) {
-                Agent a = (Agent) itr.next();
-                if (a instanceof MobileAgent) {
-                    if (((MobileAgent) a).status != Action.DIE) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
-    }
-
-    public abstract int getNodesAlive();
-
-    public int getAgentsAlive() {
-        int agentsAlive = 0;
-        synchronized (NetworkEnvironment.class) {
-            Vector cloneAgents = (Vector) this.getAgents().clone();
-            Iterator itr = cloneAgents.iterator();
-
-            while (itr.hasNext()) {
-                Agent a = (Agent) itr.next();
-                if (a instanceof MobileAgent) {
-                    if (((MobileAgent) a).status != Action.DIE) {
-                        agentsAlive++;
-                    }
-                }
-            }
-        }
-        return agentsAlive;
+    public int getNodesAlive() {
+        return nodes.size();
     }
 
     public HashMap<String, Long> getNetworkDelays() {
@@ -288,12 +346,29 @@ public abstract class NetworkEnvironment extends Environment {
     }
 
     public void setNetworkDelays(HashMap<String, Long> in) {
-        this.networkDelays = in;
+        networkDelays = in;
     }
 
     public abstract boolean isOccuped(MyVertex v);
 
-    public abstract void validateNodesAlive();
+    public List<Node> getNodes() {
+        return (List<Node>) nodes.values();
+    }
 
-    public abstract List<Node> getNodes();
+    @Override
+    public Vector<Action> actions() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public void addNodes(List<Node> lnodes) {
+        for (Node n : lnodes) {
+            nodes.put(n.getName(), n);
+        }
+    }
+
+    public void sChAndNot() {
+        setChanged();
+        notifyObservers();
+    }
+
 }

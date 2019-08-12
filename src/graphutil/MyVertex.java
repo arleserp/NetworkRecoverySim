@@ -10,7 +10,7 @@ import mobileagents.MobileAgent;
  *
  * @author Arles Rodríguez
  */
-public class MyVertex {
+public class MyVertex implements Comparable<MyVertex> {
 
     private String name;
     private ArrayList data;
@@ -135,5 +135,16 @@ public class MyVertex {
      */
     public void setLastAgentInfo(ArrayList lastAgentInfo) {
         this.lastAgentInfo = lastAgentInfo;
+    }
+
+    /**
+     * Compare two vertex named p#id 
+     * @param f1  
+     * @param f2
+     * @return compareTo of vertex
+     */
+    @Override
+    public int compareTo(MyVertex t) {        
+        return Integer.valueOf(this.getName().substring(1)).compareTo(Integer.valueOf(t.getName().substring(1)));                
     }
 }

@@ -92,7 +92,7 @@ public class NetworkNodeMessageBuffer {
         try {
             mbuffer.get(pid).add(msg);
         } catch (NullPointerException ex) {
-            System.out.println("error leyendo buffer:" + pid);
+            System.out.println("error leyendo buffer:" + pid + "ex: " + ex.getMessage());
         }
         return true;
     }

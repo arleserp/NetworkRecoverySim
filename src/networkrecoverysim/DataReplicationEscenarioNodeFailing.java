@@ -36,14 +36,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 import java.util.Observer;
 // unalcol.agent.networkSim.reports.GraphicReportHealingObserver;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 import unalcol.agents.simulate.util.SimpleLanguage;
 import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BoxLayout;
@@ -53,6 +51,7 @@ import javax.swing.JPanel;
 import mobileagents.MobileAgent;
 import mobileagents.MotionProgramSimpleFactory;
 import mobileagents.NetworkMessageBuffer;
+import observer.DataReplicationNodeFailingObserver;
 import org.apache.commons.collections15.Transformer;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -64,7 +63,9 @@ import org.jfree.data.xy.XYSeriesCollection;
 import serialization.StringSerializer;
 import staticagents.NetworkNodeMessageBuffer;
 import staticagents.Node;
-
+import environment.NetworkEnvironment;
+import environment.NetworkEnvironmentNodeFailingAllInfo;
+import environment.NetworkEnvironmentNodeFailingMulticast;
 
 /**
  * Creates a simulation without graphic interface
@@ -72,6 +73,7 @@ import staticagents.Node;
  * @author arles.rodriguez
  */
 public class DataReplicationEscenarioNodeFailing implements Runnable, ActionListener {
+
     private NetworkEnvironment world;
 
     public boolean renderAnts = true;
@@ -79,7 +81,6 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     public boolean renderCarrying = true;
     int modo = 0;
 //    GraphicReportHealingObserver greport;
-    int executions = 0;
     int population = 100;
     int vertexNumber = 100;
     int channelNumber = 100;
@@ -186,15 +187,12 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         String aCopy = s.serialize(g); //save a copy via serialization
         initialNetwork = (Graph<MyVertex, String>) s.deserialize(aCopy); //create a clone of original graph by deserializing
 
-        String graphType = SimulationParameters.graphMode;
-        graphType = graphType.replaceAll(".graph", "");
-
         //Create nodes
         for (MyVertex v : g.getVertices()) {
             v.setStatus("alive");  //to evaluate if use node marking
             Node n = null;
             NodeFailingProgram np = new NodeFailingProgram(SimulationParameters.npf);
-            n = new Node(np, v);                        
+            n = new Node(np, v);
             n.setPfCreate(0);
             NetworkNodeMessageBuffer.getInstance().createBuffer(v.getName());
             agents.add(n);
@@ -220,60 +218,54 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                 a.setProgram(program);
                 a.setAttribute("infi", new ArrayList<>());
                 NetworkMessageBuffer.getInstance().createBuffer(a.getId());
-                agents.add(a);                
-//                Initialize implies arrival message from nodes!
+                agents.add(a);
+//                Initialize implies arrival message from nodes TO review
 //                String[] msgnode = new String[3];
 //                msgnode[0] = "arrived";
 //                msgnode[1] = String.valueOf(a.getId());
 //                msgnode[2] = String.valueOf(a.getIdFather());
 //                NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode); //no delay
-
             }
         }
 
-//        graphVisualization = new DataReplicationNodeFailingObserver(this);
+        graphVisualization = new DataReplicationNodeFailingObserver(this);
 //
-//        switch (SimulationParameters.simMode) {
-//            case "broadcast":
-//                world = new NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast(agents, agentsLanguage, nodeLanguaje, g);
-//                ((NetworkEnvironmentPheromoneReplicationNodeFailingBroadcast) world).addNodes(nodes);
-//                break;
+        switch (SimulationParameters.simMode) {
+            case "broadcast":
+                world = new NetworkEnvironmentNodeFailingMulticast(agents, nodeLanguaje, g);
+                break;
 //            case "chain":
 //            case "chainnoloop":
 //                world = new NetworkEnvironmentPheromoneReplicationNodeFailingChain(agents, agentsLanguage, nodeLanguaje, g);
 //                ((NetworkEnvironmentPheromoneReplicationNodeFailingChain) world).addNodes(nodes);
 //                break;
-//            case "allinfo":
-//                world = new NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo(agents, nodeLanguaje, nodeLanguaje, g);
-//                ((NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo) world).addNodes(nodes);
-//                for (Node n : world.getNodes()) {
-//                    //System.out.println("enerooooooooooooooooooo");
-//                    n.setNetworkdata(((NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo) world).loadAllTopology());
-//                }
-//                break;
-//            case "nhopsinfo":
-//                world = new NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo(agents, nodeLanguaje, nodeLanguaje, g);
-//                ((NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo) world).addNodes(nodes);
-//                for (Node n : world.getNodes()) {
-//                    //System.out.println("enerooooooooooooooooooo")                    ;
-//                    n.setNetworkdata(((NetworkEnvironmentPheromoneReplicationNodeFailingAllInfo) world).loadPartialNetwork(SimulationParameters.nhopsChain, n));
-//                }
-//                break;
+            case "allinfo":
+                world = new NetworkEnvironmentNodeFailingAllInfo(agents, nodeLanguaje, g);
+                for (Node n : world.getNodes()) {
+                    n.setNetworkdata(((NetworkEnvironmentNodeFailingAllInfo) world).loadAllTopology());
+                }
+                break;
+            case "nhopsinfo":
+                world = new NetworkEnvironmentNodeFailingAllInfo(agents, nodeLanguaje, g);
+                for (Node n : world.getNodes()) {
+                    n.setNetworkdata(((NetworkEnvironmentNodeFailingAllInfo) world).loadPartialNetwork(SimulationParameters.nhopsChain, n));
+                }
+                break;
 //            default:
 //                world = new NetworkEnvironmentPheromoneReplicationNodeFailing(agents, agentsLanguage, nodeLanguaje, g);
 //                ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).addNodes(nodes);
 //                break;
-//        }
+        }
+        world.addNodes(nodes);
         world.setNetworkDelays(networkDelays);
         world.addObserver(graphVisualization);
-
-        world.not();
+        world.sChAndNot();
         world.run();
-        executions++;
     }
 
     @Override
-    public void actionPerformed(ActionEvent ae) {
+    public void actionPerformed(ActionEvent ae
+    ) {
         final JButton source = (JButton) ae.getSource();
         if (source.equals(redraw)) {
             redrawNetwork();
@@ -320,16 +312,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                     frame2.setVisible(true);
 
                     while (true) {
-                        //!world.isFinished()) {
                         Thread.sleep(50);
-                       // Logger.getLogger(DataReplicationEscenarioNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
-
-                        //System.out.println("n visited nodes size" + n.visitedNodes.size());
-                        // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
-                        // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
-                        //vv.repaint();
-                        //}
-                        int agentsAlive = n.getAgentsAlive();
+//                        int agentsAlive = n.getAgentsAlive();
                         int nodesAlive = n.getNodesAlive();
                         //System.out.println("n" + n.getAge() + "," + agentsAlive);
                         //System.out.println("n" + n.getAge() + "," + nodesAlive);
@@ -338,12 +322,9 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                             break;
                         } else if (n != null) {
                             if (n.getAge() % 50 == 0) { //SimulationParameters.maxIter > 500 && n.getAge() % 50 == 0) || (SimulationParameters.maxIter <= 500 && n.getAge() % 50 == 0)) { //backwards compatibility
-                                agentsLive.add(n.getAge(), agentsAlive);
+//                                agentsLive.add(n.getAge(), agentsAlive);
                                 nodesLive.add(n.getAge(), nodesAlive);
                                 //call comparator here!
-//                            GraphComparator gcmp = new GraphComparator();
-                                // System.out.println("similarity" + gcmp.calculateSimilarity(initialNetwork, g));
-//                            cosineSim.add(n.getAge(), gcmp.calculateSimilarity(initialNetwork, g));
                                 GraphComparator gnm = new GraphComparator();
                                 double sim = gnm.calculateSimilarity(initialNetwork, g);
                                 neighborMatchingSim.add(n.getAge(), sim);
@@ -493,7 +474,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                 ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).evaporatePheromone();
             }*/
             world.updateWorldAge();
-            world.validateNodesAlive();
+            //world.validateNodesAlive();
 
             /*
             if (world instanceof WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl) {
@@ -573,15 +554,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                 "ssss", "Round number", "Agents",
                 juegoDatos, PlotOrientation.VERTICAL,
                 true, true, false);
-        /*
-         JFreeChart chart =
-         ChartFactory.createTimeSeriesChart("Sesiones en Adictos al Trabajo"
-         "Meses", "Sesiones", juegoDatos,
-         false,
-         false,
-         true // Show legend
-         );
-         */
+
         BufferedImage image = chart.createBufferedImage(450, 450);
         return image;
     }

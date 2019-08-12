@@ -456,4 +456,5 @@ public class Node extends Agent {
         }
         System.out.println("end prune" + this.getVertex().getName());
     }
+    
 }
