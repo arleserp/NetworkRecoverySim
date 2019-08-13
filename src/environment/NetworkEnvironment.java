@@ -352,7 +352,7 @@ public abstract class NetworkEnvironment extends Environment {
     public abstract boolean isOccuped(MyVertex v);
 
     public List<Node> getNodes() {
-        return (List<Node>) nodes.values();
+        return new ArrayList<>(nodes.values());
     }
 
     @Override

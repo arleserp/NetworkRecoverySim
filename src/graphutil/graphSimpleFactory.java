@@ -79,10 +79,10 @@ public class graphSimpleFactory {
             case "load":
                 g = GraphSerialization.loadDeserializeGraph(SimulationParameters.filename);
                 SimulationParameters.globalData = new ArrayList();
-                for (MyVertex vertex : g.getVertices()) {
-                    SimulationParameters.globalData.removeAll(vertex.getData());
-                    SimulationParameters.globalData.addAll(vertex.getData());
-                }
+//                for (MyVertex vertex : g.getVertices()) {
+//                    SimulationParameters.globalData.removeAll(vertex.getData());
+//                    SimulationParameters.globalData.addAll(vertex.getData());
+//                }
                 break;
             default:
                 g = new EppsteinPowerLawGenerator<>(new GraphCreator.GraphFactory(), v, new GraphCreator.EdgeFactory(), SimulationParameters.rows, SimulationParameters.columns, 5).create();

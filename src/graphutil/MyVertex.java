@@ -1,5 +1,6 @@
 package graphutil;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import mobileagents.MobileAgent;
 
@@ -10,7 +11,7 @@ import mobileagents.MobileAgent;
  *
  * @author Arles Rodríguez
  */
-public class MyVertex implements Comparable<MyVertex> {
+public class MyVertex implements Comparable<MyVertex>, Serializable {
 
     private String name;
     private ArrayList data;

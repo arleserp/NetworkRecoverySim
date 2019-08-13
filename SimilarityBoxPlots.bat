@@ -1,0 +1,2 @@
+java -classpath dist/NetworkSimulator.jar unalcol.agents.NetworkSim.util.BoxPlotSimilarityVsRound . 1200 1000 500
+java -classpath dist/NetworkSimulator.jar unalcol.agents.NetworkSim.util.CompiledBoxPlotSimilarityVsRound . 400 400
