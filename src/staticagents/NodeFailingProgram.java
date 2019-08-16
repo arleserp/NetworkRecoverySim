@@ -20,7 +20,7 @@ public class NodeFailingProgram implements AgentProgram {
 
     public NodeFailingProgram(float pf) {
         this.pf = pf;
-        System.out.println("Node pf: " + pf);
+        //System.out.println("Node pf: " + pf);
     }
 
     public void setPf(float pf) {

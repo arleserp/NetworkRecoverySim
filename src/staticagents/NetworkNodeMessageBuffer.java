@@ -18,6 +18,7 @@ import networkrecoverysim.SimulationParameters;
  * @author Arles Rodriguez
  */
 public class NetworkNodeMessageBuffer {
+
     ConcurrentHashMap<String, LinkedBlockingQueue> mbuffer;
     static final int MAXQUEUE = 5; //Max input buffer size by process
 
@@ -36,7 +37,7 @@ public class NetworkNodeMessageBuffer {
 
     public void createBuffer(String pid) {
         if (mbuffer.containsKey(pid)) {
-            System.out.println("error already exists!!!!");
+            System.out.println("Buffer " + pid + " already exists");
         } else {
             mbuffer.put(pid, new LinkedBlockingQueue());
         }
@@ -47,6 +48,7 @@ public class NetworkNodeMessageBuffer {
     }
 
     public class putMessageInThread implements Runnable {
+
         private NetworkEnvironment env;
         private Node n;
         private String location;
@@ -103,7 +105,7 @@ public class NetworkNodeMessageBuffer {
             if (!mbuffer.get(pid).isEmpty()) {
                 return (String[]) (mbuffer.get(pid).poll());
             }
-        } catch (NullPointerException ex) {            
+        } catch (NullPointerException ex) {
             System.out.println("error reading mbuffer " + pid + "... creating new buffer.");
         }
         return null;

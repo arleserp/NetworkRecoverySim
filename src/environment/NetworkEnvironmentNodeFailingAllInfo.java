@@ -244,7 +244,10 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
     }
 
     @Override
+    /**
+     * Since there are not mobile agents always return false
+     */
     public boolean isOccuped(MyVertex v) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return false;
     }
 }

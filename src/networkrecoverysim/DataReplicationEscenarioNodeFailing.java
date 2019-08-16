@@ -230,9 +230,13 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
 
         graphVisualization = new DataReplicationNodeFailingObserver(this);
 //
+        
+        
+        
         switch (SimulationParameters.simMode) {
             case "broadcast":
                 world = new NetworkEnvironmentNodeFailingMulticast(agents, nodeLanguaje, g);
+                world.addNodes(nodes);
                 break;
 //            case "chain":
 //            case "chainnoloop":
@@ -241,12 +245,14 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
 //                break;
             case "allinfo":
                 world = new NetworkEnvironmentNodeFailingAllInfo(agents, nodeLanguaje, g);
+                world.addNodes(nodes);
                 for (Node n : world.getNodes()) {
                     n.setNetworkdata(((NetworkEnvironmentNodeFailingAllInfo) world).loadAllTopology());
                 }
                 break;
-            case "nhopsinfo":
+            case "nhopsinfo":                
                 world = new NetworkEnvironmentNodeFailingAllInfo(agents, nodeLanguaje, g);
+                world.addNodes(nodes);
                 for (Node n : world.getNodes()) {
                     n.setNetworkdata(((NetworkEnvironmentNodeFailingAllInfo) world).loadPartialNetwork(SimulationParameters.nhopsChain, n));
                 }
@@ -256,8 +262,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
 //                ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).addNodes(nodes);
 //                break;
         }
-        world.addNodes(nodes);
-        world.setNetworkDelays(networkDelays);
+
+        //world.setNetworkDelays(networkDelays);
         world.addObserver(graphVisualization);
         world.sChAndNot();
         world.run();
@@ -353,8 +359,9 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                     System.out.println("exception calculating similarity graph: " + ex.getLocalizedMessage());
                     isDrawing = false;
                     fgup = null;
-                } catch (Exception ex) {
-                    System.out.println("Unexpected error: " + ex.getLocalizedMessage());
+                } catch (InterruptedException ex) {
+                    
+                    Logger.getLogger(DataReplicationEscenarioNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
