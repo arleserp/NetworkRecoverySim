@@ -347,10 +347,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                             nodesLive.add(environment.getAge(), nodesAlive);
                             //call comparator here!
                             GraphComparator gnm = new GraphComparator();
-                            double sim = 0;
-                            
-                            sim = gnm.calculateSimilarity(initialNetwork, environment);
-                           
+                            double sim = 0;                            
+                            sim = gnm.calculateSimilarity(initialNetwork, environment);                           
                             neighborMatchingSim.add(environment.getAge(), sim);
                             similarity.put(environment.getAge(), sim);
                             frame2.repaint();
