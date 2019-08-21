@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import networkrecoverysim.SimulationParameters;
-import staticagents.NetworkNodeMessageBuffer;
 import staticagents.Node;
 import staticagents.NodeFailingProgram;
 import unalcol.agents.simulate.util.SimpleLanguage;
@@ -23,9 +22,10 @@ public abstract class NetworkEnvironment extends Environment {
 
     protected static SimpleLanguage nodeLanguage;
     protected final ConcurrentHashMap<String, Node> nodes; // Map of name and vs nodes
-
     protected int[][] adyacenceMatrix; //network as a adyacence matrix   
+
     protected HashMap<String, Integer> nametoAdyLocation = new HashMap<>();  //dictionary of vertexname: id
+
     protected HashMap<Integer, String> locationtoVertexName = new HashMap<>(); // dictionary of id: vertexname
     private AtomicInteger round = new AtomicInteger(0);
     private HashMap<String, Long> networkDelays; //used to administrate delays in messages
@@ -92,6 +92,18 @@ public abstract class NetworkEnvironment extends Environment {
         return null;
     }
 
+    public int[][] getAdyacenceMatrix() {
+        return adyacenceMatrix;
+    }
+
+    public void setAdyacenceMatrix(int[][] adyacenceMatrix) {
+        this.adyacenceMatrix = adyacenceMatrix;
+    }
+
+    public HashMap<String, Integer> getNametoAdyLocation() {
+        return nametoAdyLocation;
+    }
+
     /**
      * Connect two nodes
      *
@@ -99,15 +111,17 @@ public abstract class NetworkEnvironment extends Environment {
      * @param vertexToConnect reference to node
      */
     public void connect(MyVertex vertex, String vertexToConnect) {
-        synchronized (TopologySingleton.class) {
+        synchronized (TopologySingleton.getInstance()) {
             try {
                 MyVertex vertexTo = findVertex(vertexToConnect);
                 if (vertexTo != null && getTopology().containsVertex(vertex) && getTopology().containsVertex(vertexTo) && !getTopology().isNeighbor(vertex, vertexTo)) {
-                        getTopology().addEdge("e" + vertex.getName() + vertexTo.getName(), vertex, vertexTo);                   
+                    getTopology().addEdge("e" + vertex.getName() + vertexTo.getName(), vertex, vertexTo);
                     adyacenceMatrix[nametoAdyLocation.get(vertex.getName())][nametoAdyLocation.get(vertexToConnect)] = 1;
                     adyacenceMatrix[nametoAdyLocation.get(vertexToConnect)][nametoAdyLocation.get(vertex.getName())] = 1;
-                } else {
-                    System.out.println("Node to connect is null: " + vertexToConnect);
+                } 
+                
+                if(vertexTo == null) {
+                    System.out.println(vertex.getName() + "cannot connect with " + vertexToConnect + " because is null.");
                 }
             } catch (Exception ex) {
                 System.out.println("Error trying to connect nodes: " + ex.getMessage());
@@ -123,9 +137,9 @@ public abstract class NetworkEnvironment extends Environment {
      */
     void addConnection(MyVertex dvertex, Node n) {
         try {
-            synchronized (NetworkEnvironmentNodeFailingAllInfo.class) {
+            synchronized (TopologySingleton.getInstance()) {
                 if (getTopology().containsVertex(dvertex) && getTopology().containsVertex(n.getVertex()) && !getTopology().isNeighbor(dvertex, n.getVertex())) {
-                        getTopology().addEdge("e" + dvertex.getName() + n.getVertex().getName(), dvertex, n.getVertex());
+                    getTopology().addEdge("e" + dvertex.getName() + n.getVertex().getName(), dvertex, n.getVertex());
                 }
                 adyacenceMatrix[nametoAdyLocation.get(n.getVertex().getName())][nametoAdyLocation.get(dvertex.getName())] = 1;
                 adyacenceMatrix[nametoAdyLocation.get(dvertex.getName())][nametoAdyLocation.get(n.getVertex().getName())] = 1;
@@ -161,7 +175,7 @@ public abstract class NetworkEnvironment extends Environment {
         if (nodes.containsKey(name)) {
             Node n = nodes.get(name);
 //            System.out.println("Node" + n + "yaaaaaaaaaaaay");
-                
+
             if (!(n == null) && !n.getVertex().getStatus().equals("failed") && getTopology().containsVertex(n.getVertex())) {
                 return n;
             }
@@ -197,55 +211,57 @@ public abstract class NetworkEnvironment extends Environment {
      * @param d
      */
     void createNewNode(Node n, String d) {
-        System.out.println("Node " + n + " is creating new node " + d);
-        MyVertex dvertex = findVertex(d);
-        if (dvertex != null) { //can ping node and avoid creation
-            System.out.println("Node " + d + " is alive connecting instead create...[" + dvertex + ", " + n.getVertex().getName() + "]");
-            if (getTopology().containsVertex(dvertex) && !getTopology().isNeighbor(dvertex, n.getVertex())) {
-                addConnection(dvertex, n);
-            }
-        } else {
-            GraphCreator.VertexFactory v = new GraphCreator.VertexFactory();
-            MyVertex vv = v.create();
-            vv.setName(d);
-            vv.setStatus("alive");
-            synchronized (TopologySingleton.getInstance()) {
-                getTopology().addVertex(vv);
-            }
-            addConnection(vv, n);
-            NodeFailingProgram np;
+        synchronized (TopologySingleton.getInstance()) {
+            System.out.println("Node " + n + " is creating new node " + d);
+            MyVertex dvertex = findVertex(d);
+            if (dvertex != null) { //can ping node and avoid creation
+                System.out.println("Node " + d + " is alive connecting instead create...[" + dvertex + ", " + n.getVertex().getName() + "]");
+                if (getTopology().containsVertex(dvertex) && !getTopology().isNeighbor(dvertex, n.getVertex())) {
+                    addConnection(dvertex, n);
+                }
+            } else {
+                GraphCreator.VertexFactory v = new GraphCreator.VertexFactory();
+                MyVertex vv = v.create();
+                vv.setName(d);
+                vv.setStatus("alive");
+                synchronized (TopologySingleton.getInstance()) {
+                    getTopology().addVertex(vv);
+                }
+                addConnection(vv, n);
+                NodeFailingProgram np;
 
-            if (SimulationParameters.failureProfile.equals("backtolowpf")) { //after fail node will not fail again
-                np = new NodeFailingProgram(0); // set node pf = 0
-            } else if (SimulationParameters.failureProfile.contains("backtolowpf")) { //after some round number ####, backtolowpf#### sets node pf in zero
-                double rNoFail = Double.parseDouble(SimulationParameters.failureProfile.replaceAll("backtolowpf", ""));
-                if (this.getAge() >= rNoFail) {
-                    np = new NodeFailingProgram(0); //using this option reduces failure prob to zero
+                if (SimulationParameters.failureProfile.equals("backtolowpf")) { //after fail node will not fail again
+                    np = new NodeFailingProgram(0); // set node pf = 0
+                } else if (SimulationParameters.failureProfile.contains("backtolowpf")) { //after some round number ####, backtolowpf#### sets node pf in zero
+                    double rNoFail = Double.parseDouble(SimulationParameters.failureProfile.replaceAll("backtolowpf", ""));
+                    if (this.getAge() >= rNoFail) {
+                        np = new NodeFailingProgram(0); //using this option reduces failure prob to zero
+                    } else {
+                        np = new NodeFailingProgram((float) SimulationParameters.npf);
+                    }
                 } else {
                     np = new NodeFailingProgram((float) SimulationParameters.npf);
                 }
-            } else {
-                np = new NodeFailingProgram((float) SimulationParameters.npf);
+
+                //NetworkNodeMessageBuffer.getInstance().createBuffer(d);
+                Node nod;
+                nod = new Node(np, vv);
+                nod.setVertex(vv);
+                nod.setArchitecture(this);
+
+                this.agents.add(nod);
+                nod.live();
+                Thread t = new Thread(nod);
+                nod.setThread(t);
+
+                nodes.put(nod.getName(), nod); //nodes.add(nod);
+                t.start();
+
+                //System.out.println("adding data to node" + nod.getVertex().getName() + ":" + n.getNetworkdata());
+                nod.setNetworkdata(new HashMap(n.getNetworkdata()));
+                setChanged();
+                notifyObservers();
             }
-
-            NetworkNodeMessageBuffer.getInstance().createBuffer(d);
-            Node nod;
-            nod = new Node(np, vv);
-            nod.setVertex(vv);
-            nod.setArchitecture(this);
-
-            this.agents.add(nod);
-            nod.live();
-            Thread t = new Thread(nod);
-            nod.setThread(t);
-
-            nodes.put(nod.getName(), nod); //nodes.add(nod);
-            t.start();
-
-            //System.out.println("adding data to node" + nod.getVertex().getName() + ":" + n.getNetworkdata());
-            nod.setNetworkdata(new HashMap(n.getNetworkdata()));
-            setChanged();
-            notifyObservers();
         }
     }
 
@@ -259,7 +275,7 @@ public abstract class NetworkEnvironment extends Environment {
         synchronized (TopologySingleton.getInstance()) {
             //copy to avoid concurrent modification in removeEdge
             for (int i = 0; i < adyacenceMatrix.length; i++) {
-                
+
                 adyacenceMatrix[nametoAdyLocation.get(vertex.getName())][i] = 0;
                 adyacenceMatrix[i][nametoAdyLocation.get(vertex.getName())] = 0;
             }
@@ -284,16 +300,18 @@ public abstract class NetworkEnvironment extends Environment {
         if (nodes.containsKey(n.getName())) { //remove from concurrent structure
             nodes.remove(n.getName());
             System.out.println("removed: " + n.getName());
-            NetworkNodeMessageBuffer.getInstance().deleteBuffer(n.getVertex().getName());
+
         }
         System.out.println("Node " + n.getVertex().getName() + " has failed.");
         //clear buffer of node n
-        
+
         synchronized (TopologySingleton.getInstance()) {
             removeVertex(n.getVertex());
         }
-        
+
         n.die();
+        //after kill node thread deleteBuffer
+        //NetworkNodeMessageBuffer.getInstance().deleteBuffer(n.getVertex().getName());
         setChanged();
         notifyObservers();
     }

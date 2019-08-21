@@ -43,7 +43,7 @@ public class NetworkEnvironmentNodeFailingMulticast extends NetworkEnvironment {
     @Override
     public boolean act(Agent agent, Action action) {
         if (agent instanceof Node) {
-            agent.sleep(50);
+            //agent.sleep(20);
             Node n = (Node) agent;
 
             n.incRounds();

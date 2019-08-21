@@ -10,7 +10,6 @@ import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
-import environment.NetworkEnvironment;
 import graphutil.GraphComparator;
 import graphutil.GraphSerialization;
 import graphutil.MyVertex;
@@ -66,6 +65,11 @@ import staticagents.Node;
 import environment.NetworkEnvironment;
 import environment.NetworkEnvironmentNodeFailingAllInfo;
 import environment.NetworkEnvironmentNodeFailingMulticast;
+import java.util.Scanner;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Creates a simulation without graphic interface
@@ -75,7 +79,6 @@ import environment.NetworkEnvironmentNodeFailingMulticast;
 public class DataReplicationEscenarioNodeFailing implements Runnable, ActionListener {
 
     private NetworkEnvironment world;
-
     public boolean renderAnts = true;
     public boolean renderSeeking = true;
     public boolean renderCarrying = true;
@@ -108,7 +111,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     XYSeries nodesLive;
     XYSeries neighborMatchingSim;
     XYSeriesCollection juegoDatos = new XYSeriesCollection();
-    FrameGraphUpdater fgup = null;
+    SimilarityAndLiveStatsThread fgup = null;
     private final JPanel networkPanel;
     private final JPanel bPanel;
     private final JButton redraw;
@@ -187,6 +190,25 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         String aCopy = s.serialize(g); //save a copy via serialization
         initialNetwork = (Graph<MyVertex, String>) s.deserialize(aCopy); //create a clone of original graph by deserializing
 
+        //Define prefix filename
+        String fileNamePrefix;
+        String graphType = SimulationParameters.graphMode;
+        graphType = graphType.replaceAll(".graph", "");
+
+        if (SimulationParameters.nofailRounds == 0) {
+            if (SimulationParameters.simMode.contains("chain")) {
+                fileNamePrefix = "exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+" + SimulationParameters.nhopsChain + "+wsize+" + SimulationParameters.wsize + ".timeout";
+            } else {
+                fileNamePrefix = "exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+wsize+" + SimulationParameters.wsize;
+            }
+        } else if (SimulationParameters.simMode.contains("chain")) {
+            fileNamePrefix = "exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+" + SimulationParameters.nhopsChain + "+wsize+" + SimulationParameters.wsize + "+nofailr+" + SimulationParameters.nofailRounds;
+        } else {
+            fileNamePrefix = "exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+wsize+" + SimulationParameters.wsize + "+nofailr+" + SimulationParameters.nofailRounds + "";
+        }
+
+        SimulationParameters.reportsFilenamePrefix = fileNamePrefix;
+
         //Create nodes
         for (MyVertex v : g.getVertices()) {
             v.setStatus("alive");  //to evaluate if use node marking
@@ -230,9 +252,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
 
         graphVisualization = new DataReplicationNodeFailingObserver(this);
 //
-        
-        
-        
+
         switch (SimulationParameters.simMode) {
             case "broadcast":
                 world = new NetworkEnvironmentNodeFailingMulticast(agents, nodeLanguaje, g);
@@ -250,7 +270,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                     n.setNetworkdata(((NetworkEnvironmentNodeFailingAllInfo) world).loadAllTopology());
                 }
                 break;
-            case "nhopsinfo":                
+            case "nhopsinfo":
                 world = new NetworkEnvironmentNodeFailingAllInfo(agents, nodeLanguaje, g);
                 world.addNodes(nodes);
                 for (Node n : world.getNodes()) {
@@ -279,108 +299,92 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     }
 
     private void redrawNetwork() {
-        FrameGraphUpdaterOnce fgup2 = new FrameGraphUpdaterOnce(world.getTopology(), frame, world);
+        DrawCurrentGraphThread fgup2 = new DrawCurrentGraphThread(world.getTopology(), frame, world);
         fgup2.start();
     }
 
-    public class FrameGraphUpdater extends Thread {
-
-        Graph<MyVertex, String> g;
+    public class SimilarityAndLiveStatsThread implements Runnable {
         JFrame frame;
-        NetworkEnvironment n;
+        NetworkEnvironment environment;
 
-        public FrameGraphUpdater(Graph<MyVertex, String> g, JFrame frame, NetworkEnvironment ne) {
-            this.g = g;
+        public SimilarityAndLiveStatsThread(JFrame frame, NetworkEnvironment ne) {
             this.frame = frame;
-            this.n = ne;
+            this.environment = ne;
+            JFreeChart chart = ChartFactory.createXYLineChart(
+                    "Nodes and Agent Number vs Round", "Round number", "Agents-Nodes",
+                    juegoDatos, PlotOrientation.VERTICAL,
+                    true, true, false);
+            ChartPanel chpanel = new ChartPanel(chart);
+
+            JPanel jPanel = new JPanel();
+            jPanel.setLayout(new BorderLayout());
+            jPanel.add(chpanel, BorderLayout.NORTH);
+            frame2.add(jPanel);
+            frame2.pack();
+            frame2.setVisible(true);
         }
 
+        @Override
         public void run() {
-            System.out.println("call runnn!!!");
-
-            isDrawing = true;
-            if (g.getVertexCount() == 0) {
-                System.out.println("no nodes alive.");
-            } else {
-                try {
-
-                    JFreeChart chart = ChartFactory.createXYLineChart(
-                            "Nodes and Agent Number vs Round", "Round number", "Agents-Nodes",
-                            juegoDatos, PlotOrientation.VERTICAL,
-                            true, true, false);
-                    ChartPanel chpanel = new ChartPanel(chart);
-
-                    JPanel jPanel = new JPanel();
-                    jPanel.setLayout(new BorderLayout());
-                    jPanel.add(chpanel, BorderLayout.NORTH);
-                    frame2.add(jPanel);
-                    frame2.pack();
-                    frame2.setVisible(true);
-
-                    while (true) {
-                        Thread.sleep(50);
-//                        int agentsAlive = n.getAgentsAlive();
-                        int nodesAlive = n.getNodesAlive();
-                        //System.out.println("n" + n.getAge() + "," + agentsAlive);
-                        //System.out.println("n" + n.getAge() + "," + nodesAlive);
-                        if (nodesAlive == 0) {
-                            System.out.println("no nodes alive.");
-                            break;
-                        } else if (n != null) {
-                            if (n.getAge() % 50 == 0) { //SimulationParameters.maxIter > 500 && n.getAge() % 50 == 0) || (SimulationParameters.maxIter <= 500 && n.getAge() % 50 == 0)) { //backwards compatibility
+            try {
+                System.out.println("Doing a task during : - Time - " + new Date());
+                world.updateWorldAge();
+                isDrawing = true;
+                
+                if (world.getNodes().isEmpty()) {
+                    System.out.println("no nodes alive.");
+                } else {
+//                  int agentsAlive = n.getAgentsAlive();
+                    int nodesAlive = environment.getNodesAlive();
+                    //System.out.println("n" + n.getAge() + "," + agentsAlive);
+                    //System.out.println("n" + n.getAge() + "," + nodesAlive);
+                    if (nodesAlive == 0) {
+                        System.out.println("no nodes alive.");
+                        //break;
+                    } else if (environment != null) {
+                        if (environment.getAge() % 50 == 0) { //SimulationParameters.maxIter > 500 && n.getAge() % 50 == 0) || (SimulationParameters.maxIter <= 500 && n.getAge() % 50 == 0)) { //backwards compatibility
 //                                agentsLive.add(n.getAge(), agentsAlive);
-                                nodesLive.add(n.getAge(), nodesAlive);
-                                //call comparator here!
-                                GraphComparator gnm = new GraphComparator();
-                                double sim = gnm.calculateSimilarity(initialNetwork, g);
-                                neighborMatchingSim.add(n.getAge(), sim);
-                                similarity.put(n.getAge(), sim);
-                                frame2.repaint();
+                            nodesLive.add(environment.getAge(), nodesAlive);
+                            //call comparator here!
+                            GraphComparator gnm = new GraphComparator();
+                            double sim = 0;
+                            
+                            sim = gnm.calculateSimilarity(initialNetwork, environment);
+                           
+                            neighborMatchingSim.add(environment.getAge(), sim);
+                            similarity.put(environment.getAge(), sim);
+                            frame2.repaint();
 
-                                if (n.getAge() >= 5900 && !alreadyPainted) {
-                                    String baseFilename = SimulationParameters.genericFilenameTimeouts;
-                                    baseFilename = baseFilename.replace(".timeout", "");
-                                    baseFilename = baseFilename.replace("timeout+", "");
-                                    //System.out.println("base filename:" + baseFilename);
-                                    String dir = "cmpgraph";
-                                    createDir(dir);
-                                    GraphSerialization.saveSerializedGraph("./" + dir + "/" + getFileName() + "+" + baseFilename + "+round+" + n.getAge() + ".graph", g);
-                                    alreadyPainted = true;
-                                }
+                            if (environment.getAge() >= 5900 && !alreadyPainted) {
+                                String baseFilename = SimulationParameters.reportsFilenamePrefix;
+                                String dir = "cmpgraph";
+                                createDir(dir);
+                                GraphSerialization.saveSerializedGraph("./" + dir + "/" + getFileName() + "+" + baseFilename + "+round+" + environment.getAge() + ".graph", world.getTopology());
+                                alreadyPainted = true;
                             }
-                        } // System.out.println("entra:" + n.getAge());
-                        //frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
-                    }
-                } catch (NullPointerException ex) {
-                    System.out.println("exception drawing graph: " + ex.getLocalizedMessage());
-                    isDrawing = false;
-                    fgup = null;
-                } catch (ConcurrentModificationException ex) {
-                    System.out.println("exception calculating similarity graph: " + ex.getLocalizedMessage());
-                    isDrawing = false;
-                    fgup = null;
-                } catch (InterruptedException ex) {
-                    
-                    Logger.getLogger(DataReplicationEscenarioNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    } // System.out.println("entra:" + n.getAge());
+                    //frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
 
-    public class FrameGraphUpdaterOnce extends Thread {
+    public class DrawCurrentGraphThread extends Thread {
 
         Graph<MyVertex, String> g;
         JFrame frame;
         NetworkEnvironment n;
 
-        public FrameGraphUpdaterOnce(Graph<MyVertex, String> g, JFrame frame, NetworkEnvironment ne) {
+        public DrawCurrentGraphThread(Graph<MyVertex, String> g, JFrame frame, NetworkEnvironment ne) {
             this.g = g;
             this.frame = frame;
             this.n = ne;
         }
 
         public void run() {
-            System.out.println("call runnn!!!");
             isDrawing = true;
             if (g.getVertexCount() == 0) {
                 System.out.println("no nodes alive.");
@@ -452,57 +456,12 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
      */
     @Override
     public void run() {
-        //try {
-        while (true) {
-
-            if (fgup == null) {
-                fgup = new FrameGraphUpdater(world.getTopology(), frame, world);
-                fgup.start();
-            }
-            try {
-                //!world.isFinished()) {
-                Thread.sleep(50);
-
-            } catch (InterruptedException ex) {
-                Logger.getLogger(DataReplicationEscenarioNodeFailing.class
-                        .getName()).log(Level.SEVERE, null, ex);
-            }
-            //System.out.println("go");
-            //System.out.println("halo");
-            /* world.updateSandC();
-            world.calculateGlobalInfo();
-
-            
-            if (world.getAge() % 2 == 0 || world.getAgentsDie() == world.getAgents().size() || world.getRoundGetInfo() != -1) {
-                world.nObservers();
-            }
-             */
- /*if (world instanceof NetworkEnvironmentPheromoneReplicationNodeFailing && SimulationParameters.motionAlg.equals("carriers")) {
-                ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).evaporatePheromone();
-            }*/
-            world.updateWorldAge();
-            //world.validateNodesAlive();
-
-            /*
-            if (world instanceof WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl) {
-                ((WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl) world).evaporatePheromone();
-            }
-
-            if (world instanceof WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl2) {
-                ((WorldTemperaturesOneStepOnePheromoneHybridLWEvaporationImpl2) world).evaporatePheromone();
-            }
-
-            if (world instanceof WorldLwphCLwEvapImpl) {
-                ((WorldLwphCLwEvapImpl) world).evaporatePheromone();
-            }*/
+        if (fgup == null) {
+            fgup = new SimilarityAndLiveStatsThread(frame, world);
+            //fgup.start();
         }
-        /*}catch (InterruptedException e) {
-            System.out.println("interrupted!");
-        } catch (NullPointerException e) {
-            System.out.println("interrupted!");
-        }*/
- /* System.out.println("End WorldThread");*/
-
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        ScheduledFuture<?> result = executor.scheduleAtFixedRate(fgup, 0, 15, TimeUnit.MILLISECONDS);
     }
 
     public void loadLocations() {

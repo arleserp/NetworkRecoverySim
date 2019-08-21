@@ -211,9 +211,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     isUpdating = true;
                     n.stop();
 
-                    String baseFilename = SimulationParameters.genericFilenameTimeouts;
-                    baseFilename = baseFilename.replace(".timeout", "");
-                    baseFilename = baseFilename.replace("timeout+", "");
+                    String baseFilename = SimulationParameters.reportsFilenamePrefix;
                     System.out.println("base filename:" + baseFilename);
                     
                     if (SimulationParameters.simMode.equals("nhopsinfo")) {

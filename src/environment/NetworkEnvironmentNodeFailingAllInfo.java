@@ -40,10 +40,11 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
 
     @Override
     public boolean act(Agent agent, Action action) {
-        if (agent instanceof Node) {
-            agent.sleep(50);
+        if (agent instanceof Node) {            
+            agent.sleep(10);                        
             Node n = (Node) agent;
             n.incRounds();
+            //System.out.println(n.getName() + ":" + n.getRounds());
 
             //This part is primitive send to neigbors 
             String act = action.getCode();

@@ -106,7 +106,7 @@ public class NetworkNodeMessageBuffer {
                 return (String[]) (mbuffer.get(pid).poll());
             }
         } catch (NullPointerException ex) {
-            System.out.println("error reading mbuffer " + pid + "... creating new buffer.");
+            System.out.println("error reading mbuffer " + pid);
         }
         return null;
     }
