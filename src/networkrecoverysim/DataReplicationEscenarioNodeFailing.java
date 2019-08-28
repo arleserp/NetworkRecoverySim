@@ -170,6 +170,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
      * Initializes simulation.
      */
     public void init() {
+        SimulationParameters.startTime = System.currentTimeMillis();
         Vector<Agent> agents = new Vector();
         List<Node> nodes = new ArrayList<>();
         System.out.println("fp" + probFailure);

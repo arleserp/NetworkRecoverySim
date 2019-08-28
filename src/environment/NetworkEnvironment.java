@@ -22,7 +22,7 @@ public abstract class NetworkEnvironment extends Environment {
 
     protected static SimpleLanguage nodeLanguage;
     protected final ConcurrentHashMap<String, Node> nodes; // Map of name and vs nodes
-    protected int[][] adyacenceMatrix; //network as a adyacence matrix   
+    protected final int[][] adyacenceMatrix; //network as a adyacence matrix   
 
     protected HashMap<String, Integer> nametoAdyLocation = new HashMap<>();  //dictionary of vertexname: id
 
@@ -96,10 +96,6 @@ public abstract class NetworkEnvironment extends Environment {
         return adyacenceMatrix;
     }
 
-    public void setAdyacenceMatrix(int[][] adyacenceMatrix) {
-        this.adyacenceMatrix = adyacenceMatrix;
-    }
-
     public HashMap<String, Integer> getNametoAdyLocation() {
         return nametoAdyLocation;
     }
@@ -115,12 +111,12 @@ public abstract class NetworkEnvironment extends Environment {
             try {
                 MyVertex vertexTo = findVertex(vertexToConnect);
                 if (vertexTo != null && getTopology().containsVertex(vertex) && getTopology().containsVertex(vertexTo) && !getTopology().isNeighbor(vertex, vertexTo)) {
-                    getTopology().addEdge("e" + vertex.getName() + vertexTo.getName(), vertex, vertexTo);
                     adyacenceMatrix[nametoAdyLocation.get(vertex.getName())][nametoAdyLocation.get(vertexToConnect)] = 1;
                     adyacenceMatrix[nametoAdyLocation.get(vertexToConnect)][nametoAdyLocation.get(vertex.getName())] = 1;
-                } 
-                
-                if(vertexTo == null) {
+                    getTopology().addEdge("e" + vertex.getName() + vertexTo.getName(), vertex, vertexTo);
+                }
+
+                if (vertexTo == null) {
                     System.out.println(vertex.getName() + "cannot connect with " + vertexToConnect + " because is null.");
                 }
             } catch (Exception ex) {
@@ -139,14 +135,14 @@ public abstract class NetworkEnvironment extends Environment {
         try {
             synchronized (TopologySingleton.getInstance()) {
                 if (getTopology().containsVertex(dvertex) && getTopology().containsVertex(n.getVertex()) && !getTopology().isNeighbor(dvertex, n.getVertex())) {
+                    adyacenceMatrix[nametoAdyLocation.get(n.getVertex().getName())][nametoAdyLocation.get(dvertex.getName())] = 1;
+                    adyacenceMatrix[nametoAdyLocation.get(dvertex.getName())][nametoAdyLocation.get(n.getVertex().getName())] = 1;
                     getTopology().addEdge("e" + dvertex.getName() + n.getVertex().getName(), dvertex, n.getVertex());
                 }
-                adyacenceMatrix[nametoAdyLocation.get(n.getVertex().getName())][nametoAdyLocation.get(dvertex.getName())] = 1;
-                adyacenceMatrix[nametoAdyLocation.get(dvertex.getName())][nametoAdyLocation.get(n.getVertex().getName())] = 1;
             }
         } catch (Exception ex) {
             System.out.println("Trying to connect " + dvertex + " with node " + n.getName() + " failed.");
-        }
+        }        
     }
 
     /**
@@ -155,7 +151,7 @@ public abstract class NetworkEnvironment extends Environment {
      * @param node
      * @return list of id
      */
-    List<String> getTopologyNames(MyVertex node) {
+    public List<String> getTopologyNames(MyVertex node) {
         List<String> names = new ArrayList();
         for (int i = 0; i < adyacenceMatrix.length; i++) {
             if (adyacenceMatrix[nametoAdyLocation.get(node.getName())][i] == 1) {
@@ -184,21 +180,21 @@ public abstract class NetworkEnvironment extends Environment {
     }
 
     /**
-     * Obtain minimum id from a list of neighbours
+     * Obtain minimum id from a list of neighbours additionally evaluate if node
+     * have data about the node to create.
      *
-     * @param neigdiff
+     * @param neigdiff array with neighbourhood of difference
+     * @param nodeMissing id of the missing node
      * @return id of the minimum
      */
-    public String getMinimumId(List<String> neigdiff) {
+    public String getMinimumId(List<String> neigdiff, String nodeMissing) {
         List<String> nodesAlive = new ArrayList();
         for (String s : neigdiff) {
-            if (getNode(s) != null) {
-                nodesAlive.add(s);
+            Node n;
+            if ((n = getNode(s)) != null && n.getNetworkdata().containsKey(nodeMissing)) {
+                    nodesAlive.add(s);                
             }
         }
-        //if (nodesAlive.isEmpty()) {
-        //    return "none";
-        //}
         String min = Collections.min(nodesAlive, (o1, o2)
                 -> Integer.valueOf(o1.substring(1)).compareTo(Integer.valueOf(o2.substring(1))));
         return min;
@@ -210,13 +206,13 @@ public abstract class NetworkEnvironment extends Environment {
      * @param n
      * @param d
      */
-    void createNewNode(Node n, String d) {
+    public void createNewNode(Node n, String d) {
         synchronized (TopologySingleton.getInstance()) {
             System.out.println("Node " + n + " is creating new node " + d);
             MyVertex dvertex = findVertex(d);
-            if (dvertex != null) { //can ping node and avoid creation
-                System.out.println("Node " + d + " is alive connecting instead create...[" + dvertex + ", " + n.getVertex().getName() + "]");
+            if (dvertex != null) { //can ping node and avoid creation                
                 if (getTopology().containsVertex(dvertex) && !getTopology().isNeighbor(dvertex, n.getVertex())) {
+                    System.out.println("Node " + d + " is alive connecting instead create...[" + dvertex + ", " + n.getVertex().getName() + "]");
                     addConnection(dvertex, n);
                 }
             } else {
@@ -275,7 +271,6 @@ public abstract class NetworkEnvironment extends Environment {
         synchronized (TopologySingleton.getInstance()) {
             //copy to avoid concurrent modification in removeEdge
             for (int i = 0; i < adyacenceMatrix.length; i++) {
-
                 adyacenceMatrix[nametoAdyLocation.get(vertex.getName())][i] = 0;
                 adyacenceMatrix[i][nametoAdyLocation.get(vertex.getName())] = 0;
             }

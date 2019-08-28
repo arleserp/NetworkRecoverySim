@@ -5,8 +5,11 @@
  */
 package staticagents;
 
+import environment.NetworkEnvironment;
+import environment.NetworkEnvironmentNodeFailingAllInfo;
 import graphutil.MyVertex;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -22,9 +25,11 @@ import unalcol.agents.AgentProgram;
 
 /**
  * Simplified version of node
+ *
  * @author ARODRIGUEZ
  */
-public class Node extends Agent {   
+public class Node extends Agent {
+
     private MyVertex v;  //vertex in topology that represents a node
     private final ConcurrentHashMap<Integer, Integer> agentsInNode; //Maybe delete    
     private ArrayList<Agent> currentAgents;
@@ -35,18 +40,17 @@ public class Node extends Agent {
     private int nMsgRecv;
     private int rounds;
     public boolean isProcessing = false;
-    private HashMap<String, ArrayList> networkdata;    
+    private HashMap<String, ArrayList> networkdata;
     private HashMap<Object, ArrayList> pending;
     private HashMap<String, Integer> respAgentsBkp; //Maybe delete     
-    private HashMap<String, ConcurrentHashMap<Integer, Integer>> agentsInNeighbors;    
+    private HashMap<String, ConcurrentHashMap<Integer, Integer>> agentsInNeighbors;
     AtomicInteger c = new AtomicInteger(0); //maybe delete or rename
- 
+
     private LinkedBlockingQueue<String[]> networkMessagebuffer;
     private HashMap<Integer, String> idCounter; //added by arles.rodriguez 12/12/2018
 
     private HashMap<MyVertex, Integer> distancesToNode;
-    
-    
+
     public HashMap<MyVertex, Integer> getDistancesToNode() {
         return distancesToNode;
     }
@@ -54,7 +58,6 @@ public class Node extends Agent {
     public void setDistancesToNode(HashMap<MyVertex, Integer> distancesToNode) {
         this.distancesToNode = distancesToNode;
     }
-
 
     protected Hashtable<String, Object> properties = new Hashtable<>(); //hashtable is synchronized 
 
@@ -96,8 +99,8 @@ public class Node extends Agent {
     public MyVertex getVertex() {
         return v;
     }
-    
-    public String getName(){
+
+    public String getName() {
         return v.getName();
     }
 
@@ -380,10 +383,10 @@ public class Node extends Agent {
                 return networkMessagebuffer.poll();
             }
         } catch (NullPointerException ex) {
-            System.out.println("error reading networkmbuffer...." + ex.getLocalizedMessage());                       
+            System.out.println("error reading networkmbuffer...." + ex.getLocalizedMessage());
         }
         return null;
-    }    
+    }
 
     public HashMap<Integer, String> getIdCounter() {
         return idCounter;
@@ -400,9 +403,12 @@ public class Node extends Agent {
     }
 
     /**
-     * BFS algorithm to obtain list of neighbours in a determined hop and its distances
-     * @param neighbours list of neighbours of a determined node in hop nhopsChain
-     * @param nhopsChain number of hops to obtain networks 
+     * BFS algorithm to obtain list of neighbours in a determined hop and its
+     * distances
+     *
+     * @param neighbours list of neighbours of a determined node in hop
+     * nhopsChain
+     * @param nhopsChain number of hops to obtain networks
      * @param nodeName node that callas the algorithm
      * @param distances distances to a determined node
      */
@@ -431,6 +437,7 @@ public class Node extends Agent {
 
     /**
      * Prune data about neighbours in a determined number of hops
+     *
      * @param nhops number of hops
      */
     public void pruneInformation(int nhops) {
@@ -456,5 +463,63 @@ public class Node extends Agent {
         }
         System.out.println("end prune" + this.getVertex().getName());
     }
-    
+
+    /**
+     * This Method defines if create a new node or not
+     * @param env network environment.
+     */
+    public void evaluateNodeCreation(NetworkEnvironment env) {
+        ArrayList<String> topologyData = new ArrayList(env.getTopologyNames(getVertex())); // Get topology of the network
+        
+        if (getNetworkdata().containsKey(getName())) {
+            List<String> nd = new ArrayList((Collection) getNetworkdata().get(getName()));
+
+            //dif = nd - topologyData
+            List<String> dif = new ArrayList<>(nd);
+            dif.removeAll(topologyData);
+
+            //dif = topologyData - nd
+            List<String> dif2 = new ArrayList<>(topologyData);
+            dif2.removeAll(nd);
+            dif.removeAll(dif2);
+            dif.addAll(dif2);
+
+            if (!dif.isEmpty()) {
+                int level = 0;
+                level++;
+                for (String d : dif) {
+                    //without neigbor data of d is impossible create d ?
+                    if (getNetworkdata().containsKey(d)) {
+                        List<String> neigdiff = (ArrayList) getNetworkdata().get(d);
+                        String min;
+                        min = env.getMinimumId(neigdiff, d);
+
+                        //I'm minimum, I create node
+                        if (min.equals(getName())) {
+                            //System.out.println("create node because node does not detect");
+                            env.createNewNode(this, d);                            
+                            //Send message to node neigbours.
+                            //can be no nd but all agentData
+                            if (neigdiff != null && !neigdiff.isEmpty()) {
+                                for (String neig : neigdiff) {
+                                    //message msgnodediff: connect|level|nodeid|nodetoconnect
+                                    //System.out.println(n.getVertex().getName() + "is sending diff " + dif + "to" + neig);
+                                    String[] msgnodediff = new String[5];
+                                    msgnodediff[0] = "connect";
+                                    msgnodediff[1] = String.valueOf(level);
+                                    msgnodediff[2] = getName();
+                                    msgnodediff[3] = d;
+                                    NetworkNodeMessageBuffer.getInstance().putMessage(neig, msgnodediff);
+                                    //n.getPending().get(dif.toString()).add(neig);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (getNetworkdata().isEmpty()) {
+            getNetworkdata().put(getName(), topologyData);
+        }
+    }
+
 }

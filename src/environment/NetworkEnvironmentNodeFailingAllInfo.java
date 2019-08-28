@@ -40,8 +40,9 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
 
     @Override
     public boolean act(Agent agent, Action action) {
-        if (agent instanceof Node) {            
-            agent.sleep(10);                        
+        long actStartTime = System.currentTimeMillis();
+        if (agent instanceof Node) {                                               
+            //agent.sleep(10);
             Node n = (Node) agent;
             n.incRounds();
             //System.out.println(n.getName() + ":" + n.getRounds());
@@ -57,7 +58,6 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                     String[] inbox;
                     while ((inbox = NetworkNodeMessageBuffer.getInstance().getMessage(n.getVertex().getName())) != null) {
                         if (SimulationParameters.activateReplication.equals("replalgon")) {                            
-                            
                             //message networkdatanode: source | networkdata
                             //receives topological data from other node
                             if (SimulationParameters.simMode.equals("nhopsinfo") && inbox[0].equals("networkdatanode")) {
@@ -77,7 +77,6 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                                 //String ndet = String.valueOf(inbox[2]);
                                 String nodetoConnect = inbox[3];
                                 connect(n.getVertex(), nodetoConnect);
-
                                 //When n connects to nodetoConnect n sends its network topology data
                                 // if simulation mode is nhopsinfo
                                 //this should be added to other experiments !
@@ -102,71 +101,17 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                     System.out.println("acrtion not specified");
             }
 
-            if (n.status != Action.DIE) {
-                //System.out.println("node name" + n.getVertex().getName());
-                //2. Compare topology data with cache given by other agents
-                ArrayList<String> topologyData = new ArrayList(this.getTopologyNames(n.getVertex())); // Get topology of the network
-                if (n.getNetworkdata().containsKey(n.getVertex().getName())) {
-                    List<String> nd = new ArrayList((Collection) n.getNetworkdata().get(n.getVertex().getName())); 
-                    
-                    //dif = nd - topologyData
-                    List<String> dif = new ArrayList<>(nd);
-                    dif.removeAll(topologyData);
-
-                    //dif = topologyData - nd
-                    List<String> dif2 = new ArrayList<>(topologyData);
-                    dif2.removeAll(nd);
-
-                    dif.removeAll(dif2);
-                    dif.addAll(dif2);
-
-                    //System.out.println("node 2 nd" + nd);
-                    if (!dif.isEmpty()) {
-                        //System.out.println("node" + n.getVertex().getName() +" nd:" + nd + " vs  topologyData:" + topologyData);
-                        int level = 0;
-                        level++;
-                        for (String d : dif) {
-                            //without neigbor data of d is impossible create d ?
-                            if (n.getNetworkdata().containsKey(d)) {
-                                List<String> neigdiff = (ArrayList) n.getNetworkdata().get(d);
-
-                                String min;
-                                // System.out.println(n.getVertex().getName() + "-d:" + d + ", data:" + n.getNetworkdata());
-                                //System.out.println("ne:" + neigdiff + ", " + n.getVertex().getName());
-                                min = getMinimumId(neigdiff);
-                                //min = getMoreInfoId(neigdiff, d);
-                                //I'm minimum, I create node
-                                //System.out.println("min" + min + " vs " + n.getVertex().getName());
-                                if (min.equals(n.getVertex().getName())) {
-                                    //System.out.println("create node because node does not detect");
-                                    createNewNode(n, d);
-                                    //Send message to node neigbours.
-                                    //can be no nd but all agentData
-                                    if (neigdiff != null && !neigdiff.isEmpty()) {
-                                        for (String neig : neigdiff) {
-                                            //message msgnodediff: connect|level|nodeid|nodetoconnect
-                                            //System.out.println(n.getVertex().getName() + "is sending diff " + dif + "to" + neig);
-                                            String[] msgnodediff = new String[5];
-                                            msgnodediff[0] = "connect";
-                                            msgnodediff[1] = String.valueOf(level);
-                                            msgnodediff[2] = n.getVertex().getName();
-                                            msgnodediff[3] = d;
-                                            NetworkNodeMessageBuffer.getInstance().putMessage(neig, msgnodediff);
-                                            //n.getPending().get(dif.toString()).add(neig);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else if (n.getNetworkdata().isEmpty()) {
-                    n.getNetworkdata().put(n.getVertex().getName(), topologyData);
-                }
-                //Send topology data to others
-                //evaporate pheromone
-                n.getVertex().setPh((n.getVertex().getPh() - n.getVertex().getPh() * 0.001f));
+            //2. Compare topology data with information obtained
+            if (n.status != Action.DIE) {               
+                n.evaluateNodeCreation(this);
             }
+            
+            long actStopTime = System.currentTimeMillis();
+            long timeTaken = actStopTime-actStartTime;            
+            System.out.println(n.getName() + ", round: " + n.getRounds() + ", time taken act " + timeTaken);
         }
+
+        
         return false;
     }
 

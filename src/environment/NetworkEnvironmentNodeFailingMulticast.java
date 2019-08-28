@@ -24,7 +24,6 @@ import util.HashMapOperations;
  */
 public class NetworkEnvironmentNodeFailingMulticast extends NetworkEnvironment {
 
-
     public NetworkEnvironmentNodeFailingMulticast(Vector<Agent> _agents, SimpleLanguage _nlanguage, Graph gr) {
         super(_agents, _nlanguage, gr);
     }
@@ -49,10 +48,10 @@ public class NetworkEnvironmentNodeFailingMulticast extends NetworkEnvironment {
             n.incRounds();
 
             String act = action.getCode();
-            
+
             //Simple send protocol            
             ArrayList<String> topologyDatas = new ArrayList(this.getTopologyNames(n.getVertex()));
-            
+
             for (String neigbour : topologyDatas) {
                 String[] msgnet = new String[5];
                 msgnet[0] = "networkdata";
@@ -96,65 +95,7 @@ public class NetworkEnvironmentNodeFailingMulticast extends NetworkEnvironment {
                     System.out.println("acrtion not specified");
             }
             if (n.status != Action.DIE) {
-                //System.out.println("node name" + n.getVertex().getName());
-                //2. Compare topology data with cache given by agents.
-                ArrayList<String> topologyData = new ArrayList(this.getTopologyNames(n.getVertex())); // Get topology of the network
-                
-                if (n.getNetworkdata().containsKey(n.getVertex().getName())) {
-                    List<String> nd = new ArrayList((Collection) n.getNetworkdata().get(n.getVertex().getName())); //Store data given by agents
-
-                    //System.out.println("node" + n.getVertex().getName() +" nd:" + nd + "vs  topologyData:" + topologyData);
-                    //dif = nd - topologyData
-                    List<String> dif = new ArrayList<>(nd);
-                    dif.removeAll(topologyData);
-
-                    //dif = topologyData - nd
-                    List<String> dif2 = new ArrayList<>(topologyData);
-                    dif2.removeAll(nd);
-
-                    dif.removeAll(dif2);
-                    dif.addAll(dif2);
-
-                    if (!dif.isEmpty()) {
-                        int level = 0;
-                        level++;
-                        for (String d : dif) {
-                            //without neigbor data of d is impossible create d ?
-                            if (n.getNetworkdata().containsKey(d)) {
-                                List<String> neigdiff = (ArrayList) n.getNetworkdata().get(d);
-
-                                String min;
-                                // System.out.println(n.getVertex().getName() + "-d:" + d + ", data:" + n.getNetworkdata());
-                                //System.out.println("ne:" + neigdiff + ", " + n.getVertex().getName());
-                                min = getMinimumId(neigdiff);
-                                //min = getMoreInfoId(neigdiff, d);
-                                //I'm minimum, I create node
-                                //System.out.println("min" + min + " vs " + n.getVertex().getName());
-                                if (min.equals(n.getVertex().getName())) {
-                                    //System.out.println("create node because node does not detect");
-                                    createNewNode(n, d);
-                                    //Send message to node neigbours.
-                                    //can be no nd but all agentData
-                                    if (neigdiff != null && !neigdiff.isEmpty()) {
-                                        for (String neig : neigdiff) {
-                                            //message msgnodediff: connect|level|nodeid|nodetoconnect
-                                            //System.out.println(n.getVertex().getName() + "is sending diff " + dif + "to" + neig);
-                                            String[] msgnodediff = new String[5];
-                                            msgnodediff[0] = "connect";
-                                            msgnodediff[1] = String.valueOf(level);
-                                            msgnodediff[2] = n.getVertex().getName();
-                                            msgnodediff[3] = d;
-                                            NetworkNodeMessageBuffer.getInstance().putMessage(neig, msgnodediff);
-                                            //n.getPending().get(dif.toString()).add(neig);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else if (n.getNetworkdata().isEmpty()) {
-                    n.getNetworkdata().put(n.getVertex().getName(), topologyData);
-                }
+                n.evaluateNodeCreation(this);
             }
         }
         return false;

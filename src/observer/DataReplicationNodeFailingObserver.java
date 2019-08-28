@@ -230,7 +230,6 @@ public class DataReplicationNodeFailingObserver implements Observer {
                         } catch (IOException ex) {
                             Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                         }
-
                     }
 
                     //Write similarity metrics by round by simulation
@@ -274,9 +273,9 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     //ToFix: Statistis
                     sti.printStatistics(n);
 
-                    System.out.println("The end" + n.getAge());
+                    SimulationParameters.stopTime = System.currentTimeMillis();
+                    System.out.println("The end" + n.getAge() + " time of simulation:" + (SimulationParameters.stopTime-SimulationParameters.startTime));                   
                     System.exit(0);
-
                 }
             }
         }
