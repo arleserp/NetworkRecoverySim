@@ -11,9 +11,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import networkrecoverysim.SimulationParameters;
+import staticagents.NetworkNodeMessageBuffer;
 import staticagents.Node;
 import staticagents.NodeFailingProgram;
 import unalcol.agents.simulate.util.SimpleLanguage;
@@ -21,12 +23,17 @@ import unalcol.agents.simulate.util.SimpleLanguage;
 public abstract class NetworkEnvironment extends Environment {
 
     protected static SimpleLanguage nodeLanguage;
-    protected final ConcurrentHashMap<String, Node> nodes; // Map of name and vs nodes
+    protected final Map<String, Node> nodes; // Map of name and vs nodes
     protected final int[][] adyacenceMatrix; //network as a adyacence matrix   
+    protected final int[][] initialAdyacenceMatrix; //network as a adyacence matrix   
 
+    public int[][] getInitialAdyacenceMatrix() {
+        return initialAdyacenceMatrix;
+    }
     protected HashMap<String, Integer> nametoAdyLocation = new HashMap<>();  //dictionary of vertexname: id
 
     protected HashMap<Integer, String> locationtoVertexName = new HashMap<>(); // dictionary of id: vertexname
+
     private AtomicInteger round = new AtomicInteger(0);
     private HashMap<String, Long> networkDelays; //used to administrate delays in messages
 
@@ -42,6 +49,7 @@ public abstract class NetworkEnvironment extends Environment {
 
         int size = gr.getVertexCount();
         adyacenceMatrix = new int[size][size];
+        initialAdyacenceMatrix = new int[size][size];
         //mapVertex =  new ConcurrentHashMap<>();T
 
         ArrayList<MyVertex> av = new ArrayList<>(gr.getVertices());
@@ -59,7 +67,7 @@ public abstract class NetworkEnvironment extends Environment {
         for (int k = 0; k < adyacenceMatrix.length; k++) {
             for (int l = 0; l < adyacenceMatrix.length; l++) {
                 adyacenceMatrix[k][l] = 0;
-                adyacenceMatrix[k][l] = 0;
+                initialAdyacenceMatrix[k][l] = 0;
             }
         }
 
@@ -69,10 +77,15 @@ public abstract class NetworkEnvironment extends Environment {
             ArrayList<MyVertex> na = new ArrayList<>(gr.getNeighbors(va));
             Iterator<MyVertex> itn = na.iterator();
             while (itn.hasNext()) {
-                adyacenceMatrix[nametoAdyLocation.get(va.getName())][nametoAdyLocation.get(itn.next().getName())] = 1;
+                int k = nametoAdyLocation.get(va.getName());
+                int l = nametoAdyLocation.get(itn.next().getName());
+                adyacenceMatrix[k][l] = 1;
+                adyacenceMatrix[l][k] = 1;
+                initialAdyacenceMatrix[k][l] = 1;
+                initialAdyacenceMatrix[l][k] = 1;
             }
         }
-        nodes = new ConcurrentHashMap<>();
+        nodes = Collections.synchronizedMap(new HashMap<>());
         nodeLanguage = _nlanguage;
     }
 
@@ -83,13 +96,19 @@ public abstract class NetworkEnvironment extends Environment {
      * @return
      */
     MyVertex findVertex(String nodename) {
-        if (nodes.containsKey(nodename)) {
-            Node n = nodes.get(nodename);
-            if (!n.getVertex().getStatus().equals("failed")) {
-                return n.getVertex();
+        synchronized (nodes) {
+            if (nodes.containsKey(nodename)) {
+                Node n = nodes.get(nodename);
+                if (n != null && !n.getVertex().getStatus().equals("failed")) {
+                    return n.getVertex();
+                }
             }
         }
         return null;
+    }
+
+    public HashMap<Integer, String> getLocationtoVertexName() {
+        return locationtoVertexName;
     }
 
     public int[][] getAdyacenceMatrix() {
@@ -113,11 +132,12 @@ public abstract class NetworkEnvironment extends Environment {
                 if (vertexTo != null && getTopology().containsVertex(vertex) && getTopology().containsVertex(vertexTo) && !getTopology().isNeighbor(vertex, vertexTo)) {
                     adyacenceMatrix[nametoAdyLocation.get(vertex.getName())][nametoAdyLocation.get(vertexToConnect)] = 1;
                     adyacenceMatrix[nametoAdyLocation.get(vertexToConnect)][nametoAdyLocation.get(vertex.getName())] = 1;
-                    getTopology().addEdge("e" + vertex.getName() + vertexTo.getName(), vertex, vertexTo);
+                    String edgeName = "e" + vertex.getName() + vertexTo.getName();
+                    getTopology().removeEdge(edgeName);
+                    getTopology().addEdge(edgeName, vertex, vertexTo);
                 }
-
                 if (vertexTo == null) {
-                    System.out.println(vertex.getName() + "cannot connect with " + vertexToConnect + " because is null.");
+                    System.out.println(vertex.getName() + "connect: cannot connect with " + vertexToConnect + " is not in graph, findVertex return null.");
                 }
             } catch (Exception ex) {
                 System.out.println("Error trying to connect nodes: " + ex.getMessage());
@@ -137,12 +157,14 @@ public abstract class NetworkEnvironment extends Environment {
                 if (getTopology().containsVertex(dvertex) && getTopology().containsVertex(n.getVertex()) && !getTopology().isNeighbor(dvertex, n.getVertex())) {
                     adyacenceMatrix[nametoAdyLocation.get(n.getVertex().getName())][nametoAdyLocation.get(dvertex.getName())] = 1;
                     adyacenceMatrix[nametoAdyLocation.get(dvertex.getName())][nametoAdyLocation.get(n.getVertex().getName())] = 1;
-                    getTopology().addEdge("e" + dvertex.getName() + n.getVertex().getName(), dvertex, n.getVertex());
+                    String edgeName = "e" + dvertex.getName() + n.getVertex().getName();
+                    getTopology().removeEdge(edgeName);
+                    getTopology().addEdge(edgeName, dvertex, n.getVertex());
                 }
             }
         } catch (Exception ex) {
-            System.out.println("Trying to connect " + dvertex + " with node " + n.getName() + " failed.");
-        }        
+            System.out.println("Trying to connect " + dvertex + " with node " + n.getName() + " failed " + ", exception" + ex.getMessage());
+        }
     }
 
     /**
@@ -168,12 +190,13 @@ public abstract class NetworkEnvironment extends Environment {
      * @return
      */
     Node getNode(String name) {
-        if (nodes.containsKey(name)) {
-            Node n = nodes.get(name);
+        synchronized (nodes) {
+            if (nodes.containsKey(name)) {
+                Node n = nodes.get(name);
 //            System.out.println("Node" + n + "yaaaaaaaaaaaay");
-
-            if (!(n == null) && !n.getVertex().getStatus().equals("failed") && getTopology().containsVertex(n.getVertex())) {
-                return n;
+                if (!n.getVertex().getStatus().equals("failed")) {
+                    return n;
+                }
             }
         }
         return null;
@@ -189,12 +212,14 @@ public abstract class NetworkEnvironment extends Environment {
      */
     public String getMinimumId(List<String> neigdiff, String nodeMissing) {
         List<String> nodesAlive = new ArrayList();
-        for (String s : neigdiff) {
-            Node n;
-            if ((n = getNode(s)) != null && n.getNetworkdata().containsKey(nodeMissing)) {
-                    nodesAlive.add(s);                
+
+        neigdiff.forEach((s) -> {
+            Node n = getNode(s);
+            if (n != null && n.getNetworkdata().containsKey(nodeMissing)) {
+                nodesAlive.add(s);
             }
-        }
+        });
+
         String min = Collections.min(nodesAlive, (o1, o2)
                 -> Integer.valueOf(o1.substring(1)).compareTo(Integer.valueOf(o2.substring(1))));
         return min;
@@ -206,16 +231,18 @@ public abstract class NetworkEnvironment extends Environment {
      * @param n
      * @param d
      */
-    public void createNewNode(Node n, String d) {
+    public void createNewNode(Node n, String d, List<String> neigdiff) {
         synchronized (TopologySingleton.getInstance()) {
-            System.out.println("Node " + n + " is creating new node " + d);
+            System.out.println("env round:" + this.getAge() + ", node " + n + " is creating new node " + d);
             MyVertex dvertex = findVertex(d);
-            if (dvertex != null) { //can ping node and avoid creation                
+            if (dvertex != null) { //can ping node and avoid creation         
                 if (getTopology().containsVertex(dvertex) && !getTopology().isNeighbor(dvertex, n.getVertex())) {
                     System.out.println("Node " + d + " is alive connecting instead create...[" + dvertex + ", " + n.getVertex().getName() + "]");
                     addConnection(dvertex, n);
                 }
+
             } else {
+
                 GraphCreator.VertexFactory v = new GraphCreator.VertexFactory();
                 MyVertex vv = v.create();
                 vv.setName(d);
@@ -244,21 +271,40 @@ public abstract class NetworkEnvironment extends Environment {
                 nod = new Node(np, vv);
                 nod.setVertex(vv);
                 nod.setArchitecture(this);
+                nod.setNetworkdata(new HashMap(n.getNetworkdata()));
+
+                synchronized (nodes) {
+                    nodes.put(nod.getName(), nod);
+                }
+
+                //Send message to node neigbours.
+                //can be no nd but all agentData                
+                if (neigdiff != null && !neigdiff.isEmpty()) {
+                    neigdiff.forEach((neig) -> {
+                        if (!neig.equals(n.getName())) {
+                            //message msgnodediff: connect|level|nodeid|nodetoconnect
+                            //System.out.println(n.getVertex().getName() + "is sending diff " + dif + "to" + neig);
+                            String[] msgnodediff = new String[5];
+                            msgnodediff[0] = "connect";
+                            msgnodediff[1] = String.valueOf(1);
+                            msgnodediff[2] = n.getName();
+                            msgnodediff[3] = d;
+                            NetworkNodeMessageBuffer.getInstance().putMessage(neig, msgnodediff);
+                        }
+                        //n.getPending().get(dif.toString()).add(neig);
+                    });
+                }
 
                 this.agents.add(nod);
                 nod.live();
                 Thread t = new Thread(nod);
                 nod.setThread(t);
-
-                nodes.put(nod.getName(), nod); //nodes.add(nod);
                 t.start();
-
-                //System.out.println("adding data to node" + nod.getVertex().getName() + ":" + n.getNetworkdata());
-                nod.setNetworkdata(new HashMap(n.getNetworkdata()));
-                setChanged();
-                notifyObservers();
             }
+            setChanged();
+            notifyObservers();
         }
+
     }
 
     /**
@@ -291,26 +337,26 @@ public abstract class NetworkEnvironment extends Environment {
      * @param n
      */
     public void KillNode(Node n) {
-        n.getVertex().setStatus("failed"); //set status to failed
-        if (nodes.containsKey(n.getName())) { //remove from concurrent structure
-            nodes.remove(n.getName());
-            System.out.println("removed: " + n.getName());
-
-        }
-        System.out.println("Node " + n.getVertex().getName() + " has failed.");
-        //clear buffer of node n
-
         synchronized (TopologySingleton.getInstance()) {
+            synchronized (nodes) {
+                if (nodes.containsKey(n.getName())) { //remove from concurrent structure
+                    nodes.remove(n.getName());
+                    System.out.println("removed: " + n.getName());
+                }
+                n.getVertex().setStatus("failed"); //set status to failed
+            }
+            System.out.println("Node " + n.getVertex().getName() + " has failed.");
+            //clear buffer of node n
             removeVertex(n.getVertex());
+            n.die();
         }
-
-        n.die();
         //after kill node thread deleteBuffer
         //NetworkNodeMessageBuffer.getInstance().deleteBuffer(n.getVertex().getName());
         setChanged();
         notifyObservers();
     }
 
+    @Override
     public abstract boolean act(Agent agent, Action action);
 
     @Override
@@ -345,7 +391,9 @@ public abstract class NetworkEnvironment extends Environment {
     }
 
     public int getNodesAlive() {
-        return nodes.size();
+        synchronized (nodes) {
+            return nodes.size();
+        }
     }
 
     public HashMap<String, Long> getNetworkDelays() {
@@ -359,7 +407,9 @@ public abstract class NetworkEnvironment extends Environment {
     public abstract boolean isOccuped(MyVertex v);
 
     public List<Node> getNodes() {
-        return new ArrayList<>(nodes.values());
+        synchronized (nodes) {
+            return new ArrayList<>(nodes.values());
+        }
     }
 
     @Override
@@ -368,8 +418,10 @@ public abstract class NetworkEnvironment extends Environment {
     }
 
     public void addNodes(List<Node> lnodes) {
-        for (Node n : lnodes) {
-            nodes.put(n.getName(), n);
+        synchronized (nodes) {
+            for (Node n : lnodes) {
+                nodes.put(n.getName(), n);
+            }
         }
     }
 

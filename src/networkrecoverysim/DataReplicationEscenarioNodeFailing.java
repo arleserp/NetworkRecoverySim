@@ -30,7 +30,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -65,10 +64,10 @@ import staticagents.Node;
 import environment.NetworkEnvironment;
 import environment.NetworkEnvironmentNodeFailingAllInfo;
 import environment.NetworkEnvironmentNodeFailingMulticast;
-import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -116,8 +115,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     private final JPanel bPanel;
     private final JButton redraw;
     Graph<MyVertex, String> initialNetwork;
+
     HashMap<Integer, Double> similarity;
     boolean alreadyPainted = false;
+    final Semaphore available = new Semaphore(1);
 
     /**
      * Creates a simulation without graphic interface
@@ -290,6 +291,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         world.run();
     }
 
+    public Graph<MyVertex, String> getInitialNetwork() {
+        return initialNetwork;
+    }
+
     @Override
     public void actionPerformed(ActionEvent ae
     ) {
@@ -305,6 +310,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     }
 
     public class SimilarityAndLiveStatsThread implements Runnable {
+
         JFrame frame;
         NetworkEnvironment environment;
 
@@ -328,10 +334,12 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         @Override
         public void run() {
             try {
-                System.out.println("Doing a task during : - Time - " + new Date());
+                available.acquire();
+                long starTime = System.currentTimeMillis();
+
                 world.updateWorldAge();
                 isDrawing = true;
-                
+
                 if (world.getNodes().isEmpty()) {
                     System.out.println("no nodes alive.");
                 } else {
@@ -348,13 +356,13 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                             nodesLive.add(environment.getAge(), nodesAlive);
                             //call comparator here!
                             GraphComparator gnm = new GraphComparator();
-                            double sim = 0;                            
-                            sim = gnm.calculateSimilarity(initialNetwork, environment);                           
+                            double sim = 0;
+                            sim = gnm.calculateSimilarity(environment);
                             neighborMatchingSim.add(environment.getAge(), sim);
                             similarity.put(environment.getAge(), sim);
                             frame2.repaint();
 
-                            if (environment.getAge() >= 5900 && !alreadyPainted) {
+                            if (environment.getAge() >= 4900 && !alreadyPainted) {
                                 String baseFilename = SimulationParameters.reportsFilenamePrefix;
                                 String dir = "cmpgraph";
                                 createDir(dir);
@@ -365,8 +373,13 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                     } // System.out.println("entra:" + n.getAge());
                     //frame2.getGraphics().drawImage(creaImagen(), 0, 0, null);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+                long actStopTime = System.currentTimeMillis();
+                long timeTaken = actStopTime - starTime;
+                //System.out.println("time taken calculating metrics: " + timeTaken);
+                //System.out.println("Doing a task during : - Time - " + new Date());
+                available.release();
+            } catch (InterruptedException ex) {
+                System.out.println("Error obtaining live statistics" + ex.toString());
             }
         }
     }
@@ -383,6 +396,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
             this.n = ne;
         }
 
+        @Override
         public void run() {
             isDrawing = true;
             if (g.getVertexCount() == 0) {
@@ -459,8 +473,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
             fgup = new SimilarityAndLiveStatsThread(frame, world);
             //fgup.start();
         }
+
+        
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        ScheduledFuture<?> result = executor.scheduleAtFixedRate(fgup, 0, 25, TimeUnit.MILLISECONDS);
+        ScheduledFuture<?> result = executor.scheduleAtFixedRate(fgup, 0, 15, TimeUnit.MILLISECONDS);
     }
 
     public void loadLocations() {

@@ -484,35 +484,17 @@ public class Node extends Agent {
             dif.removeAll(dif2);
             dif.addAll(dif2);
 
-            if (!dif.isEmpty()) {
-                int level = 0;
-                level++;
+            if (!dif.isEmpty()) {                
                 for (String d : dif) {
                     //without neigbor data of d is impossible create d ?
                     if (getNetworkdata().containsKey(d)) {
                         List<String> neigdiff = (ArrayList) getNetworkdata().get(d);
                         String min;
                         min = env.getMinimumId(neigdiff, d);
-
-                        //I'm minimum, I create node
+                        //I'm minimum, I will create node and say others that connect with it
                         if (min.equals(getName())) {
-                            //System.out.println("create node because node does not detect");
-                            env.createNewNode(this, d);                            
-                            //Send message to node neigbours.
-                            //can be no nd but all agentData
-                            if (neigdiff != null && !neigdiff.isEmpty()) {
-                                for (String neig : neigdiff) {
-                                    //message msgnodediff: connect|level|nodeid|nodetoconnect
-                                    //System.out.println(n.getVertex().getName() + "is sending diff " + dif + "to" + neig);
-                                    String[] msgnodediff = new String[5];
-                                    msgnodediff[0] = "connect";
-                                    msgnodediff[1] = String.valueOf(level);
-                                    msgnodediff[2] = getName();
-                                    msgnodediff[3] = d;
-                                    NetworkNodeMessageBuffer.getInstance().putMessage(neig, msgnodediff);
-                                    //n.getPending().get(dif.toString()).add(neig);
-                                }
-                            }
+                            // Create node and say neighbours that connect with it
+                            env.createNewNode(this, d, neigdiff);                            
                         }
                     }
                 }

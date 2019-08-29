@@ -40,13 +40,11 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
 
     @Override
     public boolean act(Agent agent, Action action) {
-        long actStartTime = System.currentTimeMillis();
+        //long actStartTime = System.currentTimeMillis();
         if (agent instanceof Node) {                                               
-            //agent.sleep(10);
             Node n = (Node) agent;
             n.incRounds();
             //System.out.println(n.getName() + ":" + n.getRounds());
-
             //This part is primitive send to neigbors 
             String act = action.getCode();
 
@@ -57,38 +55,11 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                     /* A node process messages */
                     String[] inbox;
                     while ((inbox = NetworkNodeMessageBuffer.getInstance().getMessage(n.getVertex().getName())) != null) {
-                        if (SimulationParameters.activateReplication.equals("replalgon")) {                            
-                            //message networkdatanode: source | networkdata
-                            //receives topological data from other node
-                            if (SimulationParameters.simMode.equals("nhopsinfo") && inbox[0].equals("networkdatanode")) {
-                                String source = inbox[1]; //source of message
-                                StringSerializer s = new StringSerializer();
-                                HashMap<String, ArrayList> ndata = (HashMap) s.deserialize(inbox[2]);
-                                //System.out.println(n.getVertex().getName() + "recv networkdatanode from " + source + " nd:" + ndata);
-                                //System.out.println("network data before: " + n.getNetworkdata());
-                                n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), ndata));
-                                n.pruneInformation(SimulationParameters.nhops); //use nhops to prune data
-                                //System.out.println(n.getVertex().getName() + "network data after: " + n.getNetworkdata());
-                            }
-                            
-                            //receive connect message from other node
+                        if (SimulationParameters.activateReplication.equals("replalgon")) {                                                        
                             //message msgnodediff: connect|level|nodeid|nodetoconnect                                                            
                             if (inbox[0].equals("connect")) { 
-                                //String ndet = String.valueOf(inbox[2]);
                                 String nodetoConnect = inbox[3];
                                 connect(n.getVertex(), nodetoConnect);
-                                //When n connects to nodetoConnect n sends its network topology data
-                                // if simulation mode is nhopsinfo
-                                //this should be added to other experiments !
-                                if (SimulationParameters.simMode.equals("nhopsinfo")) {
-                                    String[] msgdatanode = new String[3];
-                                    msgdatanode[0] = "networkdatanode";
-                                    msgdatanode[1] = String.valueOf(n.getVertex().getName());
-                                    StringSerializer s = new StringSerializer();
-                                    msgdatanode[2] = s.serialize(n.getNetworkdata());
-                                    NetworkNodeMessageBuffer.getInstance().putMessage(nodetoConnect, msgdatanode);
-                                    System.out.println(n.getVertex().getName() + "send networkdatanode to " + nodetoConnect);
-                                }
                             }
                         }
                     }
@@ -98,17 +69,17 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                     KillNode(n);
                     break;
                 default:
-                    System.out.println("acrtion not specified");
+                    System.out.println("action not specified");
             }
 
             //2. Compare topology data with information obtained
             if (n.status != Action.DIE) {               
                 n.evaluateNodeCreation(this);
-            }
+            }            
             
-            long actStopTime = System.currentTimeMillis();
-            long timeTaken = actStopTime-actStartTime;            
-            System.out.println(n.getName() + ", round: " + n.getRounds() + ", time taken act " + timeTaken);
+            //long actStopTime = System.currentTimeMillis();
+            //long timeTaken = actStopTime-actStartTime;            
+            //System.out.println("env age: " + this.getAge() + " node:" + n.getName() + ", round: " + n.getRounds() + ", time taken act " + timeTaken);
         }
 
         
@@ -157,7 +128,6 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
         }
     }
 
-       
     /**
      * For each node load the neighbourhood in hops nhopsChain of n
      * @param nhopsChain number of hops

@@ -11,6 +11,7 @@ import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import environment.NetworkEnvironment;
+import graphutil.GraphComparator;
 import graphutil.MyVertex;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -25,19 +26,16 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import networkrecoverysim.DataReplicationEscenarioNodeFailing;
 import networkrecoverysim.SimulationParameters;
 import org.apache.commons.collections15.Transformer;
-import staticagents.Node;
 import util.StatisticsNormalDist;
 
 /**
@@ -192,7 +190,6 @@ public class DataReplicationNodeFailingObserver implements Observer {
 //                }
 //            }
 //            int agentsAlive = n.getAgentsAlive();
-
             int nodesAlive = n.getNodesAlive();
             if (lastnodesAlive == -1 || nodesAlive != lastnodesAlive) {
                 System.out.println("Nodes alive: " + nodesAlive);
@@ -203,7 +200,6 @@ public class DataReplicationNodeFailingObserver implements Observer {
 //                System.out.println("Agents alive: " + agentsAlive);
 //                lastagentsAlive = agentsAlive;
 //            }
-
 //            System.out.println("maxIter:" + SimulationParameters.maxIter  + ", " + n.getAge());
             if (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter || nodesAlive == 0) {
                 if (!isUpdating) {
@@ -213,7 +209,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
 
                     String baseFilename = SimulationParameters.reportsFilenamePrefix;
                     System.out.println("base filename:" + baseFilename);
-                    
+
                     if (SimulationParameters.simMode.equals("nhopsinfo")) {
                         String roundVsInfoFileName = baseFilename + "+nhopsInfo+" + SimulationParameters.nhopsChain + "+roundVsInfo";
                         createDir(roundVsInfoFileName);
@@ -233,6 +229,13 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     }
 
                     //Write similarity metrics by round by simulation
+                    //write last similarity reported
+                    GraphComparator gnm = new GraphComparator();
+                    double sim = 0;
+                    sim = gnm.calculateSimilarity(n);
+                    System.out.println("Final Similarity:" + sim);
+                    dataReplEsc.getSimilarity().put(n.getAge(), sim);
+
                     String graphSimilarity = baseFilename + "+similarity";
                     createDir(graphSimilarity);
                     String graphSimilarityStats = "./" + graphSimilarity + "/" + baseFilename + "+" + getFileName() + "+similarity.csv";
@@ -274,7 +277,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     sti.printStatistics(n);
 
                     SimulationParameters.stopTime = System.currentTimeMillis();
-                    System.out.println("The end" + n.getAge() + " time of simulation:" + (SimulationParameters.stopTime-SimulationParameters.startTime));                   
+                    System.out.println("The end" + n.getAge() + " time of simulation:" + (SimulationParameters.stopTime - SimulationParameters.startTime));
                     System.exit(0);
                 }
             }
