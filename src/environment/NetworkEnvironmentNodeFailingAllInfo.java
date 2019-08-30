@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import networkrecoverysim.SimulationParameters;
 import serialization.StringSerializer;
 import staticagents.NetworkNodeMessageBuffer;
@@ -24,6 +26,7 @@ import util.HashMapOperations;
  * This class defines an environment with the following assumption No mobile
  * agents only nodes nodes have information about the entire topology or partial
  * information given in terms of hops
+ *
  * @author arlese.rodriguezp
  */
 public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
@@ -40,8 +43,13 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
 
     @Override
     public boolean act(Agent agent, Action action) {
+        try {
+            available.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(NetworkEnvironmentNodeFailingAllInfo.class.getName()).log(Level.SEVERE, null, ex);
+        }
         //long actStartTime = System.currentTimeMillis();
-        if (agent instanceof Node) {                                               
+        if (agent instanceof Node) {
             Node n = (Node) agent;
             n.incRounds();
             //System.out.println(n.getName() + ":" + n.getRounds());
@@ -55,9 +63,9 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                     /* A node process messages */
                     String[] inbox;
                     while ((inbox = NetworkNodeMessageBuffer.getInstance().getMessage(n.getVertex().getName())) != null) {
-                        if (SimulationParameters.activateReplication.equals("replalgon")) {                                                        
+                        if (SimulationParameters.activateReplication.equals("replalgon")) {
                             //message msgnodediff: connect|level|nodeid|nodetoconnect                                                            
-                            if (inbox[0].equals("connect")) { 
+                            if (inbox[0].equals("connect")) {
                                 String nodetoConnect = inbox[3];
                                 connect(n.getVertex(), nodetoConnect);
                             }
@@ -73,21 +81,24 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
             }
 
             //2. Compare topology data with information obtained
-            if (n.status != Action.DIE) {               
-                n.evaluateNodeCreation(this);
-            }            
-            
+            if (n.status != Action.DIE) {
+                if (SimulationParameters.activateReplication.equals("replalgon")) {
+                    n.evaluateNodeCreation(this);
+                }
+            }
+
             //long actStopTime = System.currentTimeMillis();
             //long timeTaken = actStopTime-actStartTime;            
             //System.out.println("env age: " + this.getAge() + " node:" + n.getName() + ", round: " + n.getRounds() + ", time taken act " + timeTaken);
         }
 
-        
+        available.release();
         return false;
     }
 
     /**
      * Load all the topology in each node
+     *
      * @return hashMap of n_1={n_1={n_k,...n_l}, n_2={...},..., n={}}
      */
     public HashMap<String, ArrayList> loadAllTopology() {
@@ -101,10 +112,11 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
 
     /**
      * load neighobours using bfs
-     * @param neighbours neighbours of a node 
+     *
+     * @param neighbours neighbours of a node
      * @param nhopsChain number of hops
-     * @param v node to load neighbour 
-     * @param distances  //distances to a determined node
+     * @param v node to load neighbour
+     * @param distances //distances to a determined node
      */
     private void loadNeighboursBFS(ArrayList<MyVertex> neighbours, int nhopsChain, MyVertex v, HashMap<MyVertex, Integer> distances) {
         //System.out.println("nopsChain:" + nhopsChain);
@@ -130,9 +142,10 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
 
     /**
      * For each node load the neighbourhood in hops nhopsChain of n
+     *
      * @param nhopsChain number of hops
      * @param n node
-     * @return 
+     * @return
      */
     public HashMap<String, ArrayList> loadPartialNetwork(int nhopsChain, Node n) {
         HashMap<String, ArrayList> networkInfo = new HashMap<>();

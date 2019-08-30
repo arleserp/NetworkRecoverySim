@@ -277,7 +277,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     sti.printStatistics(n);
 
                     SimulationParameters.stopTime = System.currentTimeMillis();
-                    System.out.println("The end" + n.getAge() + " time of simulation:" + (SimulationParameters.stopTime - SimulationParameters.startTime));
+                    System.out.println("The end" + n.getAge() + " time of simulation:" + (SimulationParameters.stopTime - SimulationParameters.startTime)  + " number of node failures: " + n.getNumberFailures());
                     System.exit(0);
                 }
             }

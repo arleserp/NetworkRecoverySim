@@ -260,9 +260,9 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
                     /*pf == 1.0E-4 || pf == 3.0E-4*/
                     if (SimilarityVsSimulation.containsKey(r)) {
                         if (Pf.size() == 1) {
-                            dataset.add(SimilarityVsSimulation.get(r), r, r + getTechniqueName(mode) + "\n" + graphtype + "\n" + fn2 + "\n");
+                            dataset.add(SimilarityVsSimulation.get(r), r, r);
                         } else {
-                            dataset.add(SimilarityVsSimulation.get(r), r, "-" + r + getTechniqueName(mode) + "\n" + graphtype + "\n" + fn2 + "\n");
+                            dataset.add(SimilarityVsSimulation.get(r), r, r);
                         }
                     }
                     //}

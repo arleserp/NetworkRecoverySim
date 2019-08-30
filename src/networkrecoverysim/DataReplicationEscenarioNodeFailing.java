@@ -75,7 +75,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author arles.rodriguez
  */
-public class DataReplicationEscenarioNodeFailing implements Runnable, ActionListener {
+public class DataReplicationEscenarioNodeFailing implements Runnable {
 
     private NetworkEnvironment world;
     public boolean renderAnts = true;
@@ -103,8 +103,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     HashMap<String, Long> networkDelays;
     int indexLoc;
     boolean added = false;
-    JFrame frame;
-    JFrame frame2;
+    //JFrame frame;
+    //JFrame frame2;
     private boolean isDrawing = false;
     XYSeries agentsLive;
     XYSeries nodesLive;
@@ -137,10 +137,9 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         System.out.println("Pf: " + pf);
         System.out.println("Movement: " + SimulationParameters.motionAlg);
         indexLoc = 0;
-        frame = new JFrame("Simple Graph View");
-        //frame.setSize(1000, 1000);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame2 = new JFrame("Agent and Node Number");
+        //frame = new JFrame("Simple Graph View");
+        //frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        //frame2 = new JFrame("Agent and Node Number");
         agentsLive = new XYSeries("agentsLive");
         nodesLive = new XYSeries("nodesLive");
         neighborMatchingSim = new XYSeries("Neighbour Sim");
@@ -149,20 +148,16 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         juegoDatos.addSeries(nodesLive);
         juegoDatos.addSeries(neighborMatchingSim);
 
-        frame2.setLocation(650, 150);
-        frame2.setSize(450, 450);
-        frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
+//        frame2.setLocation(650, 150);
+//        frame2.setSize(450, 450);
+//        frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
         bPanel = new JPanel();
         redraw = new JButton("Redraw Network");
         bPanel.add(redraw);
         networkPanel = new JPanel();
-        frame.add(networkPanel);
-        frame.add(bPanel);
-        redraw.addActionListener(this);
-        //frame2.show();
-        frame.setSize(650, 650);
-        frame.setVisible(true);
-        frame2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        frame.setSize(650, 650);
+//        frame.setVisible(true);
+//        frame2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         similarity = new HashMap<>();
     }
 
@@ -295,27 +290,24 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         return initialNetwork;
     }
 
-    @Override
-    public void actionPerformed(ActionEvent ae
-    ) {
-        final JButton source = (JButton) ae.getSource();
-        if (source.equals(redraw)) {
-            redrawNetwork();
-        }
-    }
+//    @Override
+//    public void actionPerformed(ActionEvent ae
+//    ) {
+//        final JButton source = (JButton) ae.getSource();
+//        if (source.equals(redraw)) {
+//            redrawNetwork();
+//        }
+//    }
 
-    private void redrawNetwork() {
-        DrawCurrentGraphThread fgup2 = new DrawCurrentGraphThread(world.getTopology(), frame, world);
-        fgup2.start();
-    }
+//    private void redrawNetwork() {
+//        DrawCurrentGraphThread fgup2 = new DrawCurrentGraphThread(world.getTopology(), frame, world);
+//        fgup2.start();
+//    }
 
     public class SimilarityAndLiveStatsThread implements Runnable {
-
-        JFrame frame;
         NetworkEnvironment environment;
 
-        public SimilarityAndLiveStatsThread(JFrame frame, NetworkEnvironment ne) {
-            this.frame = frame;
+        public SimilarityAndLiveStatsThread(NetworkEnvironment ne) {
             this.environment = ne;
             JFreeChart chart = ChartFactory.createXYLineChart(
                     "Nodes and Agent Number vs Round", "Round number", "Agents-Nodes",
@@ -326,9 +318,6 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
             JPanel jPanel = new JPanel();
             jPanel.setLayout(new BorderLayout());
             jPanel.add(chpanel, BorderLayout.NORTH);
-            frame2.add(jPanel);
-            frame2.pack();
-            frame2.setVisible(true);
         }
 
         @Override
@@ -351,7 +340,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                         System.out.println("no nodes alive.");
                         //break;
                     } else if (environment != null) {
-                        if (environment.getAge() % 50 == 0) { //SimulationParameters.maxIter > 500 && n.getAge() % 50 == 0) || (SimulationParameters.maxIter <= 500 && n.getAge() % 50 == 0)) { //backwards compatibility
+                        if (environment.getAge() % 50 == 0 || (environment.getAge() >= 1000 && environment.getAge() <= 1050) ) { //SimulationParameters.maxIter > 500 && n.getAge() % 50 == 0) || (SimulationParameters.maxIter <= 500 && n.getAge() % 50 == 0)) { //backwards compatibility
 //                                agentsLive.add(n.getAge(), agentsAlive);
                             nodesLive.add(environment.getAge(), nodesAlive);
                             //call comparator here!
@@ -360,9 +349,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                             sim = gnm.calculateSimilarity(environment);
                             neighborMatchingSim.add(environment.getAge(), sim);
                             similarity.put(environment.getAge(), sim);
-                            frame2.repaint();
+                            
+                            //frame2.repaint();
 
-                            if (environment.getAge() >= 4900 && !alreadyPainted) {
+                            if (environment.getAge() >= 1400 && !alreadyPainted) {
                                 String baseFilename = SimulationParameters.reportsFilenamePrefix;
                                 String dir = "cmpgraph";
                                 createDir(dir);
@@ -384,76 +374,76 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         }
     }
 
-    public class DrawCurrentGraphThread extends Thread {
-
-        Graph<MyVertex, String> g;
-        JFrame frame;
-        NetworkEnvironment n;
-
-        public DrawCurrentGraphThread(Graph<MyVertex, String> g, JFrame frame, NetworkEnvironment ne) {
-            this.g = g;
-            this.frame = frame;
-            this.n = ne;
-        }
-
-        @Override
-        public void run() {
-            isDrawing = true;
-            if (g.getVertexCount() == 0) {
-                System.out.println("no nodes alive.");
-            } else {
-                //GraphComparator gcmp = new GraphComparator();
-                //nodesLive.add(n.getAge(), gcmp.calculateSimilarity(initialNetwork, g));
-                try {
-                    Layout<MyVertex, String> layout = null;
-
-                    layout = new ISOMLayout<>(world.getTopology());
-
-                    BasicVisualizationServer<MyVertex, String> vv = new BasicVisualizationServer<>(layout);
-                    vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
-                    //vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-                    //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
-                    //n.setVV(vv);
-                    Transformer<MyVertex, Paint> vertexColor = new Transformer<MyVertex, Paint>() {
-                        @Override
-                        public Paint transform(MyVertex i) {
-                            if (n.isOccuped(i)) {
-                                return Color.YELLOW;
-                            }
-
-                            if (i.getStatus() != null && i.getStatus().equals("failed")) {
-                                return Color.BLACK;
-                            }
-
-                            if (i.getStatus() != null && i.getStatus().equals("visited")) {
-                                return Color.BLUE;
-                            }
-
-                            //if(i.getData().size() > 0){
-                            //    System.out.println("i"+ i.getData().size());
-                            //}
-                            /*if (i.getData().size() == n.getTopology().getVertices().size()) {
-                                return Color.GREEN;
-                            }*/
-                            return Color.RED;
-                        }
-                    };
-                    vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
-                    if (!added) {
-                        networkPanel.add(vv);
-                        added = true;
-                        frame.pack();
-                        frame.setVisible(true);
-                    } else {
-                        frame.repaint();
-                    }
-                } catch (NullPointerException ex) {
-                    System.out.println("exception drawing graph: " + ex.getLocalizedMessage());
-                    isDrawing = false;
-                }
-            }
-        }
-    }
+//    public class DrawCurrentGraphThread extends Thread {
+//
+//        Graph<MyVertex, String> g;
+//        JFrame frame;
+//        NetworkEnvironment n;
+//
+//        public DrawCurrentGraphThread(Graph<MyVertex, String> g, JFrame frame, NetworkEnvironment ne) {
+//            this.g = g;
+//            this.frame = frame;
+//            this.n = ne;
+//        }
+//
+//        @Override
+//        public void run() {
+//            isDrawing = true;
+//            if (g.getVertexCount() == 0) {
+//                System.out.println("no nodes alive.");
+//            } else {
+//                //GraphComparator gcmp = new GraphComparator();
+//                //nodesLive.add(n.getAge(), gcmp.calculateSimilarity(initialNetwork, g));
+//                try {
+//                    Layout<MyVertex, String> layout = null;
+//
+//                    layout = new ISOMLayout<>(world.getTopology());
+//
+//                    BasicVisualizationServer<MyVertex, String> vv = new BasicVisualizationServer<>(layout);
+//                    vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
+//                    //vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+//                    //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
+//                    //n.setVV(vv);
+//                    Transformer<MyVertex, Paint> vertexColor = new Transformer<MyVertex, Paint>() {
+//                        @Override
+//                        public Paint transform(MyVertex i) {
+//                            if (n.isOccuped(i)) {
+//                                return Color.YELLOW;
+//                            }
+//
+//                            if (i.getStatus() != null && i.getStatus().equals("failed")) {
+//                                return Color.BLACK;
+//                            }
+//
+//                            if (i.getStatus() != null && i.getStatus().equals("visited")) {
+//                                return Color.BLUE;
+//                            }
+//
+//                            //if(i.getData().size() > 0){
+//                            //    System.out.println("i"+ i.getData().size());
+//                            //}
+//                            /*if (i.getData().size() == n.getTopology().getVertices().size()) {
+//                                return Color.GREEN;
+//                            }*/
+//                            return Color.RED;
+//                        }
+//                    };
+//                    vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
+//                    if (!added) {
+//                        networkPanel.add(vv);
+//                        added = true;
+//                        frame.pack();
+//                        frame.setVisible(true);
+//                    } else {
+//                        frame.repaint();
+//                    }
+//                } catch (NullPointerException ex) {
+//                    System.out.println("exception drawing graph: " + ex.getLocalizedMessage());
+//                    isDrawing = false;
+//                }
+//            }
+//        }
+//    }
 
     public HashMap<Integer, Double> getSimilarity() {
         return similarity;
@@ -470,13 +460,11 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
     @Override
     public void run() {
         if (fgup == null) {
-            fgup = new SimilarityAndLiveStatsThread(frame, world);
+            fgup = new SimilarityAndLiveStatsThread(world);
             //fgup.start();
-        }
-
-        
+        }        
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        ScheduledFuture<?> result = executor.scheduleAtFixedRate(fgup, 0, 15, TimeUnit.MILLISECONDS);
+        ScheduledFuture<?> result = executor.scheduleAtFixedRate(fgup, 0, 10, TimeUnit.MILLISECONDS);
     }
 
     public void loadLocations() {
@@ -509,26 +497,26 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
         }
     }
 
-    public void saveImage(String filename) {
-        FileOutputStream output;
-        JFreeChart chart = ChartFactory.createXYLineChart(
-                "Agents Live", "round number", "agents",
-                juegoDatos, PlotOrientation.VERTICAL,
-                true, true, false);
-
-        try {
-            output = new FileOutputStream(filename + ".jpg");
-            ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, 400, 400, null);
-
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(DataReplicationEscenarioNodeFailing.class
-                    .getName()).log(Level.SEVERE, null, ex);
-
-        } catch (IOException ex) {
-            Logger.getLogger(DataReplicationEscenarioNodeFailing.class
-                    .getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+//    public void saveImage(String filename) {
+//        FileOutputStream output;
+//        JFreeChart chart = ChartFactory.createXYLineChart(
+//                "Agents Live", "round number", "agents",
+//                juegoDatos, PlotOrientation.VERTICAL,
+//                true, true, false);
+//
+//        try {
+//            output = new FileOutputStream(filename + ".jpg");
+//            ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, 400, 400, null);
+//
+//        } catch (FileNotFoundException ex) {
+//            Logger.getLogger(DataReplicationEscenarioNodeFailing.class
+//                    .getName()).log(Level.SEVERE, null, ex);
+//
+//        } catch (IOException ex) {
+//            Logger.getLogger(DataReplicationEscenarioNodeFailing.class
+//                    .getName()).log(Level.SEVERE, null, ex);
+//        }
+//    }
 
     public BufferedImage creaImagen() {
         JFreeChart chart = ChartFactory.createXYLineChart(

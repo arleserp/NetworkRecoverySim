@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import networkrecoverysim.SimulationParameters;
 import staticagents.NetworkNodeMessageBuffer;
@@ -26,15 +27,17 @@ public abstract class NetworkEnvironment extends Environment {
     protected final Map<String, Node> nodes; // Map of name and vs nodes
     protected final int[][] adyacenceMatrix; //network as a adyacence matrix   
     protected final int[][] initialAdyacenceMatrix; //network as a adyacence matrix   
+    protected final Semaphore available = new Semaphore(1);
 
     public int[][] getInitialAdyacenceMatrix() {
         return initialAdyacenceMatrix;
     }
     protected HashMap<String, Integer> nametoAdyLocation = new HashMap<>();  //dictionary of vertexname: id
-
     protected HashMap<Integer, String> locationtoVertexName = new HashMap<>(); // dictionary of id: vertexname
+    private final AtomicInteger round = new AtomicInteger(0);
 
-    private AtomicInteger round = new AtomicInteger(0);
+    private final AtomicInteger numberFailures = new AtomicInteger(0);
+
     private HashMap<String, Long> networkDelays; //used to administrate delays in messages
 
     /**
@@ -352,6 +355,7 @@ public abstract class NetworkEnvironment extends Environment {
         }
         //after kill node thread deleteBuffer
         //NetworkNodeMessageBuffer.getInstance().deleteBuffer(n.getVertex().getName());
+        numberFailures.incrementAndGet();
         setChanged();
         notifyObservers();
     }
@@ -428,6 +432,14 @@ public abstract class NetworkEnvironment extends Environment {
     public void sChAndNot() {
         setChanged();
         notifyObservers();
+    }
+
+    /**
+     * Return number of failures recovered
+     * @return 
+     */
+    public AtomicInteger getNumberFailures() {
+        return numberFailures;
     }
 
 }
