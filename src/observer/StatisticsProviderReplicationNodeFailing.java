@@ -43,6 +43,7 @@ public class StatisticsProviderReplicationNodeFailing {
         StatisticsNormalDist strecv = new StatisticsNormalDist(msgin, msgin.size());
         Statistics.put("avgRecv", strecv.getMean());
         Statistics.put("stdDevRecv", strecv.getStdDev());
+        Statistics.put("numberFailures", w.getNumberFailures());
         Statistics.put("round", w.getAge());
         System.out.println("stats: " + Statistics);
         return Statistics;
@@ -53,7 +54,7 @@ public class StatisticsProviderReplicationNodeFailing {
         try {
             PrintWriter escribir;
             escribir = new PrintWriter(new BufferedWriter(new FileWriter(reportFile+".csv", true)));
-            escribir.println(st.get("avgRecv") + "," + st.get("stdDevRecv") + "," + st.get("round"));
+            escribir.println(st.get("numberFailures") + "," + st.get("avgRecv") + "," + st.get("stdDevRecv") + "," + st.get("round"));
             escribir.close();
         } catch (IOException ex) {
             Logger.getLogger(StatisticsProviderReplicationNodeFailing.class.getName()).log(Level.SEVERE, null, ex);

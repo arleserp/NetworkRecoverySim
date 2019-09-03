@@ -1,4 +1,4 @@
-for /L %%x in (1, 1, 10) do (
+REM for /L %%x in (1, 1, 10) do (
 
 Java -d64 -Xms3G -Xmx3G  -XX:+UseG1GC  -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=20 -XX:ConcGCThreads=5 -XX:InitiatingHeapOccupancyPercent=70  -classpath dist/NetworkRecoverySim.jar networkrecoverysim.DataReplicationNodeFailingMain load smallworld+v+100+beta+0.5+degree+2.graph 0 0 carriersrep smallworld+v+100+beta+0.5+degree+2.loc 1500 replalgon NODELAY  0.5 4 allinfo 4 5 0 backtolowpf1000
 
