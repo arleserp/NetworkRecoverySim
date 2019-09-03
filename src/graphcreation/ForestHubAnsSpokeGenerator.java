@@ -1,5 +1,6 @@
-package graphutil;
+package graphcreation;
 
+import graphcreation.HubAndSpokeGraphGenerator;
 import edu.uci.ics.jung.algorithms.generators.Lattice2DGenerator;
 import java.util.Random;
 import edu.uci.ics.jung.graph.Graph;

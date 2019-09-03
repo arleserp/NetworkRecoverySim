@@ -1,4 +1,4 @@
-package graphutil;
+package graphcreation;
 
 /*
  * Copyright (c) 2003, the JUNG Project and the Regents of the University 
@@ -9,6 +9,7 @@ package graphutil;
  * "license.txt" or
  * http://jung.sourceforge.net/license.txt for a description.
  */
+import graphcreation.WattsBetaSmallWorldGenerator;
 import edu.uci.ics.jung.algorithms.generators.Lattice2DGenerator;
 import java.util.Random;
 

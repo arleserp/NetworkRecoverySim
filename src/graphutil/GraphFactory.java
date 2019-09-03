@@ -5,6 +5,12 @@
  */
 package graphutil;
 
+import graphcreation.LineGraphGenerator;
+import graphcreation.CommunityCircleNetworkGenerator;
+import graphcreation.CommunityNetworkGenerator;
+import graphcreation.ForestHubAnsSpokeGenerator;
+import graphcreation.HubAndSpokeGraphGenerator;
+import graphcreation.WattsBetaSmallWorldGenerator;
 import edu.uci.ics.jung.algorithms.generators.Lattice2DGenerator;
 import edu.uci.ics.jung.algorithms.generators.random.BarabasiAlbertGenerator;
 import edu.uci.ics.jung.algorithms.generators.random.EppsteinPowerLawGenerator;
@@ -19,7 +25,7 @@ import networkrecoverysim.SimulationParameters;
  *
  * @author Arles Rodriguez
  */
-public class graphSimpleFactory {
+public class GraphFactory {
 
     public static Graph<MyVertex, String> createGraph(String topology) {
         //Network creation

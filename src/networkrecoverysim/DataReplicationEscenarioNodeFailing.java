@@ -13,7 +13,7 @@ import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import graphutil.GraphComparator;
 import graphutil.GraphSerialization;
 import graphutil.MyVertex;
-import graphutil.graphSimpleFactory;
+import graphutil.GraphFactory;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -182,7 +182,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         SimpleLanguage nodeLanguaje = new SimpleLanguage(nodePercepts, nodeActions);
 
         //Create graph and initial network
-        Graph<MyVertex, String> g = graphSimpleFactory.createGraph(SimulationParameters.graphMode);
+        Graph<MyVertex, String> g = GraphFactory.createGraph(SimulationParameters.graphMode);
         StringSerializer s = new StringSerializer();
         String aCopy = s.serialize(g); //save a copy via serialization
         initialNetwork = (Graph<MyVertex, String>) s.deserialize(aCopy); //create a clone of original graph by deserializing

@@ -1,4 +1,4 @@
-package graphutil;
+package graphcreation;
 
 /*
  * Copyright (c) 2003, the JUNG Project and the Regents of the University 
@@ -14,6 +14,7 @@ import java.util.Random;
 
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.UndirectedSparseGraph;
+import java.util.ArrayList;
 import org.apache.commons.collections15.Factory;
 
 /**
@@ -30,10 +31,11 @@ import org.apache.commons.collections15.Factory;
  * @author Christopher Brooks, Scott White
  *
  */
-public class LineGraphGenerator<V, E> extends Lattice2DGenerator {
+public class LongHubAndSpokeGraphGenerator<V, E> extends Lattice2DGenerator {
 
     private int numNodes = 0;
     private double beta = 0;
+    private int length = 1;
     private int degree = 0;
     private Random random = new Random();
     Factory<V> vertex_factory;
@@ -44,18 +46,32 @@ public class LineGraphGenerator<V, E> extends Lattice2DGenerator {
      *
      * @param graph_factory
      * @param vertex_factory
-     * @param numNodes the number of nodes in the ring lattice
-     * proportion of randomly rewired edges in a graph.
+     * @param numNodes the number of nodes in the ring lattice proportion of
+     * randomly rewired edges in a graph.
      * @param is_toroidal
+     * @param length length of star
      * @param edge_factory
      */
-    public LineGraphGenerator(Factory<? extends Graph<V, E>> graph_factory, Factory<V> vertex_factory,
-            Factory<E> edge_factory, int numNodes, boolean is_toroidal) {
+    public LongHubAndSpokeGraphGenerator(Factory<? extends Graph<V, E>> graph_factory, Factory<V> vertex_factory,
+            Factory<E> edge_factory, int numNodes, int length, boolean is_toroidal) {
         super(graph_factory, vertex_factory, edge_factory, numNodes, is_toroidal);
 
         this.numNodes = numNodes;
         this.vertex_factory = vertex_factory;
         this.edge_factory = edge_factory;
+        this.length = length;
+    }
+
+    private ArrayList<V> addNodestoStar(ArrayList<V> nodes, Graph g, int count) {
+        ArrayList<V> temp = new ArrayList<>();
+        for (int i = 0; i < nodes.size(); i++) {
+            if (count < g.getVertices().size()) {
+                temp.add((V) g.getVertices().toArray()[count]);
+                g.addEdge(edge_factory.create(), nodes.get(i), g.getVertices().toArray()[count]);
+                count++;
+            }
+        }
+        return temp;
     }
 
     /**
@@ -66,19 +82,31 @@ public class LineGraphGenerator<V, E> extends Lattice2DGenerator {
      */
     public Graph generateGraph() {
         Graph g = new UndirectedSparseGraph();
-
+        System.out.println("numnodes" + numNodes);
         for (int i = 0; i < numNodes; i++) {
             g.addVertex(vertex_factory.create());
         }
-        
-        //rewire edges
-        for (int i = 0; i < numNodes-1; i++) {
-           g.addEdge(edge_factory.create(), g.getVertices().toArray()[i], g.getVertices().toArray()[i+1]);
-        }
-        
-        if(is_toroidal){
-           g.addEdge(edge_factory.create(), g.getVertices().toArray()[0], g.getVertices().toArray()[numNodes-1]);
-        }
+
+        //first star
+        int count = 0;
+        ArrayList<V> firstNodes = new ArrayList<>();
+
+        if (length == 1) {
+            for (int i = 1; i <= (numNodes - 1); i++) {
+                firstNodes.add((V) g.getVertices().toArray()[i]);
+                g.addEdge(edge_factory.create(), g.getVertices().toArray()[0], g.getVertices().toArray()[i]);
+            }
+        } else {
+            for (count = 1; count <= (((numNodes - 1) / length) + 1); count++) {
+                firstNodes.add((V) g.getVertices().toArray()[count]);
+                g.addEdge(edge_factory.create(), g.getVertices().toArray()[0], g.getVertices().toArray()[count]);
+            }
+            
+            for (int i = 1; i < length; i++) {
+                firstNodes = addNodestoStar(firstNodes, g, count);
+                count += firstNodes.size();
+            }
+        }        
         return g;
     }
 }
