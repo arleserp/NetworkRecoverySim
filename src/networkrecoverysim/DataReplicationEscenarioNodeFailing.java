@@ -464,7 +464,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
             //fgup.start();
         }        
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        ScheduledFuture<?> result = executor.scheduleAtFixedRate(fgup, 0, 10, TimeUnit.MILLISECONDS);
+        ScheduledFuture<?> result = executor.scheduleAtFixedRate(fgup, 0, 20, TimeUnit.MILLISECONDS);
     }
 
     public void loadLocations() {
