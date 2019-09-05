@@ -68,6 +68,26 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                             if (inbox[0].equals("connect")) {
                                 String nodetoConnect = inbox[3];
                                 connect(n.getVertex(), nodetoConnect);
+                                
+                                //When n connects to nodetoConnect n also sends its network topology
+                                // msg: networkdatainnode: networkdatanode|source|networkdata
+                                if (SimulationParameters.simMode.equals("nhopsinfo")) {
+                                    String[] msgdatanode = new String[3];
+                                    msgdatanode[0] = "networkdatanode";
+                                    msgdatanode[1] = String.valueOf(n.getVertex().getName());
+                                    StringSerializer s = new StringSerializer();
+                                    msgdatanode[2] = s.serialize(n.getNetworkdata());
+                                    NetworkNodeMessageBuffer.getInstance().putMessage(nodetoConnect, msgdatanode);
+                                    System.out.println(n.getVertex().getName() + "send networkdatanode to " + nodetoConnect);
+                                }
+                            }
+
+                            if (SimulationParameters.simMode.equals("nhopsinfo") && inbox[0].equals("networkdatanode")) {
+                                String source = inbox[1]; //origin of message
+                                StringSerializer s = new StringSerializer();
+                                HashMap<String, ArrayList> ndata = (HashMap) s.deserialize(inbox[2]); //networkdata
+                                n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), ndata));
+                                n.pruneInformation(SimulationParameters.nhopsChain); //use nhops to prune data
                             }
                         }
                     }
@@ -152,7 +172,7 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
         HashMap<MyVertex, Integer> distances = new HashMap<>();
         ArrayList<MyVertex> neighbours = new ArrayList<>();
         neighbours.add(n.getVertex());
-        int initialPos = 0;
+
         //loadNeighboursRecursively(neighbours, nhopsChain, n.getVertex()); //slow!
         loadNeighboursBFS(neighbours, nhopsChain, n.getVertex(), distances);
 

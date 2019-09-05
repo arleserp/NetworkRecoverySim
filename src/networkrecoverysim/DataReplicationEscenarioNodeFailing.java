@@ -6,25 +6,14 @@
 package networkrecoverysim;
 
 import staticagents.NodeFailingProgram;
-import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
-import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import graphutil.GraphComparator;
 import graphutil.GraphSerialization;
 import graphutil.MyVertex;
 import graphutil.GraphFactory;
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Paint;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -40,20 +29,14 @@ import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 import unalcol.agents.simulate.util.SimpleLanguage;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import mobileagents.MobileAgent;
 import mobileagents.MotionProgramSimpleFactory;
 import mobileagents.NetworkMessageBuffer;
 import observer.DataReplicationNodeFailingObserver;
-import org.apache.commons.collections15.Transformer;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
-import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
@@ -248,7 +231,6 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         }
 
         graphVisualization = new DataReplicationNodeFailingObserver(this);
-//
 
         switch (SimulationParameters.simMode) {
             case "broadcast":
