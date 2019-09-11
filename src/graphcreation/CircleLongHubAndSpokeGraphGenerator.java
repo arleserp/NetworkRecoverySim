@@ -98,7 +98,7 @@ public class CircleLongHubAndSpokeGraphGenerator<V, E> extends Lattice2DGenerato
                 g.addEdge(edge_factory.create(), g.getVertices().toArray()[0], g.getVertices().toArray()[i]);
             }
         } else {
-            for (count = 1; count <= (((numNodes - 1) / length) + 1); count++) {
+            for (count = 1; count <= (((numNodes - 1) / length)); count++) {
                 firstNodes.add((V) g.getVertices().toArray()[count]);
                 g.addEdge(edge_factory.create(), g.getVertices().toArray()[0], g.getVertices().toArray()[count]);
             }
@@ -107,6 +107,8 @@ public class CircleLongHubAndSpokeGraphGenerator<V, E> extends Lattice2DGenerato
                 count += firstNodes.size();
             }
         }
+        
+        
 
         for (int i = 0; i < firstNodes.size() - 1; i += 2) {
             g.addEdge(edge_factory.create(), firstNodes.get(i), firstNodes.get(i + 1));

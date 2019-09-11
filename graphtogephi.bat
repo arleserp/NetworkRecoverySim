@@ -1,1 +1,1 @@
-Java -classpath dist/NetworkRecoverySim.jar graphutil.GephiExportGraph
+Java -classpath dist/NetworkRecoverySim.jar graphutil.GraphToGephi

@@ -98,12 +98,11 @@ public class GraphToGephi {
                     //node file
                     PrintWriter nodeCSVFile;
                     nodeCSVFile = new PrintWriter(new BufferedWriter(new FileWriter(nodeCSV, true)));
-                    int nodeId = 0;
-                    HashMap<String, Integer> dictIds = new HashMap<>();
-                    nodeCSVFile.println("Id,Label");
+                    // HashMap<String, Integer> dictIds = new HashMap<>();
+                    nodeCSVFile.println("Id");
                     for (MyVertex v : g.getVertices()) {
-                        dictIds.put(v.getName(), nodeId++);
-                        nodeCSVFile.println(nodeId + "," + v.getName());
+                        //dictIds.put(v.getName(), nodeId++);
+                        nodeCSVFile.println(v.getName());
                         //System.out.println();                        
                     }
 
@@ -112,7 +111,7 @@ public class GraphToGephi {
                     edgeCSVFile.println("Source,Target,Type");
                     for (String ed : g.getEdges()) {
                         Pair<MyVertex> endpoints = g.getEndpoints(ed);
-                        edgeCSVFile.println(dictIds.get(endpoints.getFirst().getName()) + "," + dictIds.get(endpoints.getSecond().getName()) + ",Undirected");
+                        edgeCSVFile.println(endpoints.getFirst().getName() + "," + endpoints.getSecond().getName() + ",Undirected");
                     }
                     nodeCSVFile.close();
                     edgeCSVFile.close();

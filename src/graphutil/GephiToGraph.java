@@ -37,15 +37,13 @@ public class GephiToGraph {
 
                 BufferedReader br = new BufferedReader(new FileReader(fileSrc));
                 HashMap<String, MyVertex> vertices = new HashMap<>();
-                HashMap<Integer, String> idNode = new HashMap<>();
 
                 String st;
                 while ((st = br.readLine()) != null) {
-                    String[] l = st.split(",");
-                    if (!(l[0].equals("Id"))) {
-                        idNode.put(Integer.parseInt(l[0]), l[1]);
-                        vertices.put(l[1], new MyVertex(l[1]));
-                        g.addVertex(vertices.get(l[1]));
+                    
+                    if (!(st.equals("Id"))) {
+                        vertices.put(st, new MyVertex(st));
+                        g.addVertex(vertices.get(st));
                     }
                 }
 
@@ -57,10 +55,9 @@ public class GephiToGraph {
                 GraphCreator.EdgeFactory edge_factory = new GraphCreator.EdgeFactory();
                 while ((st = edbr.readLine()) != null) {
                     String[] l = st.split(",");
-                    if (!l[0].equals("Source")) {
-                        Integer source = Integer.parseInt(l[0]);
+                    if (!l[0].equals("Source")) {                        
                         Integer dest = Integer.parseInt(l[1]);
-                        g.addEdge(edge_factory.create(), vertices.get(idNode.get(source)), vertices.get(idNode.get(dest)));
+                        g.addEdge(edge_factory.create(), vertices.get(l[0]), vertices.get(l[1]));
                     }
                 }
                 edbr.close();

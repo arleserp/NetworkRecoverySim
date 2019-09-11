@@ -97,7 +97,7 @@ public class LongHubAndSpokeGraphGenerator<V, E> extends Lattice2DGenerator {
                 g.addEdge(edge_factory.create(), g.getVertices().toArray()[0], g.getVertices().toArray()[i]);
             }
         } else {
-            for (count = 1; count <= (((numNodes - 1) / length) + 1); count++) {
+            for (count = 1; count <= (((numNodes - 1) / length)); count++) {
                 firstNodes.add((V) g.getVertices().toArray()[count]);
                 g.addEdge(edge_factory.create(), g.getVertices().toArray()[0], g.getVertices().toArray()[count]);
             }
