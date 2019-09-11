@@ -223,9 +223,15 @@ public abstract class NetworkEnvironment extends Environment {
             }
         });
 
-        String min = Collections.min(nodesAlive, (o1, o2)
-                -> Integer.valueOf(o1.substring(1)).compareTo(Integer.valueOf(o2.substring(1))));
-        return min;
+        if (!nodesAlive.isEmpty() && nodesAlive.get(0).contains("p")) {
+            String min = Collections.min(nodesAlive, (o1, o2)
+                    -> Integer.valueOf(o1.substring(1)).compareTo(Integer.valueOf(o2.substring(1))));
+            return min;
+        } else {
+            String min = Collections.min(nodesAlive, (o1, o2)
+                    -> Integer.valueOf(o1).compareTo(Integer.valueOf(o2)));
+            return min;
+        }
     }
 
     /**
@@ -436,7 +442,8 @@ public abstract class NetworkEnvironment extends Environment {
 
     /**
      * Return number of failures recovered
-     * @return 
+     *
+     * @return
      */
     public AtomicInteger getNumberFailures() {
         return numberFailures;

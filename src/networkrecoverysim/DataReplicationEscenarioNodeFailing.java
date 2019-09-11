@@ -334,7 +334,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                             
                             //frame2.repaint();
 
-                            if (environment.getAge() >= 1400 && !alreadyPainted) {
+                            if (environment.getAge() >= (SimulationParameters.maxIter - 100) && !alreadyPainted) {
                                 String baseFilename = SimulationParameters.reportsFilenamePrefix;
                                 String dir = "cmpgraph";
                                 createDir(dir);

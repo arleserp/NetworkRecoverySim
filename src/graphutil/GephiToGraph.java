@@ -39,8 +39,7 @@ public class GephiToGraph {
                 HashMap<String, MyVertex> vertices = new HashMap<>();
 
                 String st;
-                while ((st = br.readLine()) != null) {
-                    
+                while ((st = br.readLine()) != null) {                    
                     if (!(st.equals("Id"))) {
                         vertices.put(st, new MyVertex(st));
                         g.addVertex(vertices.get(st));

@@ -23,7 +23,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import networkrecoverysim.SimulationParameters;
 
-
 /**
  *
  * @author Arles Rodriguez
@@ -98,30 +97,34 @@ public class GraphSerialization {
 
         String[] graphparameters = filename.split(filename);
         //System.out.println("grappat" + graphparameters);
-        SimulationParameters.graphMode = graphparameters[0];
-         
-        if (graphparameters[0].equals("smallworld")) {
-            SimulationParameters.vertexNumber = Integer.valueOf(graphparameters[2]);
-            SimulationParameters.beta = Float.valueOf(graphparameters[4]);
-            SimulationParameters.degree = Integer.valueOf(graphparameters[6]);
-        }
 
-        if (graphparameters[0].equals("community")) {
-            SimulationParameters.vertexNumber = Integer.valueOf(graphparameters[2]);
-            SimulationParameters.beta = Float.valueOf(graphparameters[4]);
-            SimulationParameters.degree = Integer.valueOf(graphparameters[6]);
-            SimulationParameters.clusters = Integer.valueOf(graphparameters[8]);
-        }
+        if (graphparameters.length > 0) {
 
-        if (graphparameters[0].equals("scalefree")) {
-            SimulationParameters.startNodesScaleFree = Integer.valueOf(graphparameters[2]);
-            SimulationParameters.edgesToAttachScaleFree = Integer.valueOf(graphparameters[4]);
-            SimulationParameters.numSteps = Integer.valueOf(graphparameters[6]);
-        }
+            SimulationParameters.graphMode = graphparameters[0];
 
-        if (SimulationParameters.graphMode.equals("lattice")) {
-            SimulationParameters.rows = Integer.valueOf(graphparameters[2]);
-            SimulationParameters.columns = Integer.valueOf(graphparameters[4]);
+            if (graphparameters[0].equals("smallworld")) {
+                SimulationParameters.vertexNumber = Integer.valueOf(graphparameters[2]);
+                SimulationParameters.beta = Float.valueOf(graphparameters[4]);
+                SimulationParameters.degree = Integer.valueOf(graphparameters[6]);
+            }
+
+            if (graphparameters[0].equals("community")) {
+                SimulationParameters.vertexNumber = Integer.valueOf(graphparameters[2]);
+                SimulationParameters.beta = Float.valueOf(graphparameters[4]);
+                SimulationParameters.degree = Integer.valueOf(graphparameters[6]);
+                SimulationParameters.clusters = Integer.valueOf(graphparameters[8]);
+            }
+
+            if (graphparameters[0].equals("scalefree")) {
+                SimulationParameters.startNodesScaleFree = Integer.valueOf(graphparameters[2]);
+                SimulationParameters.edgesToAttachScaleFree = Integer.valueOf(graphparameters[4]);
+                SimulationParameters.numSteps = Integer.valueOf(graphparameters[6]);
+            }
+
+            if (SimulationParameters.graphMode.equals("lattice")) {
+                SimulationParameters.rows = Integer.valueOf(graphparameters[2]);
+                SimulationParameters.columns = Integer.valueOf(graphparameters[4]);
+            }
         }
         return h;
     }

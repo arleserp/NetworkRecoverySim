@@ -32,7 +32,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JFrame;
+//import javax.swing.JFrame;
 import networkrecoverysim.DataReplicationEscenarioNodeFailing;
 import networkrecoverysim.SimulationParameters;
 import org.apache.commons.collections15.Transformer;
@@ -44,7 +44,7 @@ import util.StatisticsNormalDist;
  */
 public class DataReplicationNodeFailingObserver implements Observer {
 
-    JFrame frame;
+    //JFrame frame;
     BasicVisualizationServer<MyVertex, String> vv = null;
     boolean added = false;
     boolean isDrawing = false;
@@ -61,12 +61,12 @@ public class DataReplicationNodeFailingObserver implements Observer {
     DataReplicationEscenarioNodeFailing dataReplEsc;
 
     public DataReplicationNodeFailingObserver(DataReplicationEscenarioNodeFailing drs) {
-        frame = new JFrame("Simple Graph View");
-        //frame.setSize(1000, 1000);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        //frame.setSize(1000, 1000);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        frame = new JFrame("Simple Graph View");
+//        //frame.setSize(1000, 1000);
+//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//
+//        //frame.setSize(1000, 1000);
+//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //frame.getContentPane().add(vv);
         //frame.setPreferredSize(new Dimension(600, 600));
         //frame.setLocationRelativeTo(null);
@@ -75,104 +75,104 @@ public class DataReplicationNodeFailingObserver implements Observer {
         dataReplEsc = drs;
     }
 
-    public class FrameGraphUpdater extends Thread {
-
-        Graph<MyVertex, String> g;
-        JFrame frame;
-        NetworkEnvironment n;
-
-        public FrameGraphUpdater(Graph<MyVertex, String> g, JFrame frame, NetworkEnvironment ne) {
-            this.g = g;
-            this.frame = frame;
-            this.n = ne;
-        }
-
-        public void run() {
-            if (isDrawing) {
-                return;
-            }
-
-            try {
-                isDrawing = true;
-                if (g.getVertexCount() == 0) {
-                    System.out.println("no nodes alive.");
-                } else {
-                    Layout<MyVertex, String> layout = null;
-                    /*
-                switch (SimulationParameters.graphMode) {
-                    case "scalefree":
-                        layout = new ISOMLayout<>(g);
-                        break;
-                    case "smallworld":
-                        layout = new CircleLayout<>(g);
-                        break;
-                    case "community":
-                        layout = new CircleLayout<>(g);
-                        break;
-                    case "kleinberg":
-                        layout = new CircleLayout<>(g);
-                        break;
-                    case "circle":
-                        layout = new ISOMLayout<>(g);
-                        break;
-                    case "line":
-                        layout = new ISOMLayout<>(g);
-                        break;
-                    case "lattice":
-                        layout = new ISOMLayout<>(g);
-                        break;
-                    default:
-                        layout = new ISOMLayout<>(g);
-                        break;
-                }*/
-                    layout = new ISOMLayout<>(g);
-                    //layout = new CircleLayout<>(g);
-
-                    BasicVisualizationServer<MyVertex, String> vv = new BasicVisualizationServer<>(layout);
-                    vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
-
-                    // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
-                    // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
-                    Transformer<MyVertex, Paint> vertexColor = new Transformer<MyVertex, Paint>() {
-                        @Override
-                        public Paint transform(MyVertex i) {
-//                            if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
-//                                return Color.YELLOW;
-//                            }
-//                            if (n.getVisitedNodes().contains(i)) {
-//                                return Color.BLUE;
-//                            }
-                            //if(i.getData().size() > 0){
-                            //    System.out.println("i"+ i.getData().size());
-                            //}
-                            /*if (i.getData().size() == n.getTopology().getVertices().size()) {
-                                return Color.GREEN;
-                            }*/
-                            return Color.RED;
-                        }
-                    };
-
-                    vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-                    //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
-                    //n.setVV(vv);
-                    vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
-
-                    if (!added) {
-                        frame.getContentPane().add(vv);
-                        added = true;
-                        frame.pack();
-                        frame.setVisible(true);
-                    } else {
-                        frame.repaint();
-                    }
-                }
-            } catch (NullPointerException ex) {
-                System.out.println("exeeeeeeeeeeeeeeeeeeeeeeeeeeeepyion" + ex);
-                isDrawing = false;
-            }
-            isDrawing = false;
-        }
-    }
+//    public class FrameGraphUpdater extends Thread {
+//
+//        Graph<MyVertex, String> g;
+//        JFrame frame;
+//        NetworkEnvironment n;
+//
+//        public FrameGraphUpdater(Graph<MyVertex, String> g, JFrame frame, NetworkEnvironment ne) {
+//            this.g = g;
+//            this.frame = frame;
+//            this.n = ne;
+//        }
+//
+//        public void run() {
+//            if (isDrawing) {
+//                return;
+//            }
+//
+//            try {
+//                isDrawing = true;
+//                if (g.getVertexCount() == 0) {
+//                    System.out.println("no nodes alive.");
+//                } else {
+//                    Layout<MyVertex, String> layout = null;
+//                    /*
+//                switch (SimulationParameters.graphMode) {
+//                    case "scalefree":
+//                        layout = new ISOMLayout<>(g);
+//                        break;
+//                    case "smallworld":
+//                        layout = new CircleLayout<>(g);
+//                        break;
+//                    case "community":
+//                        layout = new CircleLayout<>(g);
+//                        break;
+//                    case "kleinberg":
+//                        layout = new CircleLayout<>(g);
+//                        break;
+//                    case "circle":
+//                        layout = new ISOMLayout<>(g);
+//                        break;
+//                    case "line":
+//                        layout = new ISOMLayout<>(g);
+//                        break;
+//                    case "lattice":
+//                        layout = new ISOMLayout<>(g);
+//                        break;
+//                    default:
+//                        layout = new ISOMLayout<>(g);
+//                        break;
+//                }*/
+//                    layout = new ISOMLayout<>(g);
+//                    //layout = new CircleLayout<>(g);
+//
+//                    BasicVisualizationServer<MyVertex, String> vv = new BasicVisualizationServer<>(layout);
+//                    vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
+//
+//                    // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
+//                    // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
+//                    Transformer<MyVertex, Paint> vertexColor = new Transformer<MyVertex, Paint>() {
+//                        @Override
+//                        public Paint transform(MyVertex i) {
+////                            if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
+////                                return Color.YELLOW;
+////                            }
+////                            if (n.getVisitedNodes().contains(i)) {
+////                                return Color.BLUE;
+////                            }
+//                            //if(i.getData().size() > 0){
+//                            //    System.out.println("i"+ i.getData().size());
+//                            //}
+//                            /*if (i.getData().size() == n.getTopology().getVertices().size()) {
+//                                return Color.GREEN;
+//                            }*/
+//                            return Color.RED;
+//                        }
+//                    };
+//
+//                    vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+//                    //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
+//                    //n.setVV(vv);
+//                    vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
+//
+//                    if (!added) {
+//                        frame.getContentPane().add(vv);
+//                        added = true;
+//                        frame.pack();
+//                        frame.setVisible(true);
+//                    } else {
+//                        frame.repaint();
+//                    }
+//                }
+//            } catch (NullPointerException ex) {
+//                System.out.println("exeeeeeeeeeeeeeeeeeeeeeeeeeeeepyion" + ex);
+//                isDrawing = false;
+//            }
+//            isDrawing = false;
+//        }
+//    }
 
     @Override
     public synchronized void update(Observable o, Object arg) {

@@ -145,7 +145,11 @@ public class MyVertex implements Comparable<MyVertex>, Serializable {
      * @return compareTo of vertex
      */
     @Override
-    public int compareTo(MyVertex t) {        
-        return Integer.valueOf(this.getName().substring(1)).compareTo(Integer.valueOf(t.getName().substring(1)));                
+    public int compareTo(MyVertex t) {
+        if(t.getName().contains("p")){
+            return Integer.valueOf(this.getName().substring(1)).compareTo(Integer.valueOf(t.getName().substring(1)));                
+        }else{
+            return ((Integer)(Integer.parseInt(this.getName()))).compareTo(Integer.parseInt(t.getName()));                
+        }
     }
 }

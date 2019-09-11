@@ -17,15 +17,15 @@ public class GraphComparator {
         int[][] adyacA = world.getInitialAdyacenceMatrix().clone();
         int[][] adyacB = world.getAdyacenceMatrix().clone();
 
-        if (world.getAge() > 4500) {
-            for (int i = 0; i < adyacA.length; i++) {
-                for (int j = 0; j < adyacA.length; j++) {
-                    if (adyacA[i][j] != adyacB[i][j]) {
-                        System.out.println("env age:" + world.getAge() + " difference: " + world.getLocationtoVertexName().get(i) + "-" + world.getLocationtoVertexName().get(j));
-                    }
-                }
-            }
-        }
+//        if (world.getAge() > 4500) {
+//            for (int i = 0; i < adyacA.length; i++) {
+//                for (int j = 0; j < adyacA.length; j++) {
+//                    if (adyacA[i][j] != adyacB[i][j]) {
+//                        System.out.println("env age:" + world.getAge() + " difference: " + world.getLocationtoVertexName().get(i) + "-" + world.getLocationtoVertexName().get(j));
+//                    }
+//                }
+//            }
+//        }
 
         double similarity = 0.0;
         double sumA = 0.0;

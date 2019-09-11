@@ -31,8 +31,13 @@ import util.HashMapOperations;
  */
 public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
 
+    HashMap<String, ArrayList> networkInfo;
+    boolean loaded;
+
     public NetworkEnvironmentNodeFailingAllInfo(Vector<Agent> _agents, SimpleLanguage _nlanguage, Graph gr) {
         super(_agents, _nlanguage, gr);
+        networkInfo = new HashMap<>();
+        loaded = false;
     }
 
     @Override
@@ -68,7 +73,7 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                             if (inbox[0].equals("connect")) {
                                 String nodetoConnect = inbox[3];
                                 connect(n.getVertex(), nodetoConnect);
-                                
+
                                 //When n connects to nodetoConnect n also sends its network topology
                                 // msg: networkdatainnode: networkdatanode|source|networkdata
                                 if (SimulationParameters.simMode.equals("nhopsinfo")) {
@@ -122,12 +127,15 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
      * @return hashMap of n_1={n_1={n_k,...n_l}, n_2={...},..., n={}}
      */
     public HashMap<String, ArrayList> loadAllTopology() {
-        HashMap<String, ArrayList> networkInfo = new HashMap<>();
-        for (MyVertex v : getTopology().getVertices()) {
-            networkInfo.put(v.getName(), new ArrayList<>(getTopologyNames(v)));
+        if (loaded) {
+            return networkInfo;
+        } else {
+            for (MyVertex v : getTopology().getVertices()) {
+                networkInfo.put(v.getName(), new ArrayList<>(getTopologyNames(v)));
+            }
+            loaded = true;
+            return networkInfo;
         }
-        return networkInfo;
-
     }
 
     /**
