@@ -6,7 +6,6 @@
 package staticagents;
 
 import environment.NetworkEnvironment;
-import environment.NetworkEnvironmentNodeFailingAllInfo;
 import graphutil.MyVertex;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,6 +19,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import serialization.StringSerializer;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 
@@ -28,7 +28,7 @@ import unalcol.agents.AgentProgram;
  *
  * @author ARODRIGUEZ
  */
-public class Node extends Agent {
+public class Node extends Agent  {
 
     private MyVertex v;  //vertex in topology that represents a node
     private final ConcurrentHashMap<Integer, Integer> agentsInNode; //Maybe delete    
@@ -36,8 +36,6 @@ public class Node extends Agent {
     private double pfCreate;
     private int roundsWithOutVisit;
     private int roundsWithoutAck;
-    private int nMsgSend;
-    private int nMsgRecv;
     private int rounds;
     public boolean isProcessing = false;
     private HashMap<String, ArrayList> networkdata;
@@ -174,45 +172,7 @@ public class Node extends Agent {
         roundsWithOutVisit++;
     }
 
-    /**
-     * @return the nMsgSend
-     */
-    public int getnMsgSend() {
-        return nMsgSend;
-    }
 
-    /**
-     * @param nMsgSend the nMsgSend to set
-     */
-    public void setnMsgSend(int nMsgSend) {
-        this.nMsgSend = nMsgSend;
-    }
-
-    /**
-     * @return the nMsgRecv
-     */
-    public int getnMsgRecv() {
-        return nMsgRecv;
-    }
-
-    /**
-     * @param nMsgRecv the nMsgRecv to set
-     */
-    public void setnMsgRecv(int nMsgRecv) {
-        this.nMsgRecv = nMsgRecv;
-    }
-
-    public void incMsgSend() {
-        synchronized (Node.class) {
-            nMsgSend++;
-        }
-    }
-
-    public void incMsgRecv() {
-        synchronized (Node.class) {
-            nMsgRecv++;
-        }
-    }
 
     /**
      * @return the roundsWithoutAck
@@ -466,10 +426,14 @@ public class Node extends Agent {
 
     /**
      * This Method defines if create a new node or not
+     *
      * @param env network environment.
      */
-    public void evaluateNodeCreation(NetworkEnvironment env) {
+    public void evaluateNodeCreation(NetworkEnvironment env) {        
         ArrayList<String> topologyData = new ArrayList(env.getTopologyNames(getVertex())); // Get topology of the network
+        
+        env.increaseTotalSizeMsgSent(getNetworkdata().get(getName()).size()*56);  //a ping is 56 bytes sent
+        env.increaseTotalSizeMsgRecv(topologyData.size()*56); //response of nodes
         
         if (getNetworkdata().containsKey(getName())) {
             List<String> nd = new ArrayList((Collection) getNetworkdata().get(getName()));
@@ -484,17 +448,17 @@ public class Node extends Agent {
             dif.removeAll(dif2);
             dif.addAll(dif2);
 
-            if (!dif.isEmpty()) {                
+            if (!dif.isEmpty()) {
                 for (String d : dif) {
                     //without neigbor data of d is impossible create d ?
                     if (getNetworkdata().containsKey(d)) {
                         List<String> neigdiff = (ArrayList) getNetworkdata().get(d);
-                        String min;
-                        min = env.getMinimumId(neigdiff, d);
+                        String min;                                                
+                        min = env.getMinimumId(neigdiff, d, this);
                         //I'm minimum, I will create node and say others that connect with it
                         if (min.equals(getName())) {
                             // Create node and say neighbours that connect with it
-                            env.createNewNode(this, d, neigdiff);                            
+                            env.createNewNode(this, d, neigdiff);
                         }
                     }
                 }
@@ -504,4 +468,13 @@ public class Node extends Agent {
         }
     }
 
+    /**
+     * 
+     * @return memoryconsumption by node in bytes
+     */
+    public int getMemoryConsumption(){
+        StringSerializer serializer = new StringSerializer();
+        String data = serializer.serialize(this.networkdata);
+        return data.length();
+    }
 }

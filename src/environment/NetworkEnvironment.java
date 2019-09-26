@@ -12,14 +12,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import networkrecoverysim.SimulationParameters;
+import serialization.StringSerializer;
 import staticagents.NetworkNodeMessageBuffer;
 import staticagents.Node;
 import staticagents.NodeFailingProgram;
 import unalcol.agents.simulate.util.SimpleLanguage;
+import util.AtomicDouble;
 
 public abstract class NetworkEnvironment extends Environment {
 
@@ -28,6 +30,15 @@ public abstract class NetworkEnvironment extends Environment {
     protected final int[][] adyacenceMatrix; //network as a adyacence matrix   
     protected final int[][] initialAdyacenceMatrix; //network as a adyacence matrix   
     protected final Semaphore available = new Semaphore(1);
+    private final ArrayList<Double> nodeAverageLife;
+    protected final Map<String, Integer> nodeVersion; // Map of node vs current version
+    private final AtomicDouble totalMsgSent; //number of messages sent
+    private final AtomicDouble totalMsgRecv; //number of messages received
+    private final AtomicDouble totalSizeMsgSent; //number of messages sent
+    private final AtomicDouble totalSizeMsgRecv; //number of messages received
+    private final AtomicDouble totalMemory; //amount of memory
+    private final AtomicLong simulationTime = new AtomicLong(0); // Counter of time
+    private final long startingTime; // Starting time
 
     public int[][] getInitialAdyacenceMatrix() {
         return initialAdyacenceMatrix;
@@ -89,7 +100,15 @@ public abstract class NetworkEnvironment extends Environment {
             }
         }
         nodes = Collections.synchronizedMap(new HashMap<>());
+        nodeVersion = Collections.synchronizedMap(new HashMap<>());
         nodeLanguage = _nlanguage;
+        nodeAverageLife = new ArrayList<>();
+        totalMsgRecv = new AtomicDouble();
+        totalSizeMsgRecv = new AtomicDouble();
+        totalSizeMsgSent = new AtomicDouble();
+        totalMsgSent = new AtomicDouble();
+        startingTime = System.currentTimeMillis();
+        totalMemory = new AtomicDouble();
     }
 
     /**
@@ -209,19 +228,28 @@ public abstract class NetworkEnvironment extends Environment {
      * Obtain minimum id from a list of neighbours additionally evaluate if node
      * have data about the node to create.
      *
+     * @param currentNode current node
      * @param neigdiff array with neighbourhood of difference
      * @param nodeMissing id of the missing node
      * @return id of the minimum
      */
-    public String getMinimumId(List<String> neigdiff, String nodeMissing) {
+    public String getMinimumId(List<String> neigdiff, String nodeMissing, Node currentNode) {
         List<String> nodesAlive = new ArrayList();
-
-        neigdiff.forEach((s) -> {
+        increaseTotalSizeMsgSent(neigdiff.size() * 56.0); //56 bytes is the size of a ping         
+        
+        
+        double cont = 0;
+        for(String s: neigdiff) {
             Node n = getNode(s);
             if (n != null && n.getNetworkdata().containsKey(nodeMissing)) {
                 nodesAlive.add(s);
+                cont += 56.0;
+                //increaseTotalSizeMsgRecv(56.0);
             }
-        });
+        }
+        
+        increaseTotalSizeMsgRecv(cont);
+        //System.out.println("inc sent" + (neigdiff.size() * 56.0)  +  "recv count" + cont);
 
         if (!nodesAlive.isEmpty() && nodesAlive.get(0).contains("p")) {
             String min = Collections.min(nodesAlive, (o1, o2)
@@ -237,29 +265,30 @@ public abstract class NetworkEnvironment extends Environment {
     /**
      * Creation of a node with name d
      *
-     * @param n
-     * @param d
+     * @param creator
+     * @param nodeId
+     * @param neigdiff
      */
-    public void createNewNode(Node n, String d, List<String> neigdiff) {
+    public void createNewNode(Node creator, String nodeId, List<String> neigdiff) {
         synchronized (TopologySingleton.getInstance()) {
-            System.out.println("env round:" + this.getAge() + ", node " + n + " is creating new node " + d);
-            MyVertex dvertex = findVertex(d);
+            System.out.println("env round:" + this.getAge() + ", node " + creator + " is creating new node " + nodeId);
+            MyVertex dvertex = findVertex(nodeId);
             if (dvertex != null) { //can ping node and avoid creation         
-                if (getTopology().containsVertex(dvertex) && !getTopology().isNeighbor(dvertex, n.getVertex())) {
-                    System.out.println("Node " + d + " is alive connecting instead create...[" + dvertex + ", " + n.getVertex().getName() + "]");
-                    addConnection(dvertex, n);
+                if (getTopology().containsVertex(dvertex) && !getTopology().isNeighbor(dvertex, creator.getVertex())) {
+                    System.out.println("Node " + nodeId + " is alive connecting instead create...[" + dvertex + ", " + creator.getVertex().getName() + "]");
+                    addConnection(dvertex, creator);
                 }
 
             } else {
 
-                GraphCreator.VertexFactory v = new GraphCreator.VertexFactory();
-                MyVertex vv = v.create();
-                vv.setName(d);
-                vv.setStatus("alive");
+                GraphCreator.VertexFactory vertexFactory = new GraphCreator.VertexFactory();
+                MyVertex newVertex = vertexFactory.create();
+                newVertex.setName(nodeId);
+                newVertex.setStatus("alive");
                 synchronized (TopologySingleton.getInstance()) {
-                    getTopology().addVertex(vv);
+                    getTopology().addVertex(newVertex);
                 }
-                addConnection(vv, n);
+                addConnection(newVertex, creator);
                 NodeFailingProgram np;
 
                 if (SimulationParameters.failureProfile.equals("backtolowpf")) { //after fail node will not fail again
@@ -277,10 +306,20 @@ public abstract class NetworkEnvironment extends Environment {
 
                 //NetworkNodeMessageBuffer.getInstance().createBuffer(d);
                 Node nod;
-                nod = new Node(np, vv);
-                nod.setVertex(vv);
+                nod = new Node(np, newVertex);
+                nod.setVertex(newVertex);
                 nod.setArchitecture(this);
-                nod.setNetworkdata(new HashMap(n.getNetworkdata()));
+
+                StringSerializer serializer = new StringSerializer();
+                String aprox = serializer.serialize(creator.getNetworkdata()); //not sure about this!
+
+                increaseTotalSizeMsgSent(aprox.length());
+                increaseTotalSizeMsgRecv(aprox.length());
+                nod.setNetworkdata(new HashMap(creator.getNetworkdata()));
+
+                synchronized (nodeVersion) {
+                    nodeVersion.put(nodeId, nodeVersion.get(nodeId) + 1);
+                }
 
                 synchronized (nodes) {
                     nodes.put(nod.getName(), nod);
@@ -290,15 +329,16 @@ public abstract class NetworkEnvironment extends Environment {
                 //can be no nd but all agentData                
                 if (neigdiff != null && !neigdiff.isEmpty()) {
                     neigdiff.forEach((neig) -> {
-                        if (!neig.equals(n.getName())) {
-                            //message msgnodediff: connect|level|nodeid|nodetoconnect
+                        if (!neig.equals(creator.getName())) {
+                            //message msgnodediff: connect|nodeid|nodetoconnect
                             //System.out.println(n.getVertex().getName() + "is sending diff " + dif + "to" + neig);
-                            String[] msgnodediff = new String[5];
-                            msgnodediff[0] = "connect";
-                            msgnodediff[1] = String.valueOf(1);
-                            msgnodediff[2] = n.getName();
-                            msgnodediff[3] = d;
-                            NetworkNodeMessageBuffer.getInstance().putMessage(neig, msgnodediff);
+                            String[] msgconnect = new String[3];
+                            msgconnect[0] = "connect";
+                            msgconnect[1] = creator.getName();
+                            msgconnect[2] = nodeId;
+                            double msgConnectSize = getMessageSize(msgconnect);
+                            increaseTotalSizeMsgSent(msgConnectSize);
+                            NetworkNodeMessageBuffer.getInstance().putMessage(neig, msgconnect);
                         }
                         //n.getPending().get(dif.toString()).add(neig);
                     });
@@ -347,6 +387,11 @@ public abstract class NetworkEnvironment extends Environment {
      */
     public void KillNode(Node n) {
         synchronized (TopologySingleton.getInstance()) {
+            //Add node life to node average life structure  
+            nodeAverageLife.add((double) n.getRounds());
+            setChanged();
+            notifyObservers(n);
+           
             synchronized (nodes) {
                 if (nodes.containsKey(n.getName())) { //remove from concurrent structure
                     nodes.remove(n.getName());
@@ -359,11 +404,11 @@ public abstract class NetworkEnvironment extends Environment {
             removeVertex(n.getVertex());
             n.die();
         }
-        //after kill node thread deleteBuffer
+
+        //after kill node thread deleteBuffer        
         //NetworkNodeMessageBuffer.getInstance().deleteBuffer(n.getVertex().getName());
         numberFailures.incrementAndGet();
-        setChanged();
-        notifyObservers();
+
     }
 
     @Override
@@ -391,6 +436,23 @@ public abstract class NetworkEnvironment extends Environment {
         round.incrementAndGet();
         setChanged();
         notifyObservers();
+    }
+
+    /**
+     * @return simulation time in milliseconds
+     */
+    public synchronized Long updateAndGetSimulationTime() {
+        long currentTime = System.currentTimeMillis();
+        long delta = currentTime - startingTime;
+        simulationTime.set(delta);
+        return simulationTime.get();
+    }
+
+    /**
+     * @return simulation time in milliseconds
+     */
+    public long getSimulationTime() {
+        return simulationTime.get();
     }
 
     /**
@@ -447,6 +509,129 @@ public abstract class NetworkEnvironment extends Environment {
      */
     public AtomicInteger getNumberFailures() {
         return numberFailures;
+    }
+
+    /**
+     * @return arrayList with average life of a node
+     */
+    public ArrayList<Double> getNodeAverageLife() {
+        return nodeAverageLife;
+    }
+
+    /**
+     * Init nodes version. Run before starting node threads by this reason it is
+     * not synchronised.
+     */
+    public void initNodesVersion() {
+        getNodes().forEach((n) -> {
+            nodeVersion.put(n.getName(), 1);
+        });
+    }
+
+    /**
+     * @return total number of messages sent
+     */
+    public double getTotalMsgSent() {
+        return totalMsgSent.getAndAdd(0.0);
+    }
+
+    /**
+     * Total number of messages received
+     *
+     * @return
+     */
+    public double getTotalMsgRecv() {
+        return totalMsgRecv.getAndAdd(0.0);
+    }
+
+    /**
+     *
+     * @return total size of messages received
+     */
+    public double getTotalSizeMsgRecv() {
+        return totalSizeMsgRecv.getAndAdd(0.0);
+    }
+
+    /**
+     * @return total size of messages sent
+     */
+    public double getTotalSizeMsgSent() {
+
+        return totalSizeMsgSent.getAndAdd(0.0);
+    }
+
+    /**
+     * Increase total size messages sent
+     *
+     * @param delta
+     */
+    public void increaseTotalSizeMsgSent(double delta) {
+        synchronized (totalMsgSent) {
+            totalMsgSent.getAndAdd(1.0);
+        }
+        synchronized (totalSizeMsgSent) {
+            totalSizeMsgSent.getAndAdd(delta);
+        }
+    }
+
+    /**
+     * Increase total size of messages received
+     *
+     * @param delta
+     */
+    public void increaseTotalSizeMsgRecv(double delta) {
+        synchronized (totalMsgRecv) {
+            totalMsgRecv.getAndAdd(1.0);
+        }
+        synchronized (totalSizeMsgRecv) {
+            totalSizeMsgRecv.getAndAdd(delta);
+        }
+    }
+
+    /**
+     * Increase memory consumed
+     *
+     * @param delta
+     */
+    public void increaseTotalMemory(double delta) {
+        synchronized (totalMemory) {
+            totalMsgRecv.getAndAdd(delta);
+        }
+    }
+
+    /**
+     * get memory consumed
+     *
+     * @return total memory consumption
+     */
+    public double totalMemoryConsumed(double delta) {
+        synchronized (totalMemory) {
+            return totalMemory.getAndAdd(0.0);
+        }
+    }
+
+    /**
+     * @param n
+     * @return
+     */
+    public int getNodeVersion(Node n) {
+        synchronized (nodeVersion) {
+            return nodeVersion.get(n.getName());
+        }
+    }
+
+    /**
+     * Given a message return an approximation of its size in bytes
+     *
+     * @param msg a determined message
+     * @return approximation of size in bytes
+     */
+    public double getMessageSize(String[] msg) {
+        int size = 0;
+        for (String m : msg) {
+            size += m.length();
+        }
+        return size;
     }
 
 }

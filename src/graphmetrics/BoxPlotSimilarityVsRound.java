@@ -297,7 +297,7 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
                 xAxis.setMaximumCategoryLabelLines(5);
 
                 final JFreeChart chart = new JFreeChart(
-                        "Similarity vs Round Number" + getTitle(Pf),
+                        "Similarity vs Time" + getTitle(Pf),
                         new Font("SansSerif", Font.BOLD, 18),
                         plot,
                         true
@@ -309,7 +309,7 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
 
                 TextTitle legendText = null;
                 if (Pf.size() == 1) {
-                    legendText = new TextTitle("Round Number");
+                    legendText = new TextTitle("Time");
                 } else {
                     legendText = new TextTitle("Round number - Probability of Failure");
                 }
@@ -321,7 +321,7 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
 
                 FileOutputStream output;
                 try {
-                    output = new FileOutputStream("Similarity vs round" + Pf + file.getName() + ".jpg");
+                    output = new FileOutputStream("Similarity vs Time" + Pf + file.getName() + ".jpg");
                     ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, dimensionX, dimensionY, null);
                 } catch (FileNotFoundException ex) {
                     Logger.getLogger(BoxPlotSimilarityVsRound.class.getName()).log(Level.SEVERE, null, ex);
@@ -447,7 +447,7 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
         for (Double pf : failureProbs) {
             ArrayList<Double> pfi = new ArrayList<>();
             pfi.add(pf);
-            final BoxPlotSimilarityVsRound demo = new BoxPlotSimilarityVsRound("Similarity vs Round Number", pfi);
+            final BoxPlotSimilarityVsRound demo = new BoxPlotSimilarityVsRound("Similarity vs Time", pfi);
         }
 
         /*

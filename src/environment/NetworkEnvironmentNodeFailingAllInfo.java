@@ -8,7 +8,6 @@ import java.util.Vector;
 import edu.uci.ics.jung.graph.*;
 import graphutil.MyVertex;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,7 +52,7 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
         } catch (InterruptedException ex) {
             Logger.getLogger(NetworkEnvironmentNodeFailingAllInfo.class.getName()).log(Level.SEVERE, null, ex);
         }
-        //long actStartTime = System.currentTimeMillis();
+//        long actStartTime = System.currentTimeMillis();
         if (agent instanceof Node) {
             Node n = (Node) agent;
             n.incRounds();
@@ -68,10 +67,15 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                     /* A node process messages */
                     String[] inbox;
                     while ((inbox = NetworkNodeMessageBuffer.getInstance().getMessage(n.getVertex().getName())) != null) {
+                        double inboxSize = getMessageSize(inbox);
+                        
+                        increaseTotalSizeMsgRecv(inboxSize); //increase total of messages received
+                        
                         if (SimulationParameters.activateReplication.equals("replalgon")) {
-                            //message msgnodediff: connect|level|nodeid|nodetoconnect                                                            
+                            //message msgnodediff: connect|nodeid|nodetoconnect                                                            
                             if (inbox[0].equals("connect")) {
-                                String nodetoConnect = inbox[3];
+                                //increase amount of messages received                                
+                                String nodetoConnect = inbox[2];                                
                                 connect(n.getVertex(), nodetoConnect);
 
                                 //When n connects to nodetoConnect n also sends its network topology
@@ -81,8 +85,13 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                                     msgdatanode[0] = "networkdatanode";
                                     msgdatanode[1] = String.valueOf(n.getVertex().getName());
                                     StringSerializer s = new StringSerializer();
-                                    msgdatanode[2] = s.serialize(n.getNetworkdata());
-                                    NetworkNodeMessageBuffer.getInstance().putMessage(nodetoConnect, msgdatanode);
+                                    msgdatanode[2] = s.serialize(n.getNetworkdata());                                    
+                                    
+                                    //increase message size
+                                    double msgdatanodeSize = getMessageSize(msgdatanode);
+                                    increaseTotalSizeMsgSent(msgdatanodeSize);
+                                    
+                                    NetworkNodeMessageBuffer.getInstance().putMessage(nodetoConnect, msgdatanode);                                                                        
                                     System.out.println(n.getVertex().getName() + "send networkdatanode to " + nodetoConnect);
                                 }
                             }
@@ -112,9 +121,9 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                 }
             }
 
-            //long actStopTime = System.currentTimeMillis();
-            //long timeTaken = actStopTime-actStartTime;            
-            //System.out.println("env age: " + this.getAge() + " node:" + n.getName() + ", round: " + n.getRounds() + ", time taken act " + timeTaken);
+//            long actStopTime = System.currentTimeMillis();
+//            long timeTaken = actStopTime-actStartTime;            
+//            System.out.println("env age: " + this.getAge() + " node:" + n.getName() + ", round: " + n.getRounds() + ", time taken act " + timeTaken);
         }
 
         available.release();
@@ -176,7 +185,7 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
      * @return
      */
     public HashMap<String, ArrayList> loadPartialNetwork(int nhopsChain, Node n) {
-        HashMap<String, ArrayList> networkInfo = new HashMap<>();
+        HashMap<String, ArrayList> localNetworkInfo = new HashMap<>();
         HashMap<MyVertex, Integer> distances = new HashMap<>();
         ArrayList<MyVertex> neighbours = new ArrayList<>();
         neighbours.add(n.getVertex());
@@ -193,11 +202,11 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
         System.out.println("node" + n + "neigh: " + neighbours + " neigh size:" + neighbours.size());
         System.out.println("");
         for (MyVertex v : neighbours) {
-            networkInfo.put(v.getName(), new ArrayList<>(getTopologyNames(v)));
+            localNetworkInfo.put(v.getName(), new ArrayList<>(getTopologyNames(v)));
         }
-        System.out.println("node" + n + "info = " + networkInfo);
+        System.out.println("node" + n + "info = " + localNetworkInfo);
 
-        return networkInfo;
+        return localNetworkInfo;
     }
 
     @Override

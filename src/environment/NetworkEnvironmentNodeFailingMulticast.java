@@ -58,6 +58,7 @@ public class NetworkEnvironmentNodeFailingMulticast extends NetworkEnvironment {
                 msgnet[1] = String.valueOf(n.getVertex().getName());
                 StringSerializer s = new StringSerializer();
                 msgnet[2] = s.serialize(n.getNetworkdata());
+                
                 if (!NetworkNodeMessageBuffer.getInstance().putMessage(neigbour, msgnet)) {
                     System.out.println("node is down: " + neigbour);
                 }
@@ -69,20 +70,21 @@ public class NetworkEnvironmentNodeFailingMulticast extends NetworkEnvironment {
                     /* A node process messages */
                     String[] inbox;
                     while ((inbox = NetworkNodeMessageBuffer.getInstance().getMessage(n.getVertex().getName())) != null) {
+
                         if (SimulationParameters.activateReplication.equals("replalgon")) {
                             //receives data
-                            if (inbox[0].equals("networkdata")) {
+                            if (inbox[0].equals("networkdata")) {                                
                                 //completes and updates data
                                 StringSerializer s = new StringSerializer();
                                 HashMap<String, ArrayList> recvData = (HashMap<String, ArrayList>) s.deserialize(inbox[2]);
                                 n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), recvData));
-                                n.incMsgRecv();
+                               
+                                double sizeRecv = inbox[0].length() + inbox[1].length() + inbox[2].length();
+  
                             }
                             if (inbox[0].equals("connect")) {
-                                //message msgnodediff: connect|level|nodeid|nodetoconnect
-                                int level = Integer.valueOf(inbox[1]);
-                                //String ndet = String.valueOf(inbox[2]);
-                                String nodetoConnect = inbox[3];
+                                //message msgnodediff: connect|level|nodeid|nodetoconnect                                
+                                String nodetoConnect = inbox[2];
                                 connect(n.getVertex(), nodetoConnect);
                             }
                         }

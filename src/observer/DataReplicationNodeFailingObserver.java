@@ -5,17 +5,10 @@
  */
 package observer;
 
-import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
-import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
-import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import environment.NetworkEnvironment;
 import graphutil.GraphComparator;
 import graphutil.MyVertex;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Paint;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -26,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.SortedSet;
@@ -35,7 +29,7 @@ import java.util.logging.Logger;
 //import javax.swing.JFrame;
 import networkrecoverysim.DataReplicationEscenarioNodeFailing;
 import networkrecoverysim.SimulationParameters;
-import org.apache.commons.collections15.Transformer;
+import staticagents.Node;
 import util.StatisticsNormalDist;
 
 /**
@@ -53,6 +47,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
     HashMap<Integer, Integer> agentsNumber = new HashMap<>();
     HashMap<Integer, Integer> nodesComplete = new HashMap<>();
     HashMap<Integer, StatisticsNormalDist> roundVsInfoAvg = new HashMap<>();
+    private String nodeStatsFileName = null;
 
     public static int lastagentsAlive = -1;
     public static int lastnodesAlive = -1;
@@ -61,124 +56,41 @@ public class DataReplicationNodeFailingObserver implements Observer {
     DataReplicationEscenarioNodeFailing dataReplEsc;
 
     public DataReplicationNodeFailingObserver(DataReplicationEscenarioNodeFailing drs) {
-//        frame = new JFrame("Simple Graph View");
-//        //frame.setSize(1000, 1000);
-//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//
-//        //frame.setSize(1000, 1000);
-//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        //frame.getContentPane().add(vv);
-        //frame.setPreferredSize(new Dimension(600, 600));
-        //frame.setLocationRelativeTo(null);
-        // frame.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
         isUpdating = false;
         dataReplEsc = drs;
     }
 
-//    public class FrameGraphUpdater extends Thread {
-//
-//        Graph<MyVertex, String> g;
-//        JFrame frame;
-//        NetworkEnvironment n;
-//
-//        public FrameGraphUpdater(Graph<MyVertex, String> g, JFrame frame, NetworkEnvironment ne) {
-//            this.g = g;
-//            this.frame = frame;
-//            this.n = ne;
-//        }
-//
-//        public void run() {
-//            if (isDrawing) {
-//                return;
-//            }
-//
-//            try {
-//                isDrawing = true;
-//                if (g.getVertexCount() == 0) {
-//                    System.out.println("no nodes alive.");
-//                } else {
-//                    Layout<MyVertex, String> layout = null;
-//                    /*
-//                switch (SimulationParameters.graphMode) {
-//                    case "scalefree":
-//                        layout = new ISOMLayout<>(g);
-//                        break;
-//                    case "smallworld":
-//                        layout = new CircleLayout<>(g);
-//                        break;
-//                    case "community":
-//                        layout = new CircleLayout<>(g);
-//                        break;
-//                    case "kleinberg":
-//                        layout = new CircleLayout<>(g);
-//                        break;
-//                    case "circle":
-//                        layout = new ISOMLayout<>(g);
-//                        break;
-//                    case "line":
-//                        layout = new ISOMLayout<>(g);
-//                        break;
-//                    case "lattice":
-//                        layout = new ISOMLayout<>(g);
-//                        break;
-//                    default:
-//                        layout = new ISOMLayout<>(g);
-//                        break;
-//                }*/
-//                    layout = new ISOMLayout<>(g);
-//                    //layout = new CircleLayout<>(g);
-//
-//                    BasicVisualizationServer<MyVertex, String> vv = new BasicVisualizationServer<>(layout);
-//                    vv.setPreferredSize(new Dimension(600, 600)); //Sets the viewing area size
-//
-//                    // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
-//                    // vv.getRenderContext().setEdgeDrawPaintTransformer(n.edgeColor);
-//                    Transformer<MyVertex, Paint> vertexColor = new Transformer<MyVertex, Paint>() {
-//                        @Override
-//                        public Paint transform(MyVertex i) {
-////                            if (((NetworkEnvironmentPheromoneReplicationNodeFailing) n).isOccuped(i)) {
-////                                return Color.YELLOW;
-////                            }
-////                            if (n.getVisitedNodes().contains(i)) {
-////                                return Color.BLUE;
-////                            }
-//                            //if(i.getData().size() > 0){
-//                            //    System.out.println("i"+ i.getData().size());
-//                            //}
-//                            /*if (i.getData().size() == n.getTopology().getVertices().size()) {
-//                                return Color.GREEN;
-//                            }*/
-//                            return Color.RED;
-//                        }
-//                    };
-//
-//                    vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-//                    //vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
-//                    //n.setVV(vv);
-//                    vv.getRenderContext().setVertexFillPaintTransformer(vertexColor);
-//
-//                    if (!added) {
-//                        frame.getContentPane().add(vv);
-//                        added = true;
-//                        frame.pack();
-//                        frame.setVisible(true);
-//                    } else {
-//                        frame.repaint();
-//                    }
-//                }
-//            } catch (NullPointerException ex) {
-//                System.out.println("exeeeeeeeeeeeeeeeeeeeeeeeeeeeepyion" + ex);
-//                isDrawing = false;
-//            }
-//            isDrawing = false;
-//        }
-//    }
-
     @Override
     public synchronized void update(Observable o, Object arg) {
+
+        if (arg instanceof Node) {
+            final NetworkEnvironment world = (NetworkEnvironment) o;
+            //write node averageLife
+            Node node = (Node) arg;
+
+            if (nodeStatsFileName == null) {
+                String baseFilename = SimulationParameters.reportsFilenamePrefix;
+                System.out.println("base filename:" + baseFilename);
+                String avgNodeLife = baseFilename + "+node";
+                createDir(avgNodeLife);
+                nodeStatsFileName = "./" + avgNodeLife + "/" + baseFilename + "+" + getFileName() + "+nodestats.csv";
+            }
+            PrintWriter nodeStatsFile;
+            try {
+                List<String> neighbours = world.getTopologyNames(node.getVertex());
+                nodeStatsFile = new PrintWriter(new BufferedWriter(new FileWriter(nodeStatsFileName, true)));
+                //log: getAge|nodeId|version|rounds|nsentmsg|sizesentmsg|nrecvmsg|sizerecvmsg|neighbours|neighbours.size|memory
+                nodeStatsFile.println(world.getAge() + "," + node.getName() + "," + world.getNodeVersion(node) + "," + node.getRounds() + "," + world.getTopology().degree(node.getVertex()));
+                nodeStatsFile.close();
+            } catch (IOException ex) {
+                Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        }
+
         //System.out.println("observer update");
         if (o instanceof NetworkEnvironment) {
-            final NetworkEnvironment n = (NetworkEnvironment) o;
+            final NetworkEnvironment world = (NetworkEnvironment) o;
 
 //            if (!agentsNumber.containsKey(n.getAge())) {
 //                agentsNumber.put(n.getAge(), n.getAgentsLive());
@@ -190,7 +102,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
 //                }
 //            }
 //            int agentsAlive = n.getAgentsAlive();
-            int nodesAlive = n.getNodesAlive();
+            int nodesAlive = world.getNodesAlive();
             if (lastnodesAlive == -1 || nodesAlive != lastnodesAlive) {
                 System.out.println("Nodes alive: " + nodesAlive);
                 lastnodesAlive = nodesAlive;
@@ -201,12 +113,26 @@ public class DataReplicationNodeFailingObserver implements Observer {
 //                lastagentsAlive = agentsAlive;
 //            }
 //            System.out.println("maxIter:" + SimulationParameters.maxIter  + ", " + n.getAge());
-            if (SimulationParameters.maxIter >= 0 && n.getAge() >= SimulationParameters.maxIter || nodesAlive == 0) {
+            if (SimulationParameters.maxIter >= 0 && world.getAge() >= SimulationParameters.maxIter || nodesAlive == 0) {
                 if (!isUpdating) {
                     System.out.println("stopping simulation");
                     isUpdating = true;
-                    n.stop();
+                    world.stop();
 
+                    for (Node node : world.getNodes()) {
+                        PrintWriter nodeStatsFile;
+                        try {
+                            List<String> neighbours = world.getTopologyNames(node.getVertex());
+                            nodeStatsFile = new PrintWriter(new BufferedWriter(new FileWriter(nodeStatsFileName, true)));
+                            //log: getAge|nodeId|version|rounds|nsentmsg|sizesentmsg|nrecvmsg|sizerecvmsg|neighbours|neighbours.size|memory
+                            nodeStatsFile.println(world.getAge() + "," + node.getName() + "," + world.getNodeVersion(node) + "," + node.getRounds() + "," + world.getTopology().degree(node.getVertex()));
+                            nodeStatsFile.close();
+                        } catch (IOException ex) {
+                            Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+
+                    }
+                    //
                     String baseFilename = SimulationParameters.reportsFilenamePrefix;
                     System.out.println("base filename:" + baseFilename);
 
@@ -217,7 +143,6 @@ public class DataReplicationNodeFailingObserver implements Observer {
                         PrintWriter writeRoundVsInfo = null;
                         try {
                             writeRoundVsInfo = new PrintWriter(new BufferedWriter(new FileWriter(roundVsInfoStats, true)));
-
                             SortedSet<Integer> keysAg = new TreeSet<>(roundVsInfoAvg.keySet());
                             for (int x : keysAg) {
                                 writeRoundVsInfo.println(x + "," + roundVsInfoAvg.get(x).getMean() + "," + roundVsInfoAvg.get(x).getStdDev());
@@ -232,10 +157,11 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     //write last similarity reported
                     GraphComparator gnm = new GraphComparator();
                     double sim = 0;
-                    sim = gnm.calculateSimilarity(n);
+                    sim = gnm.calculateSimilarity(world);
                     System.out.println("Final Similarity:" + sim);
-                    dataReplEsc.getSimilarity().put(n.getAge(), sim);
+                    dataReplEsc.getSimilarity().put(world.getAge(), sim);
 
+                    //Write similarity metrics
                     String graphSimilarity = baseFilename + "+similarity";
                     createDir(graphSimilarity);
                     String graphSimilarityStats = "./" + graphSimilarity + "/" + baseFilename + "+" + getFileName() + "+similarity.csv";
@@ -244,10 +170,25 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     try {
                         writeSimilarity = new PrintWriter(new BufferedWriter(new FileWriter(graphSimilarityStats, true)));
                         SortedSet<Integer> keysSim = new TreeSet<>(dataReplEsc.getSimilarity().keySet());
-                        for (int x : keysSim) {
+                        for (Integer x : keysSim) {
                             writeSimilarity.println(x + "," + dataReplEsc.getSimilarity().get(x));
                         }
                         writeSimilarity.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                    //write node averageLife
+                    String avgNodeLife = baseFilename + "+nodeLife";
+                    createDir(avgNodeLife);
+                    String nodeLifeStats = "./" + avgNodeLife + "/" + baseFilename + "+" + getFileName() + "+nodeLife.csv";
+                    PrintWriter writeNodeLife;
+                    try {
+                        writeNodeLife = new PrintWriter(new BufferedWriter(new FileWriter(nodeLifeStats, true)));
+                        for (double x : world.getNodeAverageLife()) {
+                            writeNodeLife.println(x);
+                        }
+                        writeNodeLife.close();
                     } catch (IOException ex) {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -274,10 +215,10 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     StatisticsProviderReplicationNodeFailing sti = new StatisticsProviderReplicationNodeFailing(baseFilename);
 
                     //ToFix: Statistis
-                    sti.printStatistics(n);
+                    sti.printStatistics(world);
 
                     SimulationParameters.stopTime = System.currentTimeMillis();
-                    System.out.println("The end" + n.getAge() + " time of simulation:" + (SimulationParameters.stopTime - SimulationParameters.startTime)  + " number of node failures: " + n.getNumberFailures());
+                    System.out.println("The end" + world.getAge() + " time of simulation:" + (SimulationParameters.stopTime - SimulationParameters.startTime) + " number of node failures: " + world.getNumberFailures());
                     System.exit(0);
                 }
             }

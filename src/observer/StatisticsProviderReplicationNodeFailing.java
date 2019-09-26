@@ -31,21 +31,18 @@ public class StatisticsProviderReplicationNodeFailing {
 
     Hashtable getStatisticsInteger(NetworkEnvironment w) {
         Hashtable Statistics = new Hashtable();
-        int n = w.getAgents().size();
-        ArrayList<Double> msgin = new ArrayList<>();
-
-        for (int i = 0; i < n; i++) {
-            if (w.getAgent(i) instanceof Node) {
-                Node node = (Node) w.getAgent(i);
-                msgin.add((double) node.getnMsgRecv());
-            }
-        }
-        StatisticsNormalDist strecv = new StatisticsNormalDist(msgin, msgin.size());
-        Statistics.put("avgRecv", strecv.getMean());
-        Statistics.put("stdDevRecv", strecv.getStdDev());
-        Statistics.put("numberFailures", w.getNumberFailures());
+        ArrayList<Double> avgNodeLife = w.getNodeAverageLife();
+        StatisticsNormalDist avgLifeNode = new StatisticsNormalDist(avgNodeLife, avgNodeLife.size());        
+        Statistics.put("totalRecv", w.getTotalMsgRecv());
+        Statistics.put("totalSent", w.getTotalMsgSent());
+        Statistics.put("totalSizeRecv", w.getTotalSizeMsgRecv());
+        Statistics.put("totalSizeSent", w.getTotalSizeMsgSent());
+        Statistics.put("numberFailures", w.getNumberFailures());        
         Statistics.put("round", w.getAge());
-        System.out.println("stats: " + Statistics);
+        Statistics.put("avgNodeLife", avgLifeNode.getMedian());
+        Statistics.put("stdNodeLife", avgLifeNode.getStdDev());
+        
+        System.out.println("stats: " + Statistics);        
         return Statistics;
     }
 
@@ -54,7 +51,7 @@ public class StatisticsProviderReplicationNodeFailing {
         try {
             PrintWriter escribir;
             escribir = new PrintWriter(new BufferedWriter(new FileWriter(reportFile+".csv", true)));
-            escribir.println(st.get("numberFailures") + "," + st.get("avgRecv") + "," + st.get("stdDevRecv") + "," + st.get("round"));
+            escribir.println(st.get("numberFailures") + "," + st.get("totalSent") + "," + st.get("totalSizeSent")+ "," + st.get("totalRecv") + "," + st.get("totalSizeRecv") + "," + st.get("avgNodeLife") + "," + st.get("stdNodeLife") + "," + st.get("round"));
             escribir.close();
         } catch (IOException ex) {
             Logger.getLogger(StatisticsProviderReplicationNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
