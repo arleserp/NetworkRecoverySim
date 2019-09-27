@@ -399,8 +399,9 @@ public abstract class NetworkEnvironment extends Environment {
                 }
                 n.getVertex().setStatus("failed"); //set status to failed
             }
-            System.out.println("Node " + n.getVertex().getName() + " has failed.");
+            System.out.println("Node " + n.getName() + " has failed.");
             //clear buffer of node n
+            NetworkNodeMessageBuffer.getInstance().clearBuffer(n.getName());
             removeVertex(n.getVertex());
             n.die();
         }

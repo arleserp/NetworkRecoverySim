@@ -47,6 +47,10 @@ public class NetworkNodeMessageBuffer {
         mbuffer.remove(pid);
     }
 
+    public void clearBuffer(String pid) {
+        mbuffer.get(pid).clear();
+    }
+
     public class putMessageInThread implements Runnable {
 
         private NetworkEnvironment env;
