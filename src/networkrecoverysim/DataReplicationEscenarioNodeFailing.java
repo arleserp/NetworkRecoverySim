@@ -99,6 +99,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
     private final JButton redraw;
     Graph<MyVertex, String> initialNetwork;
     HashMap<Integer, Double> similarity;
+    HashMap<Integer, String> networkAndMemoryStats;        
     boolean alreadyPainted = false;
     final Semaphore available = new Semaphore(1);
 
@@ -141,6 +142,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
 //        frame.setVisible(true);
 //        frame2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         similarity = new HashMap<>();
+        networkAndMemoryStats = new HashMap<>();
     }
 
     /**
@@ -312,15 +314,25 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                         nodesLive.add(environment.getSimulationTime(), nodesAlive);
                         GraphComparator gnm = new GraphComparator();
                         double sim = 0;
+                        
+                        int worldRound = environment.getAge();
+                        
                         sim = gnm.calculateSimilarity(environment);
-                        neighborMatchingSim.add(environment.getAge(), sim);
-                        similarity.put(environment.getAge(), sim);
+                        neighborMatchingSim.add(worldRound, sim);
+                        similarity.put(worldRound, sim);
 
+                        String netAndMemStats;
+                        //totalMemory|totalMsgSent|sizeMsgSent|totalMsgReceived|sizeMsgRecv
+                        netAndMemStats = environment.getTotalMemory() + "," + environment.getTotalMsgSent() + "," +
+                                environment.getTotalSizeMsgSent() + "," + environment.getTotalMsgRecv() + "," + environment.getTotalSizeMsgRecv();
+                        
+                        networkAndMemoryStats.put(worldRound, netAndMemStats);
+                        
                         if (environment.getAge() >= (SimulationParameters.maxIter - 100) && !alreadyPainted) {
                             String baseFilename = SimulationParameters.reportsFilenamePrefix;
                             String dir = "cmpgraph";
                             createDir(dir);
-                            GraphSerialization.saveSerializedGraph("./" + dir + "/" + getFileName() + "+" + baseFilename + "+round+" + environment.getAge() + ".graph", world.getTopology());
+                            GraphSerialization.saveSerializedGraph("./" + dir + "/" + getFileName() + "+" + baseFilename + "+round+" + worldRound + ".graph", world.getTopology());
                             alreadyPainted = true;
                         }
                     }
@@ -425,4 +437,9 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         String reportDate = df.format(today);
         return reportDate;
     }
+
+    public HashMap<Integer, String> getNetworkAndMemoryStats() {
+        return networkAndMemoryStats;
+    }
+    
 }

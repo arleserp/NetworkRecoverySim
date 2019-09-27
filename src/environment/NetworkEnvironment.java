@@ -236,10 +236,9 @@ public abstract class NetworkEnvironment extends Environment {
     public String getMinimumId(List<String> neigdiff, String nodeMissing, Node currentNode) {
         List<String> nodesAlive = new ArrayList();
         increaseTotalSizeMsgSent(neigdiff.size() * 56.0); //56 bytes is the size of a ping         
-        
-        
+
         double cont = 0;
-        for(String s: neigdiff) {
+        for (String s : neigdiff) {
             Node n = getNode(s);
             if (n != null && n.getNetworkdata().containsKey(nodeMissing)) {
                 nodesAlive.add(s);
@@ -247,7 +246,7 @@ public abstract class NetworkEnvironment extends Environment {
                 //increaseTotalSizeMsgRecv(56.0);
             }
         }
-        
+
         increaseTotalSizeMsgRecv(cont);
         //System.out.println("inc sent" + (neigdiff.size() * 56.0)  +  "recv count" + cont);
 
@@ -391,7 +390,7 @@ public abstract class NetworkEnvironment extends Environment {
             nodeAverageLife.add((double) n.getRounds());
             setChanged();
             notifyObservers(n);
-           
+
             synchronized (nodes) {
                 if (nodes.containsKey(n.getName())) { //remove from concurrent structure
                     nodes.remove(n.getName());
@@ -596,7 +595,7 @@ public abstract class NetworkEnvironment extends Environment {
      */
     public void increaseTotalMemory(double delta) {
         synchronized (totalMemory) {
-            totalMsgRecv.getAndAdd(delta);
+            totalMemory.getAndAdd(delta);
         }
     }
 
@@ -618,6 +617,12 @@ public abstract class NetworkEnvironment extends Environment {
     public int getNodeVersion(Node n) {
         synchronized (nodeVersion) {
             return nodeVersion.get(n.getName());
+        }
+    }
+
+    public double getTotalMemory() {
+        synchronized (totalMemory) {
+            return totalMemory.getAndAdd(0.0);
         }
     }
 

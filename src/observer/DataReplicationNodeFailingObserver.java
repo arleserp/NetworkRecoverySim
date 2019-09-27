@@ -122,7 +122,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     for (Node node : world.getNodes()) {
                         PrintWriter nodeStatsFile;
                         try {
-                            List<String> neighbours = world.getTopologyNames(node.getVertex());
+                            //List<String> neighbours = world.getTopologyNames(node.getVertex());
                             nodeStatsFile = new PrintWriter(new BufferedWriter(new FileWriter(nodeStatsFileName, true)));
                             //log: getAge|nodeId|version|rounds|nsentmsg|sizesentmsg|nrecvmsg|sizerecvmsg|neighbours|neighbours.size|memory
                             nodeStatsFile.println(world.getAge() + "," + node.getName() + "," + world.getNodeVersion(node) + "," + node.getRounds() + "," + world.getTopology().degree(node.getVertex()));
@@ -207,6 +207,33 @@ public class DataReplicationNodeFailingObserver implements Observer {
                         }
                         escribirAgentNumber.close();
 
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                    String netAndMemStats;
+                    int worldAge = world.getAge();
+                    //totalMemory|totalMsgSent|sizeMsgSent|totalMsgReceived|sizeMsgRecv
+                    netAndMemStats = world.getTotalMemory() + "," + world.getTotalMsgSent() + ","
+                            + world.getTotalSizeMsgSent() + "," + world.getTotalMsgRecv() + "," + world.getTotalSizeMsgRecv();
+
+                    dataReplEsc.getNetworkAndMemoryStats().put(worldAge, netAndMemStats);
+                    
+                    //Write stats about network and memory and network consumption
+                    String resourcesdirName = baseFilename + "+resources";
+                    createDir(resourcesdirName);
+                    String resourcesStats = "./" + resourcesdirName + "/" + baseFilename + "+" + getFileName() + "+resources.csv";
+
+                    PrintWriter escribirResourcesStats = null;
+                    try {
+                        escribirResourcesStats = new PrintWriter(new BufferedWriter(new FileWriter(resourcesStats, true)));
+                        System.out.println("writing " + dataReplEsc.getNetworkAndMemoryStats());
+                        SortedSet<Integer> keysAg = new TreeSet<>(dataReplEsc.getNetworkAndMemoryStats().keySet());
+                        for (int x : keysAg) {
+
+                            escribirResourcesStats.println(x + "," + dataReplEsc.getNetworkAndMemoryStats().get(x));
+                        }
+                        escribirResourcesStats.close();
                     } catch (IOException ex) {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }

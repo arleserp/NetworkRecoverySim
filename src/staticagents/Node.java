@@ -46,7 +46,8 @@ public class Node extends Agent  {
 
     private LinkedBlockingQueue<String[]> networkMessagebuffer;
     private HashMap<Integer, String> idCounter; //added by arles.rodriguez 12/12/2018
-
+    private int deltaMemoryConsumption = 0; // delta of memory consumption
+    
     private HashMap<MyVertex, Integer> distancesToNode;
 
     public HashMap<MyVertex, Integer> getDistancesToNode() {
@@ -472,9 +473,11 @@ public class Node extends Agent  {
      * 
      * @return memoryconsumption by node in bytes
      */
-    public int getMemoryConsumption(){
-        StringSerializer serializer = new StringSerializer();
-        String data = serializer.serialize(this.networkdata);
-        return data.length();
+    public int getDeltaMemoryConsumption(){
+        StringSerializer serializer = new StringSerializer();        
+        String data = serializer.serialize(this.networkdata);        
+        deltaMemoryConsumption = data.length() - deltaMemoryConsumption;
+        
+        return deltaMemoryConsumption;
     }
 }

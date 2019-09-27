@@ -54,8 +54,10 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
         }
 //        long actStartTime = System.currentTimeMillis();
         if (agent instanceof Node) {
+            
             Node n = (Node) agent;
             n.incRounds();
+            
             //System.out.println(n.getName() + ":" + n.getRounds());
             //This part is primitive send to neigbors 
             String act = action.getCode();
@@ -105,9 +107,11 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                             }
                         }
                     }
+                    increaseTotalMemory(n.getDeltaMemoryConsumption());
                     break;
                 case 1: //what happens if a node dies?
                     //System.out.println("node " + n.getVertex().getName() + " n followed agents:" + n.getResponsibleAgents());
+                    increaseTotalMemory(n.getDeltaMemoryConsumption());
                     KillNode(n);
                     break;
                 default:
