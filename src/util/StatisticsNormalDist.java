@@ -70,6 +70,7 @@ public class StatisticsNormalDist {
 
     public double getMedian() 
     {
+       if(data.isEmpty()) return 0;
        Collections.sort(data);
        if (getData().size() % 2 == 0) 
        {

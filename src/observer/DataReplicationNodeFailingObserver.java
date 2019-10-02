@@ -58,6 +58,11 @@ public class DataReplicationNodeFailingObserver implements Observer {
     public DataReplicationNodeFailingObserver(DataReplicationEscenarioNodeFailing drs) {
         isUpdating = false;
         dataReplEsc = drs;
+        String baseFilename = SimulationParameters.reportsFilenamePrefix;
+        System.out.println("base filename:" + baseFilename);
+        String avgNodeLife = baseFilename + "+node";
+        createDir(avgNodeLife);
+        nodeStatsFileName = "./" + avgNodeLife + "/" + baseFilename + "+" + getFileName() + "+nodestats.csv";
     }
 
     @Override
@@ -67,17 +72,8 @@ public class DataReplicationNodeFailingObserver implements Observer {
             final NetworkEnvironment world = (NetworkEnvironment) o;
             //write node averageLife
             Node node = (Node) arg;
-
-            if (nodeStatsFileName == null) {
-                String baseFilename = SimulationParameters.reportsFilenamePrefix;
-                System.out.println("base filename:" + baseFilename);
-                String avgNodeLife = baseFilename + "+node";
-                createDir(avgNodeLife);
-                nodeStatsFileName = "./" + avgNodeLife + "/" + baseFilename + "+" + getFileName() + "+nodestats.csv";
-            }
             PrintWriter nodeStatsFile;
             try {
-                List<String> neighbours = world.getTopologyNames(node.getVertex());
                 nodeStatsFile = new PrintWriter(new BufferedWriter(new FileWriter(nodeStatsFileName, true)));
                 //log: getAge|nodeId|version|rounds|nsentmsg|sizesentmsg|nrecvmsg|sizerecvmsg|neighbours|neighbours.size|memory
                 nodeStatsFile.println(world.getAge() + "," + node.getName() + "," + world.getNodeVersion(node) + "," + node.getRounds() + "," + world.getTopology().degree(node.getVertex()));
@@ -119,19 +115,20 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     isUpdating = true;
                     world.stop();
 
-                    for (Node node : world.getNodes()) {
-                        PrintWriter nodeStatsFile;
-                        try {
-                            //List<String> neighbours = world.getTopologyNames(node.getVertex());
-                            nodeStatsFile = new PrintWriter(new BufferedWriter(new FileWriter(nodeStatsFileName, true)));
-                            //log: getAge|nodeId|version|rounds|nsentmsg|sizesentmsg|nrecvmsg|sizerecvmsg|neighbours|neighbours.size|memory
+                    System.out.println("nodes" + world.getNodes().size());
+                    PrintWriter nodeStatsFile;
+                    try {
+                        System.out.println("file" + nodeStatsFileName);
+                        nodeStatsFile = new PrintWriter(new BufferedWriter(new FileWriter(nodeStatsFileName, true)));
+                        //log: getAge|nodeId|version|rounds|nsentmsg|sizesentmsg|nrecvmsg|sizerecvmsg|neighbours|neighbours.size|memory
+                        for (Node node : world.getNodes()) {
                             nodeStatsFile.println(world.getAge() + "," + node.getName() + "," + world.getNodeVersion(node) + "," + node.getRounds() + "," + world.getTopology().degree(node.getVertex()));
-                            nodeStatsFile.close();
-                        } catch (IOException ex) {
-                            Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                         }
-
+                        nodeStatsFile.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
+
                     //
                     String baseFilename = SimulationParameters.reportsFilenamePrefix;
                     System.out.println("base filename:" + baseFilename);
@@ -218,7 +215,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                             + world.getTotalSizeMsgSent() + "," + world.getTotalMsgRecv() + "," + world.getTotalSizeMsgRecv();
 
                     dataReplEsc.getNetworkAndMemoryStats().put(worldAge, netAndMemStats);
-                    
+
                     //Write stats about network and memory and network consumption
                     String resourcesdirName = baseFilename + "+resources";
                     createDir(resourcesdirName);
@@ -227,10 +224,11 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     PrintWriter escribirResourcesStats = null;
                     try {
                         escribirResourcesStats = new PrintWriter(new BufferedWriter(new FileWriter(resourcesStats, true)));
-                        System.out.println("writing " + dataReplEsc.getNetworkAndMemoryStats());
+                        //System.out.println("writing " + dataReplEsc.getNetworkAndMemoryStats());
                         SortedSet<Integer> keysAg = new TreeSet<>(dataReplEsc.getNetworkAndMemoryStats().keySet());
+                        
                         for (int x : keysAg) {
-
+                            System.out.println("writting stat" + x);
                             escribirResourcesStats.println(x + "," + dataReplEsc.getNetworkAndMemoryStats().get(x));
                         }
                         escribirResourcesStats.close();
@@ -238,6 +236,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
+                    System.out.println("pasoooo!");
                     //Statistics regarding messages received by node.
                     StatisticsProviderReplicationNodeFailing sti = new StatisticsProviderReplicationNodeFailing(baseFilename);
 

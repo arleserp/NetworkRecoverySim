@@ -28,7 +28,7 @@ import unalcol.agents.AgentProgram;
  *
  * @author ARODRIGUEZ
  */
-public class Node extends Agent  {
+public class Node extends Agent {
 
     private MyVertex v;  //vertex in topology that represents a node
     private final ConcurrentHashMap<Integer, Integer> agentsInNode; //Maybe delete    
@@ -47,7 +47,7 @@ public class Node extends Agent  {
     private LinkedBlockingQueue<String[]> networkMessagebuffer;
     private HashMap<Integer, String> idCounter; //added by arles.rodriguez 12/12/2018
     private int deltaMemoryConsumption = 0; // delta of memory consumption
-    
+    private int lastMemoryConsumption = 0; // last Memory consumption register
     private HashMap<MyVertex, Integer> distancesToNode;
 
     public HashMap<MyVertex, Integer> getDistancesToNode() {
@@ -172,8 +172,6 @@ public class Node extends Agent  {
     public void addRoundsWithOutVisit() {
         roundsWithOutVisit++;
     }
-
-
 
     /**
      * @return the roundsWithoutAck
@@ -430,12 +428,12 @@ public class Node extends Agent  {
      *
      * @param env network environment.
      */
-    public void evaluateNodeCreation(NetworkEnvironment env) {        
+    public void evaluateNodeCreation(NetworkEnvironment env) {
         ArrayList<String> topologyData = new ArrayList(env.getTopologyNames(getVertex())); // Get topology of the network
-        
-        env.increaseTotalSizeMsgSent(getNetworkdata().get(getName()).size()*56);  //a ping is 56 bytes sent
-        env.increaseTotalSizeMsgRecv(topologyData.size()*56); //response of nodes
-        
+
+        env.increaseTotalSizeMsgSent(getNetworkdata().get(getName()).size() * 56);  //a ping is 56 bytes sent
+        env.increaseTotalSizeMsgRecv(topologyData.size() * 56); //response of nodes
+
         if (getNetworkdata().containsKey(getName())) {
             List<String> nd = new ArrayList((Collection) getNetworkdata().get(getName()));
 
@@ -454,7 +452,7 @@ public class Node extends Agent  {
                     //without neigbor data of d is impossible create d ?
                     if (getNetworkdata().containsKey(d)) {
                         List<String> neigdiff = (ArrayList) getNetworkdata().get(d);
-                        String min;                                                
+                        String min;
                         min = env.getMinimumId(neigdiff, d, this);
                         //I'm minimum, I will create node and say others that connect with it
                         if (min.equals(getName())) {
@@ -470,14 +468,16 @@ public class Node extends Agent  {
     }
 
     /**
-     * 
+     *
      * @return memoryconsumption by node in bytes
      */
-    public int getDeltaMemoryConsumption(){
-        StringSerializer serializer = new StringSerializer();        
-        String data = serializer.serialize(this.networkdata);        
-        deltaMemoryConsumption = data.length() - deltaMemoryConsumption;
+    public int getDeltaMemoryConsumption() {
+        StringSerializer serializer = new StringSerializer();
+        String totalData = serializer.serialize(this.networkdata);                        
+        deltaMemoryConsumption = Math.abs(totalData.length() - lastMemoryConsumption);                
+        lastMemoryConsumption += deltaMemoryConsumption;
         
+        //System.out.println("total data size:" + totalData.length() + ", delta:" + deltaMemoryConsumption + "," + lastMemoryConsumption);
         return deltaMemoryConsumption;
     }
 }

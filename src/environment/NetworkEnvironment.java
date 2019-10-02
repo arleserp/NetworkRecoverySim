@@ -599,16 +599,6 @@ public abstract class NetworkEnvironment extends Environment {
         }
     }
 
-    /**
-     * get memory consumed
-     *
-     * @return total memory consumption
-     */
-    public double totalMemoryConsumed(double delta) {
-        synchronized (totalMemory) {
-            return totalMemory.getAndAdd(0.0);
-        }
-    }
 
     /**
      * @param n
