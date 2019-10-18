@@ -321,7 +321,11 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                         neighborMatchingSim.add(worldRound, sim);
                         similarity.put(worldRound, sim);
 
+                        
+                        
                         String netAndMemStats;
+                        
+                        
                         //totalMemory|totalMsgSent|sizeMsgSent|totalMsgReceived|sizeMsgRecv
                         netAndMemStats = environment.getTotalMemory() + "," + environment.getTotalMsgSent() + "," +
                                 environment.getTotalSizeMsgSent() + "," + environment.getTotalMsgRecv() + "," + environment.getTotalSizeMsgRecv();

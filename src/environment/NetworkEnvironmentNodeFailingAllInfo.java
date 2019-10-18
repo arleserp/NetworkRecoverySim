@@ -107,11 +107,9 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                             }
                         }
                     }
-                    increaseTotalMemory(n.getDeltaMemoryConsumption());
                     break;
                 case 1: //what happens if a node dies?
                     //System.out.println("node " + n.getVertex().getName() + " n followed agents:" + n.getResponsibleAgents());
-                    increaseTotalMemory(n.getDeltaMemoryConsumption());
                     KillNode(n);
                     break;
                 default:

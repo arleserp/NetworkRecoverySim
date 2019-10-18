@@ -599,7 +599,6 @@ public abstract class NetworkEnvironment extends Environment {
         }
     }
 
-
     /**
      * @param n
      * @return
@@ -611,9 +610,15 @@ public abstract class NetworkEnvironment extends Environment {
     }
 
     public double getTotalMemory() {
-        synchronized (totalMemory) {
-            return totalMemory.getAndAdd(0.0);
+        Double totalMemory = 0.0;
+        synchronized (nodes) {
+            for (Node n : nodes.values()) {
+                if (!n.getVertex().getStatus().equals("failed")) {
+                    totalMemory += n.getMemoryConsumption();
+                }
+            }
         }
+        return totalMemory/(1024*1024);
     }
 
     /**

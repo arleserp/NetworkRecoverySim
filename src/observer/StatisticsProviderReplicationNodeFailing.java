@@ -51,7 +51,7 @@ public class StatisticsProviderReplicationNodeFailing {
         try {
             PrintWriter escribir;
             escribir = new PrintWriter(new BufferedWriter(new FileWriter(reportFile+".csv", true)));
-            escribir.println(st.get("numberFailures") + "," + st.get("totalSent") + "," + st.get("totalSizeSent")+ "," + st.get("totalRecv") + "," + st.get("totalSizeRecv") + "," + st.get("avgNodeLife") + "," + st.get("stdNodeLife") + "," + st.get("round"));
+            escribir.println(st.get("numberFailures") + "," + st.get("totalSent") + "," + ((double)st.get("totalSizeSent")/(1024.0*1024.0))+ "," + st.get("totalRecv") + "," + (((double)st.get("totalSizeRecv"))/(1024.0*1024.0)) + "," + st.get("avgNodeLife") + "," + st.get("stdNodeLife") + "," + st.get("round"));
             escribir.close();
         } catch (IOException ex) {
             Logger.getLogger(StatisticsProviderReplicationNodeFailing.class.getName()).log(Level.SEVERE, null, ex);

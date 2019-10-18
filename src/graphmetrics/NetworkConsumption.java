@@ -179,8 +179,8 @@ public class NetworkConsumption extends ApplicationFrame {
                             System.out.println("line:" + line);
                             data = line.split(",");
                             int round = Integer.valueOf(data[0]);
-                            Double sent = Double.valueOf(data[3]);
-                            Double recv = Double.valueOf(data[5]);
+                            Double sent = Double.valueOf(data[3])/(1024.0*1024.0);
+                            Double recv = Double.valueOf(data[5])/(1024.0*1024.0);
                             // Dictionary<round, memory>
                             if (!roundVsSent.containsKey(round)) {
                                 roundVsSent.put(round, new ArrayList<>());
@@ -219,7 +219,7 @@ public class NetworkConsumption extends ApplicationFrame {
                 }
 
                 JFreeChart chartSent = ChartFactory.createXYLineChart(
-                        "Time vs Network Consumption" + file.getName(), "Time", "Network Sent (bytes)",
+                        "Time vs Network Consumption" + file.getName(), "Time", "Network Sent (MB)",
                         juegoDatosSent, PlotOrientation.VERTICAL,
                         true, true, false);
 
@@ -234,10 +234,10 @@ public class NetworkConsumption extends ApplicationFrame {
 
                 final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
                 //renderer.setSeriesShapesVisible(1, true);
-                renderer.setBaseShapesVisible(true);
-                Shape cross = ShapeUtilities.createDiagonalCross(3, 1);
-                renderer.setSeriesShape(0, cross);
-                renderer.setSeriesPaint(0, Color.MAGENTA);
+                renderer.setBaseShapesVisible(false);
+                //Shape cross = ShapeUtilities.createDiagonalCross(3, 1);
+                //renderer.setSeriesShape(0, cross);
+                //renderer.setSeriesPaint(0, Color.MAGENTA);
 
                 plot.setRenderer(renderer);
 
@@ -264,10 +264,8 @@ public class NetworkConsumption extends ApplicationFrame {
                     Logger.getLogger(NetworkConsumption.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 
-                
-                
                  JFreeChart chartRecv = ChartFactory.createXYLineChart(
-                        "Time vs Network Consumption Received " + file.getName(), "Time", "Network Recv (bytes)",
+                        "Time vs Network Consumption Received " + file.getName(), "Time", "Network Recv (MB)",
                         juegoDatosRecv, PlotOrientation.VERTICAL,
                         true, true, false);
 
@@ -282,12 +280,12 @@ public class NetworkConsumption extends ApplicationFrame {
 
                 final XYLineAndShapeRenderer rendererRecv = new XYLineAndShapeRenderer();
                 //renderer.setSeriesShapesVisible(1, true);
-                rendererRecv.setBaseShapesVisible(true);
-                cross = ShapeUtilities.createDiagonalCross(3, 1);
-                renderer.setSeriesShape(0, cross);
-                renderer.setSeriesPaint(0, Color.MAGENTA);
+                rendererRecv.setBaseShapesVisible(false);
+                //cross = ShapeUtilities.createDiagonalCross(3, 1);
+                //renderer.setSeriesShape(0, cross);
+                //renderer.setSeriesPaint(0, Color.MAGENTA);
 
-                plot.setRenderer(renderer);
+                plot.setRenderer(rendererRecv);
 
                 domainAxis = (NumberAxis) plotR.getDomainAxis();
                 font3 = new Font("Dialog", Font.PLAIN, 12);

@@ -228,7 +228,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                         SortedSet<Integer> keysAg = new TreeSet<>(dataReplEsc.getNetworkAndMemoryStats().keySet());
                         
                         for (int x : keysAg) {
-                            System.out.println("writting stat" + x);
+                            //System.out.println("writting stat" + x);
                             escribirResourcesStats.println(x + "," + dataReplEsc.getNetworkAndMemoryStats().get(x));
                         }
                         escribirResourcesStats.close();
@@ -236,7 +236,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
-                    System.out.println("pasoooo!");
+                    //System.out.println("pasoooo!");
                     //Statistics regarding messages received by node.
                     StatisticsProviderReplicationNodeFailing sti = new StatisticsProviderReplicationNodeFailing(baseFilename);
 

@@ -43,11 +43,8 @@ public class Node extends Agent {
     private HashMap<String, Integer> respAgentsBkp; //Maybe delete     
     private HashMap<String, ConcurrentHashMap<Integer, Integer>> agentsInNeighbors;
     AtomicInteger c = new AtomicInteger(0); //maybe delete or rename
-
     private LinkedBlockingQueue<String[]> networkMessagebuffer;
     private HashMap<Integer, String> idCounter; //added by arles.rodriguez 12/12/2018
-    private int deltaMemoryConsumption = 0; // delta of memory consumption
-    private int lastMemoryConsumption = 0; // last Memory consumption register
     private HashMap<MyVertex, Integer> distancesToNode;
 
     public HashMap<MyVertex, Integer> getDistancesToNode() {
@@ -471,13 +468,9 @@ public class Node extends Agent {
      *
      * @return memoryconsumption by node in bytes
      */
-    public int getDeltaMemoryConsumption() {
+    public int getMemoryConsumption() {
         StringSerializer serializer = new StringSerializer();
         String totalData = serializer.serialize(this.networkdata);                        
-        deltaMemoryConsumption = Math.abs(totalData.length() - lastMemoryConsumption);                
-        lastMemoryConsumption += deltaMemoryConsumption;
-        
-        //System.out.println("total data size:" + totalData.length() + ", delta:" + deltaMemoryConsumption + "," + lastMemoryConsumption);
-        return deltaMemoryConsumption;
+        return totalData.length();
     }
 }
