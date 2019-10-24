@@ -99,7 +99,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
     private final JButton redraw;
     Graph<MyVertex, String> initialNetwork;
     HashMap<Integer, Double> similarity;
-    HashMap<Integer, String> networkAndMemoryStats;        
+    HashMap<Integer, String> networkAndMemoryStats;  
+    HashMap<Integer, HashMap> localStatsByRound;
     boolean alreadyPainted = false;
     final Semaphore available = new Semaphore(1);
 
@@ -143,6 +144,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
 //        frame2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         similarity = new HashMap<>();
         networkAndMemoryStats = new HashMap<>();
+        localStatsByRound = new HashMap<>();
     }
 
     /**
@@ -320,18 +322,15 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                         sim = gnm.calculateSimilarity(environment);
                         neighborMatchingSim.add(worldRound, sim);
                         similarity.put(worldRound, sim);
-
-                        
-                        
+                                                
                         String netAndMemStats;
-                        
-                        
+                        HashMap localNodeStatsByRound = environment.getLocalStats();
                         //totalMemory|totalMsgSent|sizeMsgSent|totalMsgReceived|sizeMsgRecv
-                        netAndMemStats = environment.getTotalMemory() + "," + environment.getTotalMsgSent() + "," +
+                        netAndMemStats = localNodeStatsByRound.get("totalMemory") + "," + environment.getTotalMsgSent() + "," +
                                 environment.getTotalSizeMsgSent() + "," + environment.getTotalMsgRecv() + "," + environment.getTotalSizeMsgRecv();
                         
                         networkAndMemoryStats.put(worldRound, netAndMemStats);
-                        
+                        localStatsByRound.put(worldRound, localNodeStatsByRound);
                         if (environment.getAge() >= (SimulationParameters.maxIter - 100) && !alreadyPainted) {
                             String baseFilename = SimulationParameters.reportsFilenamePrefix;
                             String dir = "cmpgraph";
@@ -445,5 +444,11 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
     public HashMap<Integer, String> getNetworkAndMemoryStats() {
         return networkAndMemoryStats;
     }
+
+    public HashMap<Integer, HashMap> getLocalStatsByRound() {
+        return localStatsByRound;
+    }
+    
+    
     
 }

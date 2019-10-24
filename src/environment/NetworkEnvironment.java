@@ -22,6 +22,7 @@ import staticagents.Node;
 import staticagents.NodeFailingProgram;
 import unalcol.agents.simulate.util.SimpleLanguage;
 import util.AtomicDouble;
+import util.StatisticsNormalDist;
 
 public abstract class NetworkEnvironment extends Environment {
 
@@ -235,20 +236,26 @@ public abstract class NetworkEnvironment extends Environment {
      */
     public String getMinimumId(List<String> neigdiff, String nodeMissing, Node currentNode) {
         List<String> nodesAlive = new ArrayList();
-        increaseTotalSizeMsgSent(neigdiff.size() * 56.0); //56 bytes is the size of a ping         
 
-        double cont = 0;
+        double pingSize = 56.0;
+        //increase messages sent
+        currentNode.increaseMessagesSentByRound(neigdiff.size() * pingSize, neigdiff.size());
+        increaseTotalSizeMsgSent(neigdiff.size() * pingSize); //56 bytes is the size of a ping         
+
+        double pingRecv = 0;
+        int numberRecv = 0;
         for (String s : neigdiff) {
             Node n = getNode(s);
             if (n != null && n.getNetworkdata().containsKey(nodeMissing)) {
                 nodesAlive.add(s);
-                cont += 56.0;
-                //increaseTotalSizeMsgRecv(56.0);
+                pingRecv += pingSize;
+                numberRecv++;
             }
         }
 
-        increaseTotalSizeMsgRecv(cont);
-        //System.out.println("inc sent" + (neigdiff.size() * 56.0)  +  "recv count" + cont);
+        //increase messages received
+        currentNode.increaseMessagesRecvByRound(pingRecv, numberRecv);
+        increaseTotalSizeMsgRecv(pingRecv);
 
         if (!nodesAlive.isEmpty() && nodesAlive.get(0).contains("p")) {
             String min = Collections.min(nodesAlive, (o1, o2)
@@ -313,8 +320,10 @@ public abstract class NetworkEnvironment extends Environment {
                 String aprox = serializer.serialize(creator.getNetworkdata()); //not sure about this!
 
                 increaseTotalSizeMsgSent(aprox.length());
+                creator.increaseMessagesSentByRound(aprox.length(), 1);
                 increaseTotalSizeMsgRecv(aprox.length());
                 nod.setNetworkdata(new HashMap(creator.getNetworkdata()));
+                nod.increaseMessagesRecvByRound(aprox.length(), 1);
 
                 synchronized (nodeVersion) {
                     nodeVersion.put(nodeId, nodeVersion.get(nodeId) + 1);
@@ -327,7 +336,7 @@ public abstract class NetworkEnvironment extends Environment {
                 //Send message to node neigbours.
                 //can be no nd but all agentData                
                 if (neigdiff != null && !neigdiff.isEmpty()) {
-                    neigdiff.forEach((neig) -> {
+                    for (String neig : neigdiff) {
                         if (!neig.equals(creator.getName())) {
                             //message msgnodediff: connect|nodeid|nodetoconnect
                             //System.out.println(n.getVertex().getName() + "is sending diff " + dif + "to" + neig);
@@ -336,11 +345,13 @@ public abstract class NetworkEnvironment extends Environment {
                             msgconnect[1] = creator.getName();
                             msgconnect[2] = nodeId;
                             double msgConnectSize = getMessageSize(msgconnect);
+                            //increase number of messages sent
                             increaseTotalSizeMsgSent(msgConnectSize);
+                            creator.increaseMessagesSentByRound(msgConnectSize, 1);
                             NetworkNodeMessageBuffer.getInstance().putMessage(neig, msgconnect);
                         }
                         //n.getPending().get(dif.toString()).add(neig);
-                    });
+                    };
                 }
 
                 this.agents.add(nod);
@@ -609,18 +620,68 @@ public abstract class NetworkEnvironment extends Environment {
         }
     }
 
-    public double getTotalMemory() {
-        Double totalMemory = 0.0;
+    public HashMap getLocalStats() {
+        HashMap<String, Double> stats = new HashMap();
+        Double totalMem = 0.0;
+        ArrayList<Double> numberMsgSentRound = new ArrayList<>();
+        ArrayList<Double> numberMsgRecvRound = new ArrayList<>();
+        ArrayList<Double> sizeMsgSentRound = new ArrayList<>();
+        ArrayList<Double> sizeMsgRecvRound = new ArrayList<>();
+
         synchronized (nodes) {
             for (Node n : nodes.values()) {
                 if (!n.getVertex().getStatus().equals("failed")) {
-                    totalMemory += n.getMemoryConsumption();
+                    totalMem += n.getMemoryConsumption();
+                    numberMsgRecvRound.add((double) n.getNumberMessagesRecvByRound());
+                    numberMsgSentRound.add((double) n.getNumberMessagesSentByRound());
+                    sizeMsgRecvRound.add((double)n.getSizeMessagesRecv());
+                    sizeMsgSentRound.add((double)n.getSizeMessagesSent());
                 }
             }
         }
-        return totalMemory/(1024*1024);
+        StatisticsNormalDist stNRecv = new StatisticsNormalDist(numberMsgSentRound, numberMsgSentRound.size());
+        StatisticsNormalDist stNSent = new StatisticsNormalDist(numberMsgRecvRound, numberMsgRecvRound.size());
+        StatisticsNormalDist stSSent = new StatisticsNormalDist(sizeMsgSentRound, sizeMsgSentRound.size());
+        StatisticsNormalDist stSRecv = new StatisticsNormalDist(sizeMsgRecvRound, sizeMsgRecvRound.size());
+        
+        stats.put("totalMemory", totalMem);
+        
+        stats.put("numberMedianNMsgSentRound", stNSent.getMedian());
+        stats.put("numberMaxNMsgSentRound", stNSent.getMax());
+        stats.put("numberMinNMsgSentRound", stNSent.getMin());
+        stats.put("numberStdevNMsgSentRound", stNSent.getStdDev());
+        
+        stats.put("numberMedianSMsgSentRound", stSSent.getMedian());
+        stats.put("numberMaxSMsgSentRound", stSSent.getMax());
+        stats.put("numberMinSMsgSentRound", stSSent.getMin());
+        stats.put("numberStdevSMsgSentRound", stSSent.getStdDev());       
+        
+        stats.put("numberMedianNMsgRecvRound", stNRecv.getMedian());
+        stats.put("numberMaxNMsgRecvRound", stNRecv.getMax());
+        stats.put("numberMinNMsgRecvRound", stNRecv.getMin());
+        stats.put("numberStdevNMsgRecvRound", stNRecv.getStdDev());
+
+        stats.put("numberMedianSMsgRecvRound", stSRecv.getMedian());
+        stats.put("numberMaxSMsgRecvRound", stSRecv.getMax());
+        stats.put("numberMinSMsgRecvRound", stSRecv.getMin());
+        stats.put("numberStdevSMsgRecvRound", stSRecv.getStdDev());
+        
+        return stats;
     }
 
+    public double getTotalMemory() {
+        Double totalMem = 0.0;
+        synchronized (nodes) {
+            for (Node n : nodes.values()) {
+                if (!n.getVertex().getStatus().equals("failed")) {
+                    totalMem += n.getMemoryConsumption();
+                }
+            }
+        }        
+        return totalMem;
+    }
+    
+    
     /**
      * Given a message return an approximation of its size in bytes
      *
@@ -634,5 +695,4 @@ public abstract class NetworkEnvironment extends Environment {
         }
         return size;
     }
-
 }

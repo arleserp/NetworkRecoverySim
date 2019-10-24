@@ -54,9 +54,13 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
         }
 //        long actStartTime = System.currentTimeMillis();
         if (agent instanceof Node) {
-            
+
             Node n = (Node) agent;
             n.incRounds();
+
+            
+            //init messages sent and received by node
+            n.initCounterMessagesByRound();
             
             //System.out.println(n.getName() + ":" + n.getRounds());
             //This part is primitive send to neigbors 
@@ -70,14 +74,15 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                     String[] inbox;
                     while ((inbox = NetworkNodeMessageBuffer.getInstance().getMessage(n.getVertex().getName())) != null) {
                         double inboxSize = getMessageSize(inbox);
-                        
+                        //increase number of messages received by round
+                        n.increaseMessagesRecvByRound(inboxSize, 1);
                         increaseTotalSizeMsgRecv(inboxSize); //increase total of messages received
-                        
+
                         if (SimulationParameters.activateReplication.equals("replalgon")) {
                             //message msgnodediff: connect|nodeid|nodetoconnect                                                            
                             if (inbox[0].equals("connect")) {
                                 //increase amount of messages received                                
-                                String nodetoConnect = inbox[2];                                
+                                String nodetoConnect = inbox[2];
                                 connect(n.getVertex(), nodetoConnect);
 
                                 //When n connects to nodetoConnect n also sends its network topology
@@ -87,13 +92,14 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                                     msgdatanode[0] = "networkdatanode";
                                     msgdatanode[1] = String.valueOf(n.getVertex().getName());
                                     StringSerializer s = new StringSerializer();
-                                    msgdatanode[2] = s.serialize(n.getNetworkdata());                                    
-                                    
-                                    //increase message size
+                                    msgdatanode[2] = s.serialize(n.getNetworkdata());
+
+                                    //increase message size                                    
                                     double msgdatanodeSize = getMessageSize(msgdatanode);
+                                    n.increaseMessagesSentByRound(msgdatanodeSize, 1);
                                     increaseTotalSizeMsgSent(msgdatanodeSize);
-                                    
-                                    NetworkNodeMessageBuffer.getInstance().putMessage(nodetoConnect, msgdatanode);                                                                        
+
+                                    NetworkNodeMessageBuffer.getInstance().putMessage(nodetoConnect, msgdatanode);
                                     System.out.println(n.getVertex().getName() + "send networkdatanode to " + nodetoConnect);
                                 }
                             }

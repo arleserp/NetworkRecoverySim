@@ -164,7 +164,8 @@ public class MemoryConsumption extends ApplicationFrame {
                             System.out.println("line:" + line);
                             data = line.split(",");
                             int round = Integer.valueOf(data[0]);
-                            Double memory = Double.valueOf(data[1])/(1024.0*1024.0);
+                                                        
+                            Double memory =(double)Math.round(Double.valueOf(data[1]) * 100d) / 100d;
                             // Dictionary<round, memory>
                             if (!MemoryVsSimulation.containsKey(round)) {
                                 MemoryVsSimulation.put(round, new ArrayList<Double>());
@@ -193,7 +194,7 @@ public class MemoryConsumption extends ApplicationFrame {
                 }
 
                 JFreeChart chart = ChartFactory.createXYLineChart(
-                        "Time vs Memory Consumption" + file.getName(), "Time", "Memory (MB)",
+                        "Time vs Memory Consumption" + file.getName(), "Time", "Memory (bytes)",
                         juegoDatos, PlotOrientation.VERTICAL,
                         true, true, false);
 

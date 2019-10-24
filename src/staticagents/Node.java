@@ -46,6 +46,10 @@ public class Node extends Agent {
     private LinkedBlockingQueue<String[]> networkMessagebuffer;
     private HashMap<Integer, String> idCounter; //added by arles.rodriguez 12/12/2018
     private HashMap<MyVertex, Integer> distancesToNode;
+    private int numberMessagesRecvByRound;
+    private int numberMessagesSentByRound;
+    private double sizeMessagesSent;
+    private double sizeMessagesRecv;
 
     public HashMap<MyVertex, Integer> getDistancesToNode() {
         return distancesToNode;
@@ -429,8 +433,10 @@ public class Node extends Agent {
         ArrayList<String> topologyData = new ArrayList(env.getTopologyNames(getVertex())); // Get topology of the network
 
         env.increaseTotalSizeMsgSent(getNetworkdata().get(getName()).size() * 56);  //a ping is 56 bytes sent
+        increaseMessagesSentByRound(getNetworkdata().get(getName()).size() * 56, getNetworkdata().get(getName()).size());
         env.increaseTotalSizeMsgRecv(topologyData.size() * 56); //response of nodes
-
+        increaseMessagesRecvByRound(topologyData.size() * 56, topologyData.size());
+        
         if (getNetworkdata().containsKey(getName())) {
             List<String> nd = new ArrayList((Collection) getNetworkdata().get(getName()));
 
@@ -465,12 +471,77 @@ public class Node extends Agent {
     }
 
     /**
-     *
      * @return memoryconsumption by node in bytes
      */
     public int getMemoryConsumption() {
         StringSerializer serializer = new StringSerializer();
-        String totalData = serializer.serialize(this.networkdata);                        
+        String totalData = serializer.serialize(this.networkdata);
         return totalData.length();
     }
+
+    /**
+     * Increase number of messages received by round
+     * @param sizeMsgRecv size of messages received
+     * @param numberMessages number of messages
+     */
+    public void increaseMessagesRecvByRound(double sizeMsgRecv, int numberMessages) {
+        setSizeMessagesRecv(sizeMsgRecv + getNumberMessagesRecvByRound());
+        setNumberMessagesRecvByRound(getNumberMessagesRecvByRound() + numberMessages);
+    }
+
+    
+    /**
+     * Increase number of messages sent by round
+     * @param sizeMsgSent size of messages sent
+     * @param numberMessages number of messages sent
+     */
+    public void increaseMessagesSentByRound(double sizeMsgSent, int numberMessages) {
+        setSizeMessagesSent(sizeMsgSent + getNumberMessagesSentByRound());
+        setNumberMessagesRecvByRound(getNumberMessagesSentByRound() + numberMessages);
+    }
+
+    
+    /**
+     * Node stats in terms of network
+     * @return
+     */
+    public int getNumberMessagesRecvByRound() {
+        return numberMessagesRecvByRound;
+    }
+
+    public void setNumberMessagesRecvByRound(int numberMessagesRecvByRound) {
+        this.numberMessagesRecvByRound = numberMessagesRecvByRound;
+    }
+
+    public int getNumberMessagesSentByRound() {
+        return numberMessagesSentByRound;
+    }
+
+    public void setNumberMessagesSentByRound(int numberMessagesSentByRound) {
+        this.numberMessagesSentByRound = numberMessagesSentByRound;
+    }
+
+    public double getSizeMessagesSent() {
+        return sizeMessagesSent;
+    }
+
+    public void setSizeMessagesSent(double sizeMessagesSent) {
+        this.sizeMessagesSent = sizeMessagesSent;
+    }
+
+    public double getSizeMessagesRecv() {
+        return sizeMessagesRecv;
+    }
+
+    public void setSizeMessagesRecv(double sizeMessagesRecv) {
+        this.sizeMessagesRecv = sizeMessagesRecv;
+    }
+    
+    public void initCounterMessagesByRound(){
+        sizeMessagesRecv = 0;
+        sizeMessagesSent = 0;
+        numberMessagesRecvByRound = 0;
+        numberMessagesSentByRound = 0;    
+    }
+
 }
