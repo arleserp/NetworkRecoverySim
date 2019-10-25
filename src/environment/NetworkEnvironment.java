@@ -628,14 +628,24 @@ public abstract class NetworkEnvironment extends Environment {
         ArrayList<Double> sizeMsgSentRound = new ArrayList<>();
         ArrayList<Double> sizeMsgRecvRound = new ArrayList<>();
 
+        Double totalSSMsg = 0.0;
+        Double totalNSMsg = 0.0;
+
+        Double totalSRMsg = 0.0;
+        Double totalNRMsg = 0.0;
+
         synchronized (nodes) {
             for (Node n : nodes.values()) {
                 if (!n.getVertex().getStatus().equals("failed")) {
                     totalMem += n.getMemoryConsumption();
+                    totalNRMsg += n.getNumberMessagesRecvByRound();
+                    totalSRMsg += n.getSizeMessagesRecv();
+                    totalSSMsg += n.getSizeMessagesSent();
+                    totalNSMsg += n.getNumberMessagesSentByRound();
                     numberMsgRecvRound.add((double) n.getNumberMessagesRecvByRound());
                     numberMsgSentRound.add((double) n.getNumberMessagesSentByRound());
-                    sizeMsgRecvRound.add((double)n.getSizeMessagesRecv());
-                    sizeMsgSentRound.add((double)n.getSizeMessagesSent());
+                    sizeMsgRecvRound.add((double) n.getSizeMessagesRecv());
+                    sizeMsgSentRound.add((double) n.getSizeMessagesSent());
                 }
             }
         }
@@ -643,29 +653,33 @@ public abstract class NetworkEnvironment extends Environment {
         StatisticsNormalDist stNSent = new StatisticsNormalDist(numberMsgRecvRound, numberMsgRecvRound.size());
         StatisticsNormalDist stSSent = new StatisticsNormalDist(sizeMsgSentRound, sizeMsgSentRound.size());
         StatisticsNormalDist stSRecv = new StatisticsNormalDist(sizeMsgRecvRound, sizeMsgRecvRound.size());
-        
+
         stats.put("totalMemory", totalMem);
-        
-        stats.put("numberMedianNMsgSentRound", stNSent.getMedian());
+
+        stats.put("totalNMsgSentRound", totalNSMsg);
+        stats.put("numberAverageNMsgSentRound", stNSent.getMean());
         stats.put("numberMaxNMsgSentRound", stNSent.getMax());
         stats.put("numberMinNMsgSentRound", stNSent.getMin());
         stats.put("numberStdevNMsgSentRound", stNSent.getStdDev());
-        
-        stats.put("numberMedianSMsgSentRound", stSSent.getMedian());
+
+        stats.put("totalSMsgSentRound", totalSSMsg);
+        stats.put("numberAverageSMsgSentRound", stSSent.getMean());
         stats.put("numberMaxSMsgSentRound", stSSent.getMax());
         stats.put("numberMinSMsgSentRound", stSSent.getMin());
-        stats.put("numberStdevSMsgSentRound", stSSent.getStdDev());       
-        
-        stats.put("numberMedianNMsgRecvRound", stNRecv.getMedian());
+        stats.put("numberStdevSMsgSentRound", stSSent.getStdDev());
+
+        stats.put("totalNMsgRecvRound", totalNRMsg);
+        stats.put("numberAverageNMsgRecvRound", stNRecv.getMean());
         stats.put("numberMaxNMsgRecvRound", stNRecv.getMax());
         stats.put("numberMinNMsgRecvRound", stNRecv.getMin());
         stats.put("numberStdevNMsgRecvRound", stNRecv.getStdDev());
 
-        stats.put("numberMedianSMsgRecvRound", stSRecv.getMedian());
+        stats.put("totalSMsgRecvRound", totalSRMsg);
+        stats.put("numberAverageSMsgRecvRound", stSRecv.getMean());
         stats.put("numberMaxSMsgRecvRound", stSRecv.getMax());
         stats.put("numberMinSMsgRecvRound", stSRecv.getMin());
         stats.put("numberStdevSMsgRecvRound", stSRecv.getStdDev());
-        
+
         return stats;
     }
 
@@ -677,11 +691,10 @@ public abstract class NetworkEnvironment extends Environment {
                     totalMem += n.getMemoryConsumption();
                 }
             }
-        }        
+        }
         return totalMem;
     }
-    
-    
+
     /**
      * Given a message return an approximation of its size in bytes
      *

@@ -497,7 +497,7 @@ public class Node extends Agent {
      */
     public void increaseMessagesSentByRound(double sizeMsgSent, int numberMessages) {
         setSizeMessagesSent(sizeMsgSent + getNumberMessagesSentByRound());
-        setNumberMessagesRecvByRound(getNumberMessagesSentByRound() + numberMessages);
+        setNumberMessagesSentByRound(getNumberMessagesSentByRound() + numberMessages);
     }
 
     
