@@ -54,11 +54,9 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
         }
 //        long actStartTime = System.currentTimeMillis();
         if (agent instanceof Node) {
-
             Node n = (Node) agent;
             n.incRounds();
 
-            
             //init messages sent and received by node
             n.initCounterMessagesByRound();
             
@@ -128,7 +126,7 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                     n.evaluateNodeCreation(this);
                 }
             }
-
+            //System.out.println("recv size:" + n.getSizeMessagesRecv() + ", sent size: " + n.getSizeMessagesSent());
 //            long actStopTime = System.currentTimeMillis();
 //            long timeTaken = actStopTime-actStartTime;            
 //            System.out.println("env age: " + this.getAge() + " node:" + n.getName() + ", round: " + n.getRounds() + ", time taken act " + timeTaken);

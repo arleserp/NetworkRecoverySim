@@ -239,9 +239,11 @@ public abstract class NetworkEnvironment extends Environment {
 
         double pingSize = 56.0;
         //increase messages sent
-        currentNode.increaseMessagesSentByRound(neigdiff.size() * pingSize, neigdiff.size());
+        double pingSent = neigdiff.size() * pingSize;
+        currentNode.increaseMessagesSentByRound(pingSent, neigdiff.size());
         increaseTotalSizeMsgSent(neigdiff.size() * pingSize); //56 bytes is the size of a ping         
 
+        
         double pingRecv = 0;
         int numberRecv = 0;
         for (String s : neigdiff) {
@@ -320,10 +322,10 @@ public abstract class NetworkEnvironment extends Environment {
                 String aprox = serializer.serialize(creator.getNetworkdata()); //not sure about this!
 
                 increaseTotalSizeMsgSent(aprox.length());
-                creator.increaseMessagesSentByRound(aprox.length(), 1);
+                //creator.increaseMessagesSentByRound(aprox.length(), 1);
                 increaseTotalSizeMsgRecv(aprox.length());
                 nod.setNetworkdata(new HashMap(creator.getNetworkdata()));
-                nod.increaseMessagesRecvByRound(aprox.length(), 1);
+                //nod.increaseMessagesRecvByRound(aprox.length(), 1);
 
                 synchronized (nodeVersion) {
                     nodeVersion.put(nodeId, nodeVersion.get(nodeId) + 1);
@@ -639,6 +641,7 @@ public abstract class NetworkEnvironment extends Environment {
                 if (!n.getVertex().getStatus().equals("failed")) {
                     totalMem += n.getMemoryConsumption();
                     totalNRMsg += n.getNumberMessagesRecvByRound();
+                    //System.out.println("node" + n.getName() + "LocalsizeSent:" + n.getSizeMessagesSent() + "," + "LocalsizeRecv:" + n.getSizeMessagesRecv());
                     totalSRMsg += n.getSizeMessagesRecv();
                     totalSSMsg += n.getSizeMessagesSent();
                     totalNSMsg += n.getNumberMessagesSentByRound();
@@ -649,6 +652,8 @@ public abstract class NetworkEnvironment extends Environment {
                 }
             }
         }
+        
+        //System.out.println("sizeSent:" + totalSSMsg + "," + "sizeRecv:" + totalSRMsg);
         StatisticsNormalDist stNRecv = new StatisticsNormalDist(numberMsgSentRound, numberMsgSentRound.size());
         StatisticsNormalDist stNSent = new StatisticsNormalDist(numberMsgRecvRound, numberMsgRecvRound.size());
         StatisticsNormalDist stSSent = new StatisticsNormalDist(sizeMsgSentRound, sizeMsgSentRound.size());

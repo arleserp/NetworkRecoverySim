@@ -431,12 +431,17 @@ public class Node extends Agent {
      */
     public void evaluateNodeCreation(NetworkEnvironment env) {
         ArrayList<String> topologyData = new ArrayList(env.getTopologyNames(getVertex())); // Get topology of the network
+        int sizeNetworkData = getNetworkdata().get(getName()).size();
+        double totalSizeMsgSent = sizeNetworkData * 56;
 
-        env.increaseTotalSizeMsgSent(getNetworkdata().get(getName()).size() * 56);  //a ping is 56 bytes sent
-        increaseMessagesSentByRound(getNetworkdata().get(getName()).size() * 56, getNetworkdata().get(getName()).size());
-        env.increaseTotalSizeMsgRecv(topologyData.size() * 56); //response of nodes
-        increaseMessagesRecvByRound(topologyData.size() * 56, topologyData.size());
-        
+        env.increaseTotalSizeMsgSent(totalSizeMsgSent);  //a ping is 56 bytes sent
+        increaseMessagesSentByRound(totalSizeMsgSent, sizeNetworkData);
+
+        int topologyDataSize =topologyData.size();
+        double totalSizeMsgRecv = topologyDataSize * 56.0;
+        env.increaseTotalSizeMsgRecv(totalSizeMsgRecv); //response of nodes
+        increaseMessagesRecvByRound(totalSizeMsgRecv, topologyDataSize);
+
         if (getNetworkdata().containsKey(getName())) {
             List<String> nd = new ArrayList((Collection) getNetworkdata().get(getName()));
 
@@ -481,28 +486,29 @@ public class Node extends Agent {
 
     /**
      * Increase number of messages received by round
+     *
      * @param sizeMsgRecv size of messages received
      * @param numberMessages number of messages
      */
     public void increaseMessagesRecvByRound(double sizeMsgRecv, int numberMessages) {
-        setSizeMessagesRecv(sizeMsgRecv + getNumberMessagesRecvByRound());
+        setSizeMessagesRecv(sizeMsgRecv + getSizeMessagesRecv());
         setNumberMessagesRecvByRound(getNumberMessagesRecvByRound() + numberMessages);
     }
 
-    
     /**
      * Increase number of messages sent by round
+     *
      * @param sizeMsgSent size of messages sent
      * @param numberMessages number of messages sent
      */
     public void increaseMessagesSentByRound(double sizeMsgSent, int numberMessages) {
-        setSizeMessagesSent(sizeMsgSent + getNumberMessagesSentByRound());
+        setSizeMessagesSent(sizeMsgSent + getSizeMessagesSent());
         setNumberMessagesSentByRound(getNumberMessagesSentByRound() + numberMessages);
     }
 
-    
     /**
      * Node stats in terms of network
+     *
      * @return
      */
     public int getNumberMessagesRecvByRound() {
@@ -536,12 +542,12 @@ public class Node extends Agent {
     public void setSizeMessagesRecv(double sizeMessagesRecv) {
         this.sizeMessagesRecv = sizeMessagesRecv;
     }
-    
-    public void initCounterMessagesByRound(){
+
+    public void initCounterMessagesByRound() {
         sizeMessagesRecv = 0;
         sizeMessagesSent = 0;
         numberMessagesRecvByRound = 0;
-        numberMessagesSentByRound = 0;    
+        numberMessagesSentByRound = 0;
     }
 
 }
