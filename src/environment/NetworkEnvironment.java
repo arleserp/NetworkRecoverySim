@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import mobileagents.MobileAgent;
 import networkrecoverysim.SimulationParameters;
 import serialization.StringSerializer;
 import staticagents.NetworkNodeMessageBuffer;
@@ -27,7 +28,9 @@ import util.StatisticsNormalDist;
 public abstract class NetworkEnvironment extends Environment {
 
     protected static SimpleLanguage nodeLanguage;
-    protected final Map<String, Node> nodes; // Map of name and vs nodes
+    protected static SimpleLanguage mobileAgentLanguage;
+    protected final Map<String, Node> nodes; // Map of name of node = Node
+    protected final Map<Integer, MobileAgent> mobileAgents; // Map of name of ids of alive mobile agents = Mobile Agent
     protected final int[][] adyacenceMatrix; //network as a adyacence matrix   
     protected final int[][] initialAdyacenceMatrix; //network as a adyacence matrix   
     protected final Semaphore available = new Semaphore(1);
@@ -58,7 +61,7 @@ public abstract class NetworkEnvironment extends Environment {
      * @param _language
      * @param gr
      */
-    public NetworkEnvironment(Vector<Agent> _agents, SimpleLanguage _nlanguage, Graph gr) {
+    public NetworkEnvironment(Vector<Agent> _agents, SimpleLanguage _nlanguage, SimpleLanguage _alanguage, Graph gr) {
         super(_agents);
         TopologySingleton.getInstance().init(gr);
 
@@ -101,8 +104,10 @@ public abstract class NetworkEnvironment extends Environment {
             }
         }
         nodes = Collections.synchronizedMap(new HashMap<>());
+        mobileAgents = Collections.synchronizedMap(new HashMap<>());
         nodeVersion = Collections.synchronizedMap(new HashMap<>());
         nodeLanguage = _nlanguage;
+        mobileAgentLanguage = _alanguage;
         nodeAverageLife = new ArrayList<>();
         totalMsgRecv = new AtomicDouble();
         totalSizeMsgRecv = new AtomicDouble();
@@ -243,7 +248,6 @@ public abstract class NetworkEnvironment extends Environment {
         currentNode.increaseMessagesSentByRound(pingSent, neigdiff.size());
         increaseTotalSizeMsgSent(neigdiff.size() * pingSize); //56 bytes is the size of a ping         
 
-        
         double pingRecv = 0;
         int numberRecv = 0;
         for (String s : neigdiff) {
@@ -322,10 +326,10 @@ public abstract class NetworkEnvironment extends Environment {
                 String aprox = serializer.serialize(creator.getNetworkdata()); //not sure about this!
 
                 increaseTotalSizeMsgSent(aprox.length());
-                //creator.increaseMessagesSentByRound(aprox.length(), 1);
+                creator.increaseMessagesSentByRound(aprox.length(), 1);
                 increaseTotalSizeMsgRecv(aprox.length());
                 nod.setNetworkdata(new HashMap(creator.getNetworkdata()));
-                //nod.increaseMessagesRecvByRound(aprox.length(), 1);
+                nod.increaseMessagesRecvByRound(aprox.length(), 1);
 
                 synchronized (nodeVersion) {
                     nodeVersion.put(nodeId, nodeVersion.get(nodeId) + 1);
@@ -334,7 +338,6 @@ public abstract class NetworkEnvironment extends Environment {
                 synchronized (nodes) {
                     nodes.put(nod.getName(), nod);
                 }
-
                 //Send message to node neigbours.
                 //can be no nd but all agentData                
                 if (neigdiff != null && !neigdiff.isEmpty()) {
@@ -365,7 +368,6 @@ public abstract class NetworkEnvironment extends Environment {
             setChanged();
             notifyObservers();
         }
-
     }
 
     /**
@@ -430,6 +432,22 @@ public abstract class NetworkEnvironment extends Environment {
     @Override
     public Percept sense(Agent agent) {
         Percept p = new Percept();
+
+        if (agent instanceof MobileAgent) {
+            MobileAgent a = (MobileAgent) agent;
+            try {
+                //Validate that agent is not death 
+                if (a.status != Action.DIE && !a.getLocation().getStatus().equals("failed")) {
+                    p.setAttribute("neighbors", getTopology().getNeighbors(a.getLocation()));
+                } else {
+                    p.setAttribute("nodedeath", true);
+                }
+            } catch (NullPointerException ex) {
+                System.out.println("Killing agent sensing null node: " + a.getId() + " ex: " + ex);
+                killMobileAgent(a);
+            }
+        }
+
         return p;
     }
 
@@ -502,10 +520,28 @@ public abstract class NetworkEnvironment extends Environment {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    /**
+     * Add nodes to list of nodes alive
+     *
+     * @param lnodes
+     */
     public void addNodes(List<Node> lnodes) {
         synchronized (nodes) {
             for (Node n : lnodes) {
                 nodes.put(n.getName(), n);
+            }
+        }
+    }
+
+    /**
+     * Add mobileAgents to list of current running agents
+     *
+     * @param lMobileAgents
+     */
+    public void addMobileAgents(List<MobileAgent> lMobileAgents) {
+        synchronized (mobileAgents) {
+            for (MobileAgent ma : lMobileAgents) {
+                mobileAgents.put(ma.getId(), ma);
             }
         }
     }
@@ -652,7 +688,7 @@ public abstract class NetworkEnvironment extends Environment {
                 }
             }
         }
-        
+
         //System.out.println("sizeSent:" + totalSSMsg + "," + "sizeRecv:" + totalSRMsg);
         StatisticsNormalDist stNRecv = new StatisticsNormalDist(numberMsgSentRound, numberMsgSentRound.size());
         StatisticsNormalDist stNSent = new StatisticsNormalDist(numberMsgRecvRound, numberMsgRecvRound.size());
@@ -712,5 +748,26 @@ public abstract class NetworkEnvironment extends Environment {
             size += m.length();
         }
         return size;
+    }
+
+    /**
+     * *
+     * Methods with mobile agents from here
+     */
+    
+    
+    /**
+     * Kill a mobile agent
+     * @param a mobile agent to kill
+     */
+    public void killMobileAgent(MobileAgent a) {
+        System.out.println("killing mobile agent " + a.getId());
+        synchronized (mobileAgents) {
+            mobileAgents.remove(a.getId());
+        }
+        a.die();
+        // a.setLocation(null);
+        setChanged();
+        notifyObservers();
     }
 }

@@ -13,21 +13,20 @@ import java.util.concurrent.LinkedBlockingQueue;
  *
  * @author Arles Rodriguez
  */
-public class NetworkMessageBuffer {
+public class NetworkMessageMobileAgentBuffer {
 
     Hashtable<Integer, LinkedBlockingQueue> mbuffer;
     static final int MAXQUEUE = 5; //Max input buffer size by process
 
     private static class Holder {
-
-        static final NetworkMessageBuffer INSTANCE = new NetworkMessageBuffer();
+        static final NetworkMessageMobileAgentBuffer INSTANCE = new NetworkMessageMobileAgentBuffer();
     }
 
-    private NetworkMessageBuffer() {
+    private NetworkMessageMobileAgentBuffer() {
         mbuffer = new Hashtable<>();
     }
 
-    public static NetworkMessageBuffer getInstance() {
+    public static NetworkMessageMobileAgentBuffer getInstance() {
         return Holder.INSTANCE;
     }
 
@@ -47,8 +46,7 @@ public class NetworkMessageBuffer {
                 return (String[]) (mbuffer.get(pid).poll());
             }
         } catch (NullPointerException ex) {
-            System.out.println("Error reading mbuffer for agent:" + pid + "buffer: " + mbuffer);
-            //System.exit(1);
+            System.out.println("Error reading mbuffer for mobile agent:" + pid + "buffer: " + mbuffer);
         }
         return null;
     }

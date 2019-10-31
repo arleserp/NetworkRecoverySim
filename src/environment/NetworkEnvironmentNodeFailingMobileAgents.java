@@ -1,5 +1,6 @@
 package environment;
 
+import agents.ActionParameters;
 import unalcol.agents.simulate.util.*;
 import unalcol.agents.*;
 
@@ -15,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import mobileagents.MobileAgent;
 import networkrecoverysim.SimulationParameters;
 import serialization.StringSerializer;
 import staticagents.NetworkNodeMessageBuffer;
@@ -28,13 +30,13 @@ import util.HashMapOperations;
  *
  * @author arlese.rodriguezp
  */
-public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
+public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironment {
 
     HashMap<String, ArrayList> networkInfo;
     boolean loaded;
 
-    public NetworkEnvironmentNodeFailingAllInfo(Vector<Agent> _agents, SimpleLanguage _nlanguage, Graph gr) {
-        super(_agents, _nlanguage, null, gr);
+    public NetworkEnvironmentNodeFailingMobileAgents(Vector<Agent> _agents, SimpleLanguage _nlanguage, SimpleLanguage _alanguage, Graph gr) {
+        super(_agents, _nlanguage, _alanguage, gr);
         networkInfo = new HashMap<>();
         loaded = false;
     }
@@ -44,16 +46,66 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
         try {
             available.acquire();
         } catch (InterruptedException ex) {
-            Logger.getLogger(NetworkEnvironmentNodeFailingAllInfo.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(NetworkEnvironmentNodeFailingMobileAgents.class.getName()).log(Level.SEVERE, null, ex);
         }
-//        long actStartTime = System.currentTimeMillis();
+        System.out.println("agent:" + agent);
+        
+        if (agent instanceof MobileAgent) {
+            MobileAgent a = (MobileAgent) agent;
+            Node c = getNode(a.getLocation().getName());
+
+            if (SimulationParameters.activateReplication.equals("replalgon")) {
+                //Send data to current node
+                String[] msgdatanode = new String[3];
+                msgdatanode[0] = "networkdatanode";
+                msgdatanode[1] = String.valueOf(c.getVertex().getName());
+                StringSerializer s = new StringSerializer();
+                msgdatanode[2] = s.serialize(a.getLocalNetwork());
+                NetworkNodeMessageBuffer.getInstance().putMessage(c.getName(), msgdatanode);
+                System.out.println("Mobile Agent" + a.getId() + "send networkdatanode to " + c.getName());
+
+                //Obtain data from node
+                HashMap<String, List<String>> nodeNet = new HashMap<>();
+                nodeNet.put(a.getLocation().getName(), getTopologyNames(a.getLocation()));
+                a.getLocalNetwork().add(nodeNet);
+                System.out.println("Here is running" + a.toString());
+            }
+
+            //Action definition
+            ActionParameters ac = (ActionParameters) action;
+            String act = action.getCode();
+            switch (mobileAgentLanguage.getActionIndex(act)) {
+                case 0: // move
+
+                    //get new location
+                    MyVertex v = (MyVertex) ac.getAttribute("location");
+                    a.setLocation(v);
+                    a.getLocation().setStatus("visited"); //to review
+                    a.setPheromone((float) (a.getPheromone() + 0.01f * (0.5f - a.getPheromone())));
+                    a.getLocation().setPh(a.getLocation().getPh() + 0.01f * (a.getPheromone() - a.getLocation().getPh()));
+                    a.setRound(a.getRound() + 1);
+                    //visitedNodes.add(currentNode);
+                    break;
+                case 1: //die
+                    System.out.println("action: kill ");
+                    killMobileAgent(a);
+                    return false;
+                default:
+                    String msg = "[Unknown action " + act
+                            + ". Action not executed]";
+                    System.out.println(msg);
+                    break;
+            }
+        }
+
+//      long actStartTime = System.currentTimeMillis();
         if (agent instanceof Node) {
             Node n = (Node) agent;
             n.incRounds();
 
             //init messages sent and received by node
             n.initCounterMessagesByRound();
-            
+
             //System.out.println(n.getName() + ":" + n.getRounds());
             //This part is primitive send to neigbors 
             String act = action.getCode();
@@ -79,21 +131,20 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
 
                                 //When n connects to nodetoConnect n also sends its network topology
                                 // msg: networkdatainnode: networkdatanode|source|networkdata
-                                if (SimulationParameters.simMode.equals("nhopsinfo")) {
-                                    String[] msgdatanode = new String[3];
-                                    msgdatanode[0] = "networkdatanode";
-                                    msgdatanode[1] = String.valueOf(n.getVertex().getName());
-                                    StringSerializer s = new StringSerializer();
-                                    msgdatanode[2] = s.serialize(n.getNetworkdata());
+                                String[] msgdatanode = new String[3];
+                                msgdatanode[0] = "networkdatanode";
+                                msgdatanode[1] = String.valueOf(n.getVertex().getName());
+                                StringSerializer s = new StringSerializer();
+                                msgdatanode[2] = s.serialize(n.getNetworkdata());
 
-                                    //increase message size                                    
-                                    double msgdatanodeSize = getMessageSize(msgdatanode);
-                                    n.increaseMessagesSentByRound(msgdatanodeSize, 1);
-                                    increaseTotalSizeMsgSent(msgdatanodeSize);
+                                //increase message size                                    
+                                double msgdatanodeSize = getMessageSize(msgdatanode);
+                                n.increaseMessagesSentByRound(msgdatanodeSize, 1);
+                                increaseTotalSizeMsgSent(msgdatanodeSize);
 
-                                    NetworkNodeMessageBuffer.getInstance().putMessage(nodetoConnect, msgdatanode);
-                                    System.out.println(n.getVertex().getName() + "send networkdatanode to " + nodetoConnect);
-                                }
+                                NetworkNodeMessageBuffer.getInstance().putMessage(nodetoConnect, msgdatanode);
+                                System.out.println(n.getVertex().getName() + "send networkdatanode to " + nodetoConnect);
+
                             }
 
                             if (SimulationParameters.simMode.equals("nhopsinfo") && inbox[0].equals("networkdatanode")) {
@@ -117,10 +168,10 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
             //2. Compare topology data with information obtained
             if (n.status != Action.DIE) {
                 if (SimulationParameters.activateReplication.equals("replalgon")) {
-                    n.evaluateNodeCreation(this);
+                    //n.evaluateNodeCreation(this);
                 }
             }
-            //System.out.println("recv size:" + n.getSizeMessagesRecv() + ", sent size: " + n.getSizeMessagesSent());
+//System.out.println("recv size:" + n.getSizeMessagesRecv() + ", sent size: " + n.getSizeMessagesSent());
 //            long actStopTime = System.currentTimeMillis();
 //            long timeTaken = actStopTime-actStartTime;            
 //            System.out.println("env age: " + this.getAge() + " node:" + n.getName() + ", round: " + n.getRounds() + ", time taken act " + timeTaken);

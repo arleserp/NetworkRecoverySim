@@ -25,7 +25,7 @@ import util.HashMapOperations;
 public class NetworkEnvironmentNodeFailingMulticast extends NetworkEnvironment {
 
     public NetworkEnvironmentNodeFailingMulticast(Vector<Agent> _agents, SimpleLanguage _nlanguage, Graph gr) {
-        super(_agents, _nlanguage, gr);
+        super(_agents, _nlanguage, null, gr);
     }
 
     @Override

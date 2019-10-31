@@ -33,7 +33,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import mobileagents.MobileAgent;
 import mobileagents.MotionProgramSimpleFactory;
-import mobileagents.NetworkMessageBuffer;
+import mobileagents.NetworkMessageMobileAgentBuffer;
 import observer.DataReplicationNodeFailingObserver;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -46,6 +46,7 @@ import staticagents.NetworkNodeMessageBuffer;
 import staticagents.Node;
 import environment.NetworkEnvironment;
 import environment.NetworkEnvironmentNodeFailingAllInfo;
+import environment.NetworkEnvironmentNodeFailingMobileAgents;
 import environment.NetworkEnvironmentNodeFailingMulticast;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -99,7 +100,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
     private final JButton redraw;
     Graph<MyVertex, String> initialNetwork;
     HashMap<Integer, Double> similarity;
-    HashMap<Integer, String> networkAndMemoryStats;  
+    HashMap<Integer, String> networkAndMemoryStats;
     HashMap<Integer, HashMap> localStatsByRound;
     boolean alreadyPainted = false;
     final Semaphore available = new Semaphore(1);
@@ -155,12 +156,13 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         SimulationParameters.startTime = System.currentTimeMillis();
         Vector<Agent> agents = new Vector();
         List<Node> nodes = new ArrayList<>();
+        List<MobileAgent> mobileAgents = new ArrayList<>();
         System.out.println("fp" + probFailure);
 
         //Language for Agents
         String[] _percepts = {"data", "neighbors"};
         String[] _actions = {"move", "die", "informfailure"};
-        SimpleLanguage agentsLanguage = new SimpleLanguage(_percepts, _actions);
+        SimpleLanguage mobileAgentsLanguage = new SimpleLanguage(_percepts, _actions);
 
         //Language for nodes
         String[] nodePercepts = {"data", "neighbors"};
@@ -204,32 +206,26 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
             nodes.add(n);
         }
 
-        if (!SimulationParameters.simMode.equals("broadcast") && !SimulationParameters.simMode.equals("allinfo")) {
+        if (SimulationParameters.simMode.equals("mobileAgents")) {
             if (SimulationParameters.filenameLoc.length() > 1) {
-                //loadLocations();
+                loadLocations();
                 //loadNetworkDelays();
             }
-            //Creates "Agents"
+            //Creates "Mobile Agents"
             for (int i = 0; i < population; i++) {
                 AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
                 MobileAgent a = new MobileAgent(program, i);
                 MyVertex tmp = getLocation(g);
-                System.out.println("tmp" + tmp);
+                System.out.println("Agent" + i + " starts at node: "  + tmp);
                 a.setRound(-1);
                 a.setLocation(tmp);
                 a.setPrevLocation(tmp);
-
                 a.setPrevPrevLocation(tmp);
                 a.setProgram(program);
                 a.setAttribute("infi", new ArrayList<>());
-                NetworkMessageBuffer.getInstance().createBuffer(a.getId());
+                NetworkMessageMobileAgentBuffer.getInstance().createBuffer(a.getId());
                 agents.add(a);
-//                Initialize implies arrival message from nodes TO review
-//                String[] msgnode = new String[3];
-//                msgnode[0] = "arrived";
-//                msgnode[1] = String.valueOf(a.getId());
-//                msgnode[2] = String.valueOf(a.getIdFather());
-//                NetworkNodeMessageBuffer.getInstance().putMessage(a.getLocation().getName(), msgnode); //no delay
+                mobileAgents.add(a);
             }
         }
 
@@ -240,11 +236,15 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 world = new NetworkEnvironmentNodeFailingMulticast(agents, nodeLanguaje, g);
                 world.addNodes(nodes);
                 break;
+            case "mobileAgents":
+                world = new NetworkEnvironmentNodeFailingMobileAgents(agents, nodeLanguaje, mobileAgentsLanguage, g);
+                world.addNodes(nodes);
+                world.addMobileAgents(mobileAgents);
 //            case "chain":
 //            case "chainnoloop":
 //                world = new NetworkEnvironmentPheromoneReplicationNodeFailingChain(agents, agentsLanguage, nodeLanguaje, g);
 //                ((NetworkEnvironmentPheromoneReplicationNodeFailingChain) world).addNodes(nodes);
-//                break;
+                break;
             case "allinfo":
                 world = new NetworkEnvironmentNodeFailingAllInfo(agents, nodeLanguaje, g);
                 world.addNodes(nodes);
@@ -316,19 +316,19 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                         nodesLive.add(environment.getSimulationTime(), nodesAlive);
                         GraphComparator gnm = new GraphComparator();
                         double sim = 0;
-                        
+
                         int worldRound = environment.getAge();
-                        
+
                         sim = gnm.calculateSimilarity(environment);
                         neighborMatchingSim.add(worldRound, sim);
                         similarity.put(worldRound, sim);
-                                                
+
                         String netAndMemStats;
                         HashMap localNodeStatsByRound = environment.getLocalStats();
                         //totalMemory|totalMsgSent|sizeMsgSent|totalMsgReceived|sizeMsgRecv
-                        netAndMemStats = localNodeStatsByRound.get("totalMemory") + "," + environment.getTotalMsgSent() + "," +
-                                environment.getTotalSizeMsgSent() + "," + environment.getTotalMsgRecv() + "," + environment.getTotalSizeMsgRecv();
-                        
+                        netAndMemStats = localNodeStatsByRound.get("totalMemory") + "," + environment.getTotalMsgSent() + ","
+                                + environment.getTotalSizeMsgSent() + "," + environment.getTotalMsgRecv() + "," + environment.getTotalSizeMsgRecv();
+
                         networkAndMemoryStats.put(worldRound, netAndMemStats);
                         localStatsByRound.put(worldRound, localNodeStatsByRound);
                         if (environment.getAge() >= (SimulationParameters.maxIter - 100) && !alreadyPainted) {
@@ -382,17 +382,23 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         System.out.println("net Delays" + networkDelays);
     }
 
+    /**
+     * Obtain initial location of agents
+     * @param g 
+     * @return next location
+     */
     public MyVertex getLocation(Graph<MyVertex, String> g) {
         if (SimulationParameters.filenameLoc.length() > 1) {
+            //System.out.println("loading initial location from file...");
             MyVertex tmp = locations.get(indexLoc++);
             for (MyVertex v : g.getVertices()) {
                 if (v.toString().equals(tmp.toString())) {
                     return v;
                 }
             }
-            //System.out.println("null???");
             return null;
         } else {
+            //System.out.println("generating random location");
             int pos = (int) (Math.random() * g.getVertexCount());
             Collection E = g.getVertices();
             return (MyVertex) E.toArray()[pos];
@@ -448,7 +454,5 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
     public HashMap<Integer, HashMap> getLocalStatsByRound() {
         return localStatsByRound;
     }
-    
-    
-    
+
 }

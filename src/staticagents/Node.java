@@ -43,7 +43,6 @@ public class Node extends Agent {
     private HashMap<String, Integer> respAgentsBkp; //Maybe delete     
     private HashMap<String, ConcurrentHashMap<Integer, Integer>> agentsInNeighbors;
     AtomicInteger c = new AtomicInteger(0); //maybe delete or rename
-    private LinkedBlockingQueue<String[]> networkMessagebuffer;
     private HashMap<Integer, String> idCounter; //added by arles.rodriguez 12/12/2018
     private HashMap<MyVertex, Integer> distancesToNode;
     private int numberMessagesRecvByRound;
@@ -92,7 +91,6 @@ public class Node extends Agent {
         respAgentsBkp = new HashMap<>();
         agentsInNode = new ConcurrentHashMap<>();
         agentsInNeighbors = new HashMap<>();
-        networkMessagebuffer = new LinkedBlockingQueue();
         idCounter = new HashMap<>();
     }
 
@@ -329,23 +327,6 @@ public class Node extends Agent {
         } else {
             return (false);
         }
-    }
-
-    public synchronized boolean putMessage(String[] msg) {
-        networkMessagebuffer.add(msg);
-        return true;
-    }
-
-    // Called by Consumer
-    public synchronized String[] getMessage() {
-        try {
-            if (!networkMessagebuffer.isEmpty()) {
-                return networkMessagebuffer.poll();
-            }
-        } catch (NullPointerException ex) {
-            System.out.println("error reading networkmbuffer...." + ex.getLocalizedMessage());
-        }
-        return null;
     }
 
     public HashMap<Integer, String> getIdCounter() {
