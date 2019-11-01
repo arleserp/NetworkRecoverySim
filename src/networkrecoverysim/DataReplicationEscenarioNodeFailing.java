@@ -216,7 +216,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
                 MobileAgent a = new MobileAgent(program, i);
                 MyVertex tmp = getLocation(g);
-                System.out.println("Agent" + i + " starts at node: "  + tmp);
+                System.out.println("Agent" + i + " starts at node: " + tmp);
                 a.setRound(-1);
                 a.setLocation(tmp);
                 a.setPrevLocation(tmp);
@@ -240,6 +240,11 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 world = new NetworkEnvironmentNodeFailingMobileAgents(agents, nodeLanguaje, mobileAgentsLanguage, g);
                 world.addNodes(nodes);
                 world.addMobileAgents(mobileAgents);
+                for (Node n : world.getNodes()) {
+                    n.setNetworkdata(world.loadPartialNetwork(0, n)); //load current neighbourhood
+                    //System.out.println("n" +n);
+                }
+
 //            case "chain":
 //            case "chainnoloop":
 //                world = new NetworkEnvironmentPheromoneReplicationNodeFailingChain(agents, agentsLanguage, nodeLanguaje, g);
@@ -384,7 +389,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
 
     /**
      * Obtain initial location of agents
-     * @param g 
+     *
+     * @param g
      * @return next location
      */
     public MyVertex getLocation(Graph<MyVertex, String> g) {

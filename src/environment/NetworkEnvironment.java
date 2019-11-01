@@ -8,8 +8,10 @@ import graphutil.GraphCreator;
 import graphutil.MyVertex;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
@@ -754,10 +756,9 @@ public abstract class NetworkEnvironment extends Environment {
      * *
      * Methods with mobile agents from here
      */
-    
-    
     /**
      * Kill a mobile agent
+     *
      * @param a mobile agent to kill
      */
     public void killMobileAgent(MobileAgent a) {
@@ -770,4 +771,67 @@ public abstract class NetworkEnvironment extends Environment {
         setChanged();
         notifyObservers();
     }
+
+    /**
+     * load neighobours using bfs
+     *
+     * @param neighbours neighbours of a node
+     * @param nhopsChain number of hops
+     * @param v node to load neighbour
+     * @param distances //distances to a determined node
+     */
+    private void loadNeighboursBFS(ArrayList<MyVertex> neighbours, int nhopsChain, MyVertex v, HashMap<MyVertex, Integer> distances) {
+        //System.out.println("nopsChain:" + nhopsChain);
+        int lvls = 1;
+        Deque<MyVertex> q = new LinkedList<>();
+        distances.put(v, 0);
+        if (nhopsChain == 0) {
+            return;
+        }
+        while (v != null) {
+            List<MyVertex> list = new ArrayList<>(getTopology().getNeighbors(v));
+            Iterator<MyVertex> itr = list.iterator();
+            while (itr.hasNext()) {
+                MyVertex ne = itr.next();
+                if (!distances.containsKey(ne)) {
+                    distances.put(ne, distances.get(v) + 1);
+                    q.add(ne);
+                }
+            }
+            v = q.poll();
+        }
+    }
+
+    /**
+     * For each node load the neighbourhood in hops nhopsChain of n
+     *
+     * @param nhopsChain number of hops
+     * @param n node
+     * @return
+     */
+    public HashMap<String, ArrayList> loadPartialNetwork(int nhopsChain, Node n) {
+        HashMap<String, ArrayList> localNetworkInfo = new HashMap<>();
+        HashMap<MyVertex, Integer> distances = new HashMap<>();
+        ArrayList<MyVertex> neighbours = new ArrayList<>();
+        neighbours.add(n.getVertex());
+
+        //loadNeighboursRecursively(neighbours, nhopsChain, n.getVertex()); //slow!
+        loadNeighboursBFS(neighbours, nhopsChain, n.getVertex(), distances);
+
+        n.setDistancesToNode(distances);
+        for (MyVertex v : distances.keySet()) {
+            if (!neighbours.contains(v) && distances.get(v) <= nhopsChain) {
+                neighbours.add(v);
+            }
+        }
+        System.out.println("node" + n + "neigh: " + neighbours + " neigh size:" + neighbours.size());
+        System.out.println("");
+        for (MyVertex v : neighbours) {
+            localNetworkInfo.put(v.getName(), new ArrayList<>(getTopologyNames(v)));
+        }
+        System.out.println("node" + n + "info = " + localNetworkInfo);
+
+        return localNetworkInfo;
+    }
+
 }

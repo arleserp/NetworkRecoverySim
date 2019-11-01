@@ -147,7 +147,8 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
         }
     }
 
-    /**
+
+        /**
      * load neighobours using bfs
      *
      * @param neighbours neighbours of a node
@@ -177,37 +178,6 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
         }
     }
 
-    /**
-     * For each node load the neighbourhood in hops nhopsChain of n
-     *
-     * @param nhopsChain number of hops
-     * @param n node
-     * @return
-     */
-    public HashMap<String, ArrayList> loadPartialNetwork(int nhopsChain, Node n) {
-        HashMap<String, ArrayList> localNetworkInfo = new HashMap<>();
-        HashMap<MyVertex, Integer> distances = new HashMap<>();
-        ArrayList<MyVertex> neighbours = new ArrayList<>();
-        neighbours.add(n.getVertex());
-
-        //loadNeighboursRecursively(neighbours, nhopsChain, n.getVertex()); //slow!
-        loadNeighboursBFS(neighbours, nhopsChain, n.getVertex(), distances);
-
-        n.setDistancesToNode(distances);
-        for (MyVertex v : distances.keySet()) {
-            if (!neighbours.contains(v) && distances.get(v) <= nhopsChain) {
-                neighbours.add(v);
-            }
-        }
-        System.out.println("node" + n + "neigh: " + neighbours + " neigh size:" + neighbours.size());
-        System.out.println("");
-        for (MyVertex v : neighbours) {
-            localNetworkInfo.put(v.getName(), new ArrayList<>(getTopologyNames(v)));
-        }
-        System.out.println("node" + n + "info = " + localNetworkInfo);
-
-        return localNetworkInfo;
-    }
 
     @Override
     /**

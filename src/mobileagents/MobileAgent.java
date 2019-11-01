@@ -35,6 +35,7 @@ public class MobileAgent extends Agent implements Serializable {
     private MyVertex prevLocation;
     private MyVertex prevPrevLocation;
     private ArrayList<String> lastLocations;
+    private HashMap<String, ArrayList> networkdata;
 
     public MyVertex getPrevPrevLocation() {
         return prevPrevLocation;
@@ -62,6 +63,7 @@ public class MobileAgent extends Agent implements Serializable {
         localAgentsInNetwork = new ArrayList<>();
         localAgentsInNetworkHmap = new ArrayList<>();
         lastLocations = new ArrayList<String>();
+        networkdata = new HashMap<>();
     }
 
     public ArrayList<String> getLastLocations() {
@@ -283,6 +285,20 @@ public class MobileAgent extends Agent implements Serializable {
     }
 
     /**
+     * @return the networkdata
+     */
+    public HashMap<String, ArrayList> getNetworkdata() {
+        return networkdata;
+    }
+
+    /**
+     * @param networkdata the networkdata to set
+     */
+    public void setNetworkdata(HashMap<String, ArrayList> networkdata) {
+        this.networkdata = networkdata;
+    }
+
+    /**
      * @param respAgentsBkp the respAgentsBkp to set
      */
     public void setRespAgentsBkp(HashMap respAgentsBkp) {
@@ -317,4 +333,8 @@ public class MobileAgent extends Agent implements Serializable {
         this.localAgentsInNetworkHmap = localAgentsInNetworkHmap;
     }
 
+    @Override
+    public String toString() {
+        return "MobileAgent{" + " id=" + id + ", networkdata size=" + networkdata.size() + ", round=" + round + '}';
+    }
 }

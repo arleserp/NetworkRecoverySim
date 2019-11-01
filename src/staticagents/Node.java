@@ -29,8 +29,8 @@ import unalcol.agents.AgentProgram;
  * @author ARODRIGUEZ
  */
 public class Node extends Agent {
-
     private MyVertex v;  //vertex in topology that represents a node
+    private String visitedStatus;
     private final ConcurrentHashMap<Integer, Integer> agentsInNode; //Maybe delete    
     private ArrayList<Agent> currentAgents;
     private double pfCreate;
@@ -92,6 +92,7 @@ public class Node extends Agent {
         agentsInNode = new ConcurrentHashMap<>();
         agentsInNeighbors = new HashMap<>();
         idCounter = new HashMap<>();
+        visitedStatus = "";
     }
 
     public MyVertex getVertex() {
@@ -405,6 +406,15 @@ public class Node extends Agent {
         System.out.println("end prune" + this.getVertex().getName());
     }
 
+    public String getVisitedStatus() {
+        return visitedStatus;
+    }
+
+    public void setVisitedStatus(String visitedStatus) {
+        this.visitedStatus = visitedStatus;
+    }    
+    
+    
     /**
      * This Method defines if create a new node or not
      *

@@ -48,56 +48,63 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
         } catch (InterruptedException ex) {
             Logger.getLogger(NetworkEnvironmentNodeFailingMobileAgents.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println("agent:" + agent);
-        
-        if (agent instanceof MobileAgent) {
-            MobileAgent a = (MobileAgent) agent;
-            Node c = getNode(a.getLocation().getName());
-
-            if (SimulationParameters.activateReplication.equals("replalgon")) {
-                //Send data to current node
-                String[] msgdatanode = new String[3];
-                msgdatanode[0] = "networkdatanode";
-                msgdatanode[1] = String.valueOf(c.getVertex().getName());
-                StringSerializer s = new StringSerializer();
-                msgdatanode[2] = s.serialize(a.getLocalNetwork());
-                NetworkNodeMessageBuffer.getInstance().putMessage(c.getName(), msgdatanode);
-                System.out.println("Mobile Agent" + a.getId() + "send networkdatanode to " + c.getName());
-
-                //Obtain data from node
-                HashMap<String, List<String>> nodeNet = new HashMap<>();
-                nodeNet.put(a.getLocation().getName(), getTopologyNames(a.getLocation()));
-                a.getLocalNetwork().add(nodeNet);
+        try {
+            if (agent instanceof MobileAgent) {
+                MobileAgent a = (MobileAgent) agent;
                 System.out.println("Here is running" + a.toString());
-            }
-
-            //Action definition
-            ActionParameters ac = (ActionParameters) action;
-            String act = action.getCode();
-            switch (mobileAgentLanguage.getActionIndex(act)) {
-                case 0: // move
-
-                    //get new location
-                    MyVertex v = (MyVertex) ac.getAttribute("location");
-                    a.setLocation(v);
-                    a.getLocation().setStatus("visited"); //to review
-                    a.setPheromone((float) (a.getPheromone() + 0.01f * (0.5f - a.getPheromone())));
-                    a.getLocation().setPh(a.getLocation().getPh() + 0.01f * (a.getPheromone() - a.getLocation().getPh()));
-                    a.setRound(a.getRound() + 1);
-                    //visitedNodes.add(currentNode);
-                    break;
-                case 1: //die
-                    System.out.println("action: kill ");
+                Node c = getNode(a.getLocation().getName());
+                if (c == null) { //node failed
                     killMobileAgent(a);
-                    return false;
-                default:
-                    String msg = "[Unknown action " + act
-                            + ". Action not executed]";
-                    System.out.println(msg);
-                    break;
-            }
-        }
+                } else {
+                    if (SimulationParameters.activateReplication.equals("replalgon")) {
+                        //Send data to current node
+                        String[] msgdatanode = new String[3];
+                        msgdatanode[0] = "networkdatanode";
+                        msgdatanode[1] = String.valueOf(c.getVertex().getName());
+                        StringSerializer s = new StringSerializer();
+                        msgdatanode[2] = s.serialize(a.getNetworkdata());
+                        NetworkNodeMessageBuffer.getInstance().putMessage(c.getName(), msgdatanode);
+                        System.out.println("wa:" + getAge() + " Mobile Agent: " + a.getId() + " sends networkdatanode to: " + c.getName());
+                        //Obtain data from node
+                        //HashMap<String, ArrayList<String>> localNetworkData = new HashMap<>();
+                        a.setNetworkdata(HashMapOperations.JoinSets(c.getNetworkdata(), a.getNetworkdata()));
+                        //a.getLocalNetwork().add(localNetworkData);                        
+                    }
 
+                    //Action definition
+                    ActionParameters ac = (ActionParameters) action;
+                    String act = action.getCode();
+                    switch (mobileAgentLanguage.getActionIndex(act)) {
+                        case 0: // move
+                            //get new location
+                            MyVertex v = (MyVertex) ac.getAttribute("location");
+                            a.setLocation(v); //move agent
+                            Node n = getNode(v.getName());
+                            if (n == null) { //node failed
+                                killMobileAgent(a);
+                            } else {
+                                n.setVisitedStatus("visited");      //to use in first and second neighbour               
+                                a.setPheromone((float) (a.getPheromone() + 0.01f * (0.5f - a.getPheromone()))); //update pheromone amount
+                                a.getLocation().setPh(a.getLocation().getPh() + 0.01f * (a.getPheromone() - a.getLocation().getPh()));
+                                a.setRound(a.getRound() + 1);
+                            }
+                            break;
+                        case 1: //die
+                            System.out.println("action: kill ");
+                            killMobileAgent(a);
+                            return false;
+                        default:
+                            String msg = "[Unknown action " + act
+                                    + ". Action not executed]";
+                            System.out.println(msg);
+                            break;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.exit(-1222222);
+        }
 //      long actStartTime = System.currentTimeMillis();
         if (agent instanceof Node) {
             Node n = (Node) agent;
@@ -147,12 +154,12 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
 
                             }
 
-                            if (SimulationParameters.simMode.equals("nhopsinfo") && inbox[0].equals("networkdatanode")) {
+                            if (inbox[0].equals("networkdatanode")) { //receive topology data from mobile agent
                                 String source = inbox[1]; //origin of message
                                 StringSerializer s = new StringSerializer();
                                 HashMap<String, ArrayList> ndata = (HashMap) s.deserialize(inbox[2]); //networkdata
                                 n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), ndata));
-                                n.pruneInformation(SimulationParameters.nhopsChain); //use nhops to prune data
+                                //n.pruneInformation(SimulationParameters.nhopsChain); //not prune by now
                             }
                         }
                     }
@@ -168,7 +175,7 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
             //2. Compare topology data with information obtained
             if (n.status != Action.DIE) {
                 if (SimulationParameters.activateReplication.equals("replalgon")) {
-                    //n.evaluateNodeCreation(this);
+                    n.evaluateNodeCreation(this);
                 }
             }
 //System.out.println("recv size:" + n.getSizeMessagesRecv() + ", sent size: " + n.getSizeMessagesSent());
