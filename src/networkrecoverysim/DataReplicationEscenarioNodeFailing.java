@@ -244,7 +244,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 world.addNodes(nodes);
                 world.addMobileAgents(mobileAgents);
                 for (Node n : world.getNodes()) {
-                    n.setNetworkdata(world.loadPartialNetwork(0, n)); //load current neighbourhood in hop 0
+                    n.setNetworkdata(world.loadPartialNetwork(1, n)); //load current neighbourhood in hop 0
                     //System.out.println("n" +n);
                 }
 

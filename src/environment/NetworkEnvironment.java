@@ -18,6 +18,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import mobileagents.MobileAgent;
+import mobileagents.MotionProgramSimpleFactory;
+import mobileagents.NetworkMessageMobileAgentBuffer;
 import networkrecoverysim.SimulationParameters;
 import serialization.StringSerializer;
 import staticagents.NetworkNodeMessageBuffer;
@@ -45,6 +47,7 @@ public abstract class NetworkEnvironment extends Environment {
     private final AtomicDouble totalMemory; //amount of memory
     private final AtomicLong simulationTime = new AtomicLong(0); // Counter of time
     private final long startingTime; // Starting time
+    private final AtomicInteger idMa = new AtomicInteger(10000);
 
     public int[][] getInitialAdyacenceMatrix() {
         return initialAdyacenceMatrix;
@@ -292,6 +295,33 @@ public abstract class NetworkEnvironment extends Environment {
     }
 
     /**
+     * Creation of a new mobile agent
+     *
+     * @param location location of new agent
+     * @return MobileAgent
+     */
+    public MobileAgent createNewMobileAgent(Node location) {
+        AgentProgram program = MotionProgramSimpleFactory.createMotionProgram(SimulationParameters.pf, SimulationParameters.motionAlg);
+        Integer id = idMa.addAndGet(1);
+        MobileAgent a = new MobileAgent(program, id);
+        NetworkMessageMobileAgentBuffer.getInstance().createBuffer(a.getId());
+        MyVertex tmp = location.getVertex();
+        //a.setData(new ArrayList(location.getVertex().getData()));
+        System.out.println("New replica agent " + id + " starts at node: " + tmp);
+        a.setRound(0);
+        a.setLocation(tmp);
+        a.setPrevLocation(tmp);
+        a.setPrevPrevLocation(tmp);
+        a.setProgram(program);
+        a.setAttribute("infi", new ArrayList<>());
+        a.setArchitecture(this);
+        agents.add(a);
+        mobileAgents.put(id, a);
+        return a;
+
+    }
+
+    /**
      * Creation of a node with name d
      *
      * @param creator
@@ -373,7 +403,7 @@ public abstract class NetworkEnvironment extends Environment {
                             NetworkNodeMessageBuffer.getInstance().putMessage(neig, msgconnect);
                         }
                         //n.getPending().get(dif.toString()).add(neig);
-                    };
+                    }
                 }
 
                 this.agents.add(nod);
@@ -381,6 +411,15 @@ public abstract class NetworkEnvironment extends Environment {
                 Thread t = new Thread(nod);
                 nod.setThread(t);
                 t.start();
+
+                // if (Math.random() < ((double) SimulationParameters.popSize / (double) SimulationParameters.vertexNumber)) {
+                System.out.println("crea agenteeeeee");
+                MobileAgent ma = createNewMobileAgent(nod);
+                ma.live();
+                Thread tma = new Thread(ma);
+                ma.setThread(tma);
+                tma.start();
+                //  }
             }
             setChanged();
             notifyObservers();
@@ -472,9 +511,6 @@ public abstract class NetworkEnvironment extends Environment {
         return mobileAgents;
     }
 
-    
-    
-    
     @Override
     public void init(Agent agent) {
         //@TODO: Any special initialization processs of the environment
@@ -790,8 +826,8 @@ public abstract class NetworkEnvironment extends Environment {
         }
         a.die();
         // a.setLocation(null);
-        setChanged();
-        notifyObservers();
+        //setChanged();
+        //notifyObservers();
     }
 
     /**
@@ -855,8 +891,5 @@ public abstract class NetworkEnvironment extends Environment {
 
         return localNetworkInfo;
     }
-    
-    
-    
 
 }

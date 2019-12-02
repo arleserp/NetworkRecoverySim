@@ -101,8 +101,8 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
                     }
                 }
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (NullPointerException ex) {
+            ex.printStackTrace();            
             //System.exit(-1222222);
         }
 //      long actStartTime = System.currentTimeMillis();
