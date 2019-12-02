@@ -6,6 +6,7 @@ java -classpath dist/NetworkRecoverySim.jar graphmetrics.NetworkConsumptionLocal
 java -classpath dist/NetworkRecoverySim.jar graphmetrics.NetworkConsumption
 java -classpath dist/NetworkRecoverySim.jar graphmetrics.NetworkConsumptionLocalSizeSent
 java -classpath dist/NetworkRecoverySim.jar graphmetrics.NetworkConsumptionLocalSizeRecv
+java -classpath dist/NetworkRecoverySim.jar graphmetrics.NumberOfMobileAgents
 
 
 
