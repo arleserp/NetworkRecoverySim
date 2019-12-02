@@ -44,7 +44,6 @@ public class DataReplicationNodeFailingObserver implements Observer {
     boolean isDrawing = false;
     public static boolean isUpdating;
     HashMap<Integer, Double> globalInfo = new HashMap();
-    HashMap<Integer, Integer> agentsNumber = new HashMap<>();
     HashMap<Integer, Integer> nodesComplete = new HashMap<>();
     HashMap<Integer, StatisticsNormalDist> roundVsInfoAvg = new HashMap<>();
     private String nodeStatsFileName = null;
@@ -190,6 +189,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
+                    
                     //Write agents live number
                     String agNumberdirName = baseFilename + "+agentNumber";
                     createDir(agNumberdirName);
@@ -198,6 +198,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     PrintWriter escribirAgentNumber = null;
                     try {
                         escribirAgentNumber = new PrintWriter(new BufferedWriter(new FileWriter(agentNumberStats, true)));
+                        HashMap agentsNumber = dataReplEsc.getMobileAgentsAlive();
                         SortedSet<Integer> keysAg = new TreeSet<>(agentsNumber.keySet());
                         for (int x : keysAg) {
                             escribirAgentNumber.println(x + "," + agentsNumber.get(x));

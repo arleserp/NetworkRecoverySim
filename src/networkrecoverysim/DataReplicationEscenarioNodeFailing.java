@@ -102,6 +102,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
     HashMap<Integer, Double> similarity;
     HashMap<Integer, String> networkAndMemoryStats;
     HashMap<Integer, HashMap> localStatsByRound;
+    HashMap<Integer, Integer> mobileAgentsAlive;
     boolean alreadyPainted = false;
     final Semaphore available = new Semaphore(1);
 
@@ -146,6 +147,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         similarity = new HashMap<>();
         networkAndMemoryStats = new HashMap<>();
         localStatsByRound = new HashMap<>();
+        mobileAgentsAlive = new HashMap<>();
+    
     }
 
     /**
@@ -241,7 +244,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 world.addNodes(nodes);
                 world.addMobileAgents(mobileAgents);
                 for (Node n : world.getNodes()) {
-                    n.setNetworkdata(world.loadPartialNetwork(0, n)); //load current neighbourhood
+                    n.setNetworkdata(world.loadPartialNetwork(0, n)); //load current neighbourhood in hop 0
                     //System.out.println("n" +n);
                 }
 
@@ -308,6 +311,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 System.out.println("wa: " + world.getAge() + " simulation time: " + currentTime);
                 isDrawing = true;
 
+                //                System.out.println("xxxxxx");
+
                 if (world.getNodes().isEmpty()) {
                     System.out.println("no nodes alive.");
                 } else {
@@ -328,6 +333,9 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                         neighborMatchingSim.add(worldRound, sim);
                         similarity.put(worldRound, sim);
 
+                        
+                        mobileAgentsAlive.put(worldRound, environment.getMobileAgents().size());
+                        
                         String netAndMemStats;
                         HashMap localNodeStatsByRound = environment.getLocalStats();
                         //totalMemory|totalMsgSent|sizeMsgSent|totalMsgReceived|sizeMsgRecv
@@ -461,4 +469,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         return localStatsByRound;
     }
 
+    public HashMap<Integer, Integer> getMobileAgentsAlive() {
+        return mobileAgentsAlive;
+    }
+
+    
+    
 }

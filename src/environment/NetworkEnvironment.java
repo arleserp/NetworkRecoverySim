@@ -233,6 +233,21 @@ public abstract class NetworkEnvironment extends Environment {
     }
 
     /**
+     * Get a mobile agent given its id
+     *
+     * @param name
+     * @return
+     */
+    public MobileAgent getAgent(int id) {
+        synchronized (mobileAgents) {
+            if (mobileAgents.containsKey(id)) {
+                return mobileAgents.get(id);
+            }
+        }
+        return null;
+    }
+
+    /**
      * Obtain minimum id from a list of neighbours additionally evaluate if node
      * have data about the node to create.
      *
@@ -453,6 +468,13 @@ public abstract class NetworkEnvironment extends Environment {
         return p;
     }
 
+    public Map<Integer, MobileAgent> getMobileAgents() {
+        return mobileAgents;
+    }
+
+    
+    
+    
     @Override
     public void init(Agent agent) {
         //@TODO: Any special initialization processs of the environment
@@ -833,5 +855,8 @@ public abstract class NetworkEnvironment extends Environment {
 
         return localNetworkInfo;
     }
+    
+    
+    
 
 }

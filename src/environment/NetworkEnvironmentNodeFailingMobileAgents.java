@@ -103,7 +103,7 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.exit(-1222222);
+            //System.exit(-1222222);
         }
 //      long actStartTime = System.currentTimeMillis();
         if (agent instanceof Node) {
