@@ -148,7 +148,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         networkAndMemoryStats = new HashMap<>();
         localStatsByRound = new HashMap<>();
         mobileAgentsAlive = new HashMap<>();
-    
+
     }
 
     /**
@@ -308,11 +308,11 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 long currentTime = world.updateAndGetSimulationTime();
                 world.updateWorldAge();
 
-                System.out.println("wa: " + world.getAge() + " simulation time: " + currentTime);
+                System.out.println("wa: " + world.getAge() + " simulation time: " 
+                        + currentTime + " nodes " + world.getNodesAlive() + " mobile: " + world.getMobileAgents().size());
                 isDrawing = true;
 
                 //                System.out.println("xxxxxx");
-
                 if (world.getNodes().isEmpty()) {
                     System.out.println("no nodes alive.");
                 } else {
@@ -333,9 +333,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                         neighborMatchingSim.add(worldRound, sim);
                         similarity.put(worldRound, sim);
 
-                        
                         mobileAgentsAlive.put(worldRound, environment.getMobileAgents().size());
-                        
+
                         String netAndMemStats;
                         HashMap localNodeStatsByRound = environment.getLocalStats();
                         //totalMemory|totalMsgSent|sizeMsgSent|totalMsgReceived|sizeMsgRecv
@@ -473,6 +472,4 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         return mobileAgentsAlive;
     }
 
-    
-    
 }

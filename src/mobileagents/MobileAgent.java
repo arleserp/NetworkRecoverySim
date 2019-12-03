@@ -335,6 +335,6 @@ public class MobileAgent extends Agent implements Serializable {
 
     @Override
     public String toString() {
-        return "MobileAgent{" + " id=" + id + ", networkdata size=" + networkdata.size() + ", round=" + round + '}';
+        return "MobileAgent{" + " id=" + id + ", networkdata size=" + networkdata.size() + ", round=" + round + ", status "  + status + '}';
     }
 }

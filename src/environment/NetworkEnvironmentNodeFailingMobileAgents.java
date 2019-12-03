@@ -43,17 +43,13 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
 
     @Override
     public boolean act(Agent agent, Action action) {
-        try {
-            available.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(NetworkEnvironmentNodeFailingMobileAgents.class.getName()).log(Level.SEVERE, null, ex);
-        }
+
         try {
             if (agent instanceof MobileAgent) {
                 MobileAgent a = (MobileAgent) agent;
                 System.out.println("Here is running" + a.toString());
                 Node c = getNode(a.getLocation().getName());
-                if (c == null) { //node failed
+                if (c == null) { //node failed                    
                     killMobileAgent(a);
                 } else {
                     if (SimulationParameters.activateReplication.equals("replalgon")) {
@@ -100,13 +96,20 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
                             break;
                     }
                 }
+                a.setRound(a.getRound() + 1);
             }
         } catch (NullPointerException ex) {
-            ex.printStackTrace();            
-            //System.exit(-1222222);
+            //System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaayyyyyyyyyyyyyyyyyyyyy");
+            //ex.printStackTrace();            
+            System.exit(-1222222);
         }
 //      long actStartTime = System.currentTimeMillis();
         if (agent instanceof Node) {
+            try {
+                available.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(NetworkEnvironmentNodeFailingMobileAgents.class.getName()).log(Level.SEVERE, null, ex);
+            }
             Node n = (Node) agent;
             n.incRounds();
 
@@ -166,6 +169,7 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
                     break;
                 case 1: //what happens if a node dies?
                     //System.out.println("node " + n.getVertex().getName() + " n followed agents:" + n.getResponsibleAgents());
+                    //System.out.println("kiill");
                     KillNode(n);
                     break;
                 default:

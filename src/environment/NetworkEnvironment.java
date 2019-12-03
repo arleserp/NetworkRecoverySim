@@ -27,6 +27,7 @@ import staticagents.Node;
 import staticagents.NodeFailingProgram;
 import unalcol.agents.simulate.util.SimpleLanguage;
 import util.AtomicDouble;
+import util.HashMapOperations;
 import util.StatisticsNormalDist;
 
 public abstract class NetworkEnvironment extends Environment {
@@ -307,13 +308,14 @@ public abstract class NetworkEnvironment extends Environment {
         NetworkMessageMobileAgentBuffer.getInstance().createBuffer(a.getId());
         MyVertex tmp = location.getVertex();
         //a.setData(new ArrayList(location.getVertex().getData()));
-        System.out.println("New replica agent " + id + " starts at node: " + tmp);
+        System.out.println("New replica agent " + id + " starts at node: " + tmp + "get Node:" + getNode(location.getName()));
         a.setRound(0);
         a.setLocation(tmp);
         a.setPrevLocation(tmp);
         a.setPrevPrevLocation(tmp);
         a.setProgram(program);
-        a.setAttribute("infi", new ArrayList<>());
+
+        a.setNetworkdata(HashMapOperations.JoinSets(location.getNetworkdata(), a.getNetworkdata()));
         a.setArchitecture(this);
         agents.add(a);
         mobileAgents.put(id, a);
@@ -337,9 +339,7 @@ public abstract class NetworkEnvironment extends Environment {
                     System.out.println("Node " + nodeId + " is alive connecting instead create...[" + dvertex + ", " + creator.getVertex().getName() + "]");
                     addConnection(dvertex, creator);
                 }
-
             } else {
-
                 GraphCreator.VertexFactory vertexFactory = new GraphCreator.VertexFactory();
                 MyVertex newVertex = vertexFactory.create();
                 newVertex.setName(nodeId);
@@ -406,20 +406,21 @@ public abstract class NetworkEnvironment extends Environment {
                     }
                 }
 
+                creator.replicasCreated ++;
                 this.agents.add(nod);
                 nod.live();
                 Thread t = new Thread(nod);
                 nod.setThread(t);
                 t.start();
 
-                // if (Math.random() < ((double) SimulationParameters.popSize / (double) SimulationParameters.vertexNumber)) {
-                System.out.println("crea agenteeeeee");
-                MobileAgent ma = createNewMobileAgent(nod);
-                ma.live();
-                Thread tma = new Thread(ma);
-                ma.setThread(tma);
-                tma.start();
-                //  }
+                if (Math.random() < (1/(double)creator.replicasCreated)) {
+                    System.out.println("crea agenteeeeee");
+                    MobileAgent ma = createNewMobileAgent(nod);
+                    ma.live();
+                    Thread tma = new Thread(ma);
+                    ma.setThread(tma);
+                    tma.start();
+                }
             }
             setChanged();
             notifyObservers();
@@ -493,7 +494,7 @@ public abstract class NetworkEnvironment extends Environment {
             MobileAgent a = (MobileAgent) agent;
             try {
                 //Validate that agent is not death 
-                if (a.status != Action.DIE && !a.getLocation().getStatus().equals("failed")) {
+                if (getNode(a.getLocation().getName()) != null) {
                     p.setAttribute("neighbors", getTopology().getNeighbors(a.getLocation()));
                 } else {
                     p.setAttribute("nodedeath", true);

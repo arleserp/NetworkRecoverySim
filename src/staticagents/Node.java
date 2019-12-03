@@ -37,6 +37,7 @@ public class Node extends Agent {
     private int roundsWithOutVisit;
     private int roundsWithoutAck;
     private int rounds;
+    public int replicasCreated;
     public boolean isProcessing = false;
     private HashMap<String, ArrayList> networkdata;
     private HashMap<Object, ArrayList> pending;
@@ -93,6 +94,7 @@ public class Node extends Agent {
         agentsInNeighbors = new HashMap<>();
         idCounter = new HashMap<>();
         visitedStatus = "";
+        replicasCreated = 0;
     }
 
     public MyVertex getVertex() {
