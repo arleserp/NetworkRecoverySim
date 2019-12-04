@@ -25,6 +25,7 @@ import serialization.StringSerializer;
 import staticagents.NetworkNodeMessageBuffer;
 import staticagents.Node;
 import staticagents.NodeFailingProgram;
+import trickle.Trickle;
 import unalcol.agents.simulate.util.SimpleLanguage;
 import util.AtomicDouble;
 import util.HashMapOperations;
@@ -406,14 +407,19 @@ public abstract class NetworkEnvironment extends Environment {
                     }
                 }
 
-                creator.replicasCreated ++;
+                creator.replicasCreated++;
                 this.agents.add(nod);
+                if (SimulationParameters.simMode.equals("trickle")) {
+                    System.out.println("initializes trickleeeeeeeeeeeeeeeeeeeeee");
+                    nod.setTrickleAlg(new Trickle());
+                }
                 nod.live();
                 Thread t = new Thread(nod);
                 nod.setThread(t);
                 t.start();
 
-                if (Math.random() < (1/(double)creator.replicasCreated)) {
+
+                if (SimulationParameters.simMode.equals("mobileAgents") && Math.random() < 1.0 - 1.0 / creator.replicasCreated) {
                     System.out.println("crea agenteeeeee");
                     MobileAgent ma = createNewMobileAgent(nod);
                     ma.live();

@@ -48,11 +48,13 @@ import environment.NetworkEnvironment;
 import environment.NetworkEnvironmentNodeFailingAllInfo;
 import environment.NetworkEnvironmentNodeFailingMobileAgents;
 import environment.NetworkEnvironmentNodeFailingMulticast;
+import environment.NetworkEnvironmentNodeFailingTrickle;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import trickle.Trickle;
 
 /**
  * Creates a simulation without graphic interface
@@ -267,6 +269,14 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                     n.setNetworkdata(((NetworkEnvironmentNodeFailingAllInfo) world).loadPartialNetwork(SimulationParameters.nhopsChain, n));
                 }
                 break;
+            case "trickle":
+                world = new NetworkEnvironmentNodeFailingTrickle(agents, nodeLanguaje, g);
+                world.addNodes(nodes);
+                for(Node n : world.getNodes()) {
+                    n.setNetworkdata(((NetworkEnvironmentNodeFailingTrickle) world).loadPartialNetwork(0, n));
+                    n.setTrickleAlg(new Trickle());
+                }
+                break;
 //            default:
 //                world = new NetworkEnvironmentPheromoneReplicationNodeFailing(agents, agentsLanguage, nodeLanguaje, g);
 //                ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).addNodes(nodes);
@@ -308,7 +318,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 long currentTime = world.updateAndGetSimulationTime();
                 world.updateWorldAge();
 
-                System.out.println("wa: " + world.getAge() + " simulation time: " 
+                System.out.println("wa: " + world.getAge() + " simulation time: "
                         + currentTime + " nodes " + world.getNodesAlive() + " mobile: " + world.getMobileAgents().size());
                 isDrawing = true;
 

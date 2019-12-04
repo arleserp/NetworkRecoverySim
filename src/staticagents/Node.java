@@ -17,9 +17,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import serialization.StringSerializer;
+import trickle.Trickle;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
 
@@ -50,6 +50,7 @@ public class Node extends Agent {
     private int numberMessagesSentByRound;
     private double sizeMessagesSent;
     private double sizeMessagesRecv;
+    private Trickle trickleAlg;
 
     public HashMap<MyVertex, Integer> getDistancesToNode() {
         return distancesToNode;
@@ -414,9 +415,8 @@ public class Node extends Agent {
 
     public void setVisitedStatus(String visitedStatus) {
         this.visitedStatus = visitedStatus;
-    }    
-    
-    
+    }
+
     /**
      * This Method defines if create a new node or not
      *
@@ -430,7 +430,7 @@ public class Node extends Agent {
         env.increaseTotalSizeMsgSent(totalSizeMsgSent);  //a ping is 56 bytes sent
         increaseMessagesSentByRound(totalSizeMsgSent, sizeNetworkData);
 
-        int topologyDataSize =topologyData.size();
+        int topologyDataSize = topologyData.size();
         double totalSizeMsgRecv = topologyDataSize * 56.0;
         env.increaseTotalSizeMsgRecv(totalSizeMsgRecv); //response of nodes
         increaseMessagesRecvByRound(totalSizeMsgRecv, topologyDataSize);
@@ -541,6 +541,14 @@ public class Node extends Agent {
         sizeMessagesSent = 0;
         numberMessagesRecvByRound = 0;
         numberMessagesSentByRound = 0;
+    }
+
+    public Trickle getTrickleAlg() {
+        return trickleAlg;
+    }
+
+    public void setTrickleAlg(Trickle trickleAlg) {
+        this.trickleAlg = trickleAlg;
     }
 
 }
