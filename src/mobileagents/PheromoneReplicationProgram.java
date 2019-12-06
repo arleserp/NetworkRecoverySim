@@ -61,7 +61,7 @@ public class PheromoneReplicationProgram implements AgentProgram {
             // System.out.println("this cannot happen!!! agent fail because node is not running or was killed determining new movement." + vs);
             //return new ActionParameters("die");
             // System.out.println("Inform node that possibly a node is death: " + ex.getLocalizedMessage());
-            return new ActionParameters("informfailure");
+            return new ActionParameters("die");
         }
         /* If termite has a message then react to this message */
         return act;

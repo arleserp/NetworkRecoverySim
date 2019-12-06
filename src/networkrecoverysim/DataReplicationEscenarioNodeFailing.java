@@ -273,8 +273,9 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 world = new NetworkEnvironmentNodeFailingTrickle(agents, nodeLanguaje, g);
                 world.addNodes(nodes);
                 for(Node n : world.getNodes()) {
-                    n.setNetworkdata(((NetworkEnvironmentNodeFailingTrickle) world).loadPartialNetwork(0, n));
-                    n.setTrickleAlg(new Trickle());
+                    n.setNetworkdata(((NetworkEnvironmentNodeFailingTrickle) world).loadPartialNetwork(1, n));
+                    n.setTrickleAlg(new Trickle()); //Initializes trickle
+                    n.trickleInterval = n.getTrickleAlg().next();         //create interval {random, I]            
                 }
                 break;
 //            default:

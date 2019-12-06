@@ -410,8 +410,9 @@ public abstract class NetworkEnvironment extends Environment {
                 creator.replicasCreated++;
                 this.agents.add(nod);
                 if (SimulationParameters.simMode.equals("trickle")) {
-                    System.out.println("initializes trickleeeeeeeeeeeeeeeeeeeeee");
+                    //System.out.println("initializes trickleeeeeeeeeeeeeeeeeeeeee");
                     nod.setTrickleAlg(new Trickle());
+                    nod.trickleInterval = nod.getTrickleAlg().next();
                 }
                 nod.live();
                 Thread t = new Thread(nod);
@@ -419,8 +420,8 @@ public abstract class NetworkEnvironment extends Environment {
                 t.start();
 
 
-                if (SimulationParameters.simMode.equals("mobileAgents") && Math.random() < 1.0 - 1.0 / creator.replicasCreated) {
-                    System.out.println("crea agenteeeeee");
+                if (SimulationParameters.simMode.equals("mobileAgents") && Math.random() < ((double)(SimulationParameters.popSize)/(double)SimulationParameters.vertexNumber)) {
+                    //System.out.println("crea agenteeeeee");
                     MobileAgent ma = createNewMobileAgent(nod);
                     ma.live();
                     Thread tma = new Thread(ma);
@@ -827,7 +828,7 @@ public abstract class NetworkEnvironment extends Environment {
      * @param a mobile agent to kill
      */
     public void killMobileAgent(MobileAgent a) {
-        System.out.println("killing mobile agent " + a.getId());
+        //System.out.println("killing mobile agent " + a.getId());
         synchronized (mobileAgents) {
             mobileAgents.remove(a.getId());
         }

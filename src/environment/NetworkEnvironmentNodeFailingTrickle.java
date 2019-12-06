@@ -7,9 +7,10 @@ import java.util.Vector;
 import edu.uci.ics.jung.graph.*;
 import graphutil.MyVertex;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import networkrecoverysim.SimulationParameters;
 import serialization.StringSerializer;
 import staticagents.NetworkNodeMessageBuffer;
@@ -46,26 +47,37 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
             Node n = (Node) agent;
 
             n.incRounds();
-
+            System.out.println("0-"+n.trickleInterval[0]+ " 1-"+n.trickleInterval[1]);
+            n.trickleT = (n.trickleInterval[0] + n.trickleInterval[1]) / 2;
             String act = action.getCode();
+            //https://www.researchgate.net/publication/318344774_Development_of_Thread-compatible_Open_Source_Stack/figures?lo=1
+            Runnable sendData = () -> {
+                //Step 4. Trickle Simple send protocol 
+                if (n.getTrickleAlg().check()) {
+                    //System.out.println("neeeeeeeeeeeeeeeeeeeeeeeeew");
 
-            //Simple send protocol 
-            if (n.getTrickleAlg().check()) {
-                ArrayList<String> topologyDatas = new ArrayList(this.getTopologyNames(n.getVertex()));
-                for (String neigbour : topologyDatas) {
-                    String[] msgnet = new String[5];
-                    msgnet[0] = "networkdata";
-                    msgnet[1] = String.valueOf(n.getVertex().getName());
-                    StringSerializer s = new StringSerializer();
-                    msgnet[2] = s.serialize(n.getNetworkdata());
+                    ArrayList<String> topologyDatas = new ArrayList(this.getTopologyNames(n.getVertex()));
+                    for (String neigbour : topologyDatas) {
+                        String[] msgnet = new String[5];
+                        msgnet[0] = "networkdata";
+                        msgnet[1] = String.valueOf(n.getVertex().getName());
+                        StringSerializer s = new StringSerializer();
+                        msgnet[2] = s.serialize(n.getNetworkdata());
 
-                    if (!NetworkNodeMessageBuffer.getInstance().putMessage(neigbour, msgnet)) {
-                        System.out.println("node is down: " + neigbour);
+                        if (!NetworkNodeMessageBuffer.getInstance().putMessage(neigbour, msgnet)) {
+                            System.out.println("node is down: " + neigbour);
+                        }
                     }
                 }
-            }else{
-                System.out.println("quaaaaaaaaaaaaaaaaaaaaaaaaaaaaaak! no send");
-            }
+            };
+            ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
+            ses.schedule(sendData, n.trickleT, TimeUnit.MILLISECONDS); //Time t send data
+
+            Runnable iExpired = () -> {
+                n.trickleInterval = n.getTrickleAlg().next();
+            };
+            ScheduledExecutorService ses2 = Executors.newScheduledThreadPool(1);
+            ses2.schedule(iExpired, n.trickleInterval[1], TimeUnit.MILLISECONDS); // i expired reset timer
 
             //1. process messages from an agent
             switch (nodeLanguage.getActionIndex(act)) {
@@ -83,12 +95,12 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
                                 HashMap<String, ArrayList> localData = n.getNetworkdata();
                                 n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), recvData));
 
-                                //inconsistency detected
+                                //inconsistency detected step 6 trickle
                                 if (!HashMapOperations.calculateDifference(n.getNetworkdata(), localData).isEmpty()) {
                                     n.getTrickleAlg().reset();
-                                    
+
                                 } else {
-                                    //Whenever Trickle hears a transmission that is "consistent", it increments the counter c.
+                                    //step 3: Whenever Trickle hears a transmission that is "consistent", it increments the counter c.
                                     n.getTrickleAlg().incr();
                                 }
                                 //double sizeRecv = inbox[0].length() + inbox[1].length() + inbox[2].length();

@@ -21,7 +21,7 @@ public class Trickle {
         intervalMin = 100;
         intervalMax = (long) (2 >> 16);
         redundancyFactorK = 5; //3
-     }
+    }
 
     public Trickle(long iMin, int iFactor, int redunFactor) {
         intervalMin = iMin;
@@ -33,6 +33,7 @@ public class Trickle {
         currentInterval = Math.min(intervalMin, currentInterval * 2);
         counter = 0;
         return new long[]{currentInterval - Math.round(Math.random() * (currentInterval / 2)), currentInterval};
+
     }
 
     public void incr() {
@@ -46,10 +47,10 @@ public class Trickle {
     public long[] reset() {
         if (currentInterval <= intervalMin) {
             currentInterval = intervalMin;
-            return new long[0];
+            //return new long[0];
         } else {
             currentInterval = intervalMin / 2;
-            return next();
         }
+        return next();
     }
 }

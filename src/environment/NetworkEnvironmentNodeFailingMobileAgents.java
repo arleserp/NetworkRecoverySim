@@ -47,7 +47,7 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
         try {
             if (agent instanceof MobileAgent) {
                 MobileAgent a = (MobileAgent) agent;
-                System.out.println("Here is running" + a.toString());
+                //System.out.println("Here is running" + a.toString());
                 Node c = getNode(a.getLocation().getName());
                 if (c == null) { //node failed                    
                     killMobileAgent(a);
@@ -60,7 +60,7 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
                         StringSerializer s = new StringSerializer();
                         msgdatanode[2] = s.serialize(a.getNetworkdata());
                         NetworkNodeMessageBuffer.getInstance().putMessage(c.getName(), msgdatanode);
-                        System.out.println("wa:" + getAge() + " Mobile Agent: " + a.getId() + " sends networkdatanode to: " + c.getName());
+                        //System.out.println("wa:" + getAge() + " Mobile Agent: " + a.getId() + " sends networkdatanode to: " + c.getName());
                         //Obtain data from node
                         //HashMap<String, ArrayList<String>> localNetworkData = new HashMap<>();
                         a.setNetworkdata(HashMapOperations.JoinSets(c.getNetworkdata(), a.getNetworkdata()));
