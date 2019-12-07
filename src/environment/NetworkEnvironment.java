@@ -812,6 +812,7 @@ public abstract class NetworkEnvironment extends Environment {
      */
     public double getMessageSize(String[] msg) {
         int size = 0;
+        //System.out.println(msg[0]);
         for (String m : msg) {
             size += m.length();
         }

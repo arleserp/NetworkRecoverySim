@@ -246,7 +246,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 world.addNodes(nodes);
                 world.addMobileAgents(mobileAgents);
                 for (Node n : world.getNodes()) {
-                    n.setNetworkdata(world.loadPartialNetwork(1, n)); //load current neighbourhood in hop 0
+                    n.setNetworkdata(world.loadPartialNetwork(0, n)); //load current neighbourhood in hop 0
                     //System.out.println("n" +n);
                 }
 
@@ -273,7 +273,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 world = new NetworkEnvironmentNodeFailingTrickle(agents, nodeLanguaje, g);
                 world.addNodes(nodes);
                 for(Node n : world.getNodes()) {
-                    n.setNetworkdata(((NetworkEnvironmentNodeFailingTrickle) world).loadPartialNetwork(1, n));
+                    n.setNetworkdata(((NetworkEnvironmentNodeFailingTrickle) world).loadPartialNetwork(0, n));
                     n.setTrickleAlg(new Trickle()); //Initializes trickle
                     n.trickleInterval = n.getTrickleAlg().next();         //create interval {random, I]            
                 }

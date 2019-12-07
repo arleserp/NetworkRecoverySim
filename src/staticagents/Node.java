@@ -51,8 +51,8 @@ public class Node extends Agent {
     private double sizeMessagesSent;
     private double sizeMessagesRecv;
     private Trickle trickleAlg;
-    public long trickleT;            
-    public long[] trickleInterval;
+    public int trickleT;            
+    public int[] trickleInterval;
 
     public HashMap<MyVertex, Integer> getDistancesToNode() {
         return distancesToNode;
@@ -346,7 +346,6 @@ public class Node extends Agent {
     @Override
     public String toString() {
         return "Node{" + "v=" + v + ", rounds=" + rounds + '}';
-
     }
 
     /**

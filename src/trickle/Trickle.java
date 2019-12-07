@@ -5,35 +5,54 @@
  */
 package trickle;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
  *
  * @author Arles
  */
 public class Trickle {
 
-    private long intervalMin;
-    private long intervalMax;
+    private int intervalMin;
+    private int intervalMax;
     private int redundancyFactorK;
-    private long currentInterval = 100; //milliseconds
+    private int currentInterval = 1; //rounds
     private int counter = 0;
 
+    public int getCounter() {
+        return counter;
+    }
+        
     public Trickle() {
-        intervalMin = 100;
-        intervalMax = (long) (2 >> 16);
-        redundancyFactorK = 5; //3
+        intervalMin = 1;
+        intervalMax = 2 << 16;
+        redundancyFactorK = 3;
     }
 
-    public Trickle(long iMin, int iFactor, int redunFactor) {
+    public Trickle(int iMin, int iFactor, int redunFactor) {
         intervalMin = iMin;
-        intervalMax = (long) (2 >> iFactor) * iMin;
+        intervalMax = 2 << 16;
         redundancyFactorK = redunFactor;
     }
 
-    public long[] next() {
+    public int[] next() {
+        //System.out.println("inconsistency!");
         currentInterval = Math.min(intervalMin, currentInterval * 2);
+        //System.out.println("current" + currentInterval);
         counter = 0;
-        return new long[]{currentInterval - Math.round(Math.random() * (currentInterval / 2)), currentInterval};
+        return new int[]{currentInterval, currentInterval};
+    }
 
+    //Possible step 5
+    public int[] iExpired() {    
+        //System.out.println("entraaaaaa");
+        counter = 0;
+        if(currentInterval*2 > intervalMax){
+            currentInterval = intervalMax;
+        }
+        currentInterval *=2;
+       // System.out.println("i expired: " + currentInterval);
+        return new int[]{currentInterval/2, currentInterval};
     }
 
     public void incr() {
@@ -44,13 +63,15 @@ public class Trickle {
         return counter < redundancyFactorK;
     }
 
-    public long[] reset() {
+    public int[] reset() {
         if (currentInterval <= intervalMin) {
             currentInterval = intervalMin;
-            //return new long[0];
-        } else {
-            currentInterval = intervalMin / 2;
         }
         return next();
     }
+    
+    public int getT(int min, int max){
+        return ThreadLocalRandom.current().nextInt(min, max+1);    
+    }
+        
 }
