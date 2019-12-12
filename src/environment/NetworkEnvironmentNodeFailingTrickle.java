@@ -37,12 +37,6 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
     }
 
     @Override
-    public Percept sense(Agent agent) {
-        Percept p = new Percept();
-        return p;
-    }
-
-    @Override
     public boolean act(Agent agent, Action action) {
         if (agent instanceof Node) {
             try {

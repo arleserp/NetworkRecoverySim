@@ -321,7 +321,6 @@ public abstract class NetworkEnvironment extends Environment {
         agents.add(a);
         mobileAgents.put(id, a);
         return a;
-
     }
 
     /**
@@ -512,6 +511,10 @@ public abstract class NetworkEnvironment extends Environment {
             }
         }
 
+        if(agent instanceof Node){
+           
+            p.setAttribute("round", getAge());
+        }
         return p;
     }
 

@@ -6,6 +6,7 @@
 package staticagents;
 
 import agents.ActionParameters;
+import networkrecoverysim.SimulationParameters;
 import unalcol.agents.Action;
 import unalcol.agents.AgentProgram;
 
@@ -16,6 +17,7 @@ import unalcol.agents.Percept;
  * @author Arles Rodriguez
  */
 public class NodeFailingProgram implements AgentProgram {
+
     float pf;
 
     public NodeFailingProgram(float pf) {
@@ -25,20 +27,34 @@ public class NodeFailingProgram implements AgentProgram {
 
     public void setPf(float pf) {
         this.pf = pf;
-    }   
-    
+    }
+
     @Override
     public Action compute(Percept p) {
-        if (Math.random() < pf) {
-            return new ActionParameters("die");
-        } else{
-            return new ActionParameters("communicate");
+
+        if (SimulationParameters.failureProfile.contains("zeropf")) {
+            String[] zeroPfInterval = SimulationParameters.failureProfile.split("-");
+            int initialRound = Integer.valueOf(zeroPfInterval[1]);
+            int endRound = Integer.valueOf(zeroPfInterval[2]);
+            int round = (Integer)(p.getAttribute("round"));
+            
+            if (Math.random() < pf && (round >= initialRound && round <= endRound) ) {
+                return new ActionParameters("die");
+            } else {
+                return new ActionParameters("communicate");
+            }
+        } else {
+            if (Math.random() < pf) {
+                return new ActionParameters("die");
+            } else {
+                return new ActionParameters("communicate");
+            }
         }
     }
 
     @Override
     public void init() {
-        
+
     }
 
 }
