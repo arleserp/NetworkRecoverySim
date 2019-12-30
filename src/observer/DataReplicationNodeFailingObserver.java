@@ -173,7 +173,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     } catch (IOException ex) {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    
+
                     //write node averageLife
                     String avgNodeLife = baseFilename + "+nodeLife";
                     createDir(avgNodeLife);
@@ -189,7 +189,6 @@ public class DataReplicationNodeFailingObserver implements Observer {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
-                    
                     //Write agents live number
                     String agNumberdirName = baseFilename + "+agentNumber";
                     createDir(agNumberdirName);
@@ -209,13 +208,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
-                    String netAndMemStats;
-                    int worldAge = world.getAge();
-                    //totalMemory|totalMsgSent|sizeMsgSent|totalMsgReceived|sizeMsgRecv
-                    netAndMemStats = world.getTotalMemory() + "," + world.getTotalMsgSent() + ","
-                            + world.getTotalSizeMsgSent() + "," + world.getTotalMsgRecv() + "," + world.getTotalSizeMsgRecv();
-
-                    dataReplEsc.getNetworkAndMemoryStats().put(worldAge, netAndMemStats);
+                    world.getLocalStats();
 
                     //Write stats about total network consumption and total memory consumption by round
                     String resourcesdirName = baseFilename + "+resources";
@@ -226,43 +219,56 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     try {
                         escribirResourcesStats = new PrintWriter(new BufferedWriter(new FileWriter(resourcesStats, true)));
                         //System.out.println("writing " + dataReplEsc.getNetworkAndMemoryStats());
-                        SortedSet<Integer> keysAg = new TreeSet<>(dataReplEsc.getNetworkAndMemoryStats().keySet());
 
-                        for (int x : keysAg) {
+                        SortedSet<Integer> keyAges = new TreeSet<>(world.getMemoryConsumption().keySet());
+                        for (int wRound : keyAges) {
                             //System.out.println("writting stat" + x);
-                            escribirResourcesStats.println(x + "," + dataReplEsc.getNetworkAndMemoryStats().get(x));
+                            escribirResourcesStats.println(wRound + "," + world.getMemoryConsumption().get(wRound));
                         }
                         escribirResourcesStats.close();
                     } catch (IOException ex) {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
+
+                    
+                    //Write stats about total network consumption and total memory consumption by round
+                    String resourcesdirNameMa = baseFilename + "+resourcesMa";
+                    createDir(resourcesdirNameMa);
+                    String resourcesStatsMa = "./" + resourcesdirNameMa + "/" + baseFilename + "+" + getFileName() + "+resourcesMa.csv";
+
+                    PrintWriter escribirResourcesStatsMa;
+                    try {
+                        escribirResourcesStatsMa = new PrintWriter(new BufferedWriter(new FileWriter(resourcesStatsMa, true)));
+                        //System.out.println("writing " + dataReplEsc.getNetworkAndMemoryStats());
+
+                        SortedSet<Integer> keyAgesMa = new TreeSet<>(world.getMemoryConsumptionMa().keySet());
+                        for (int wRoundMa : keyAgesMa) {
+                            //System.out.println("writting stat" + x);
+                            escribirResourcesStatsMa.println(wRoundMa + "," + world.getMemoryConsumptionMa().get(wRoundMa));
+                        }
+                        escribirResourcesStatsMa.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    
                     
                     //write stats about amount of messages recv a send in each round, it is shown the overhead imposed for the algorithm in each round.
                     String localNetworkStatsSent;
-                    HashMap localStatsNode;
 
                     //Write stats about total network consumption and total memory consumption by round
                     //Sent:
                     String localStatsSentdirName = baseFilename + "+localstatssent";
                     createDir(localStatsSentdirName);
                     String localStatsSentFileName = "./" + localStatsSentdirName + "/" + baseFilename + "+" + getFileName() + "+sent.csv";
-                    
+
                     PrintWriter escribirLocalStatsSent = null;
                     try {
                         escribirLocalStatsSent = new PrintWriter(new BufferedWriter(new FileWriter(localStatsSentFileName, true)));
                         //System.out.println("writing " + dataReplEsc.getNetworkAndMemoryStats());
-                        SortedSet<Integer> worldRoundSet = new TreeSet<>(dataReplEsc.getLocalStatsByRound().keySet());                        
-                        System.out.println("pasa");
-                        //totalNMsgRecvRound|numberMedianNMsgSentRound|numberMaxNMsgSentRound|numberMinNMsgSentRound|numberStdevNMsgSentRound|
-                        //totalSMsgSentRound|numberMedianSMsgSentRound|numberMaxSMsgSentRound|numberMinSMsgSentRound|numberStdevSMsgSentRound                                        
+                        SortedSet<Integer> worldRoundSet = new TreeSet<>(world.getNumberMessagesSent().keySet());
+                        //totalNMsgSentRound|totalSMsgSentRound                        
                         for (Integer r : worldRoundSet) {
-                            localStatsNode = dataReplEsc.getLocalStatsByRound().get(r);
-                            localNetworkStatsSent = localStatsNode.get("totalNMsgSentRound") + "," + localStatsNode.get("numberAverageNMsgSentRound") + "," + localStatsNode.get("numberMaxNMsgSentRound") + ","
-                                    + localStatsNode.get("numberMinNMsgSentRound") + "," + localStatsNode.get("numberStdevNMsgSentRound") + "," 
-                                    + localStatsNode.get("totalSMsgSentRound") + "," + localStatsNode.get("numberAverageSMsgSentRound") + "," + localStatsNode.get("numberMaxSMsgSentRound") + ","
-                                    + localStatsNode.get("numberMinSMsgSentRound") + "," + localStatsNode.get("numberStdevSMsgSentRound");
-
-                            //System.out.println("writting stat" + localNetworkStatsSent);
+                            localNetworkStatsSent = world.getNumberMessagesSent().get(r) + "," + world.getSizeMessagesSent().get(r);
                             escribirLocalStatsSent.println(r + "," + localNetworkStatsSent);
                         }
                         escribirLocalStatsSent.close();
@@ -270,7 +276,32 @@ public class DataReplicationNodeFailingObserver implements Observer {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
+                    
+                    
+                    //write stats about amount of messages recv a send in each round, it is shown the overhead imposed for the algorithm in each round.
+                    String localNetworkStatsSentMa;
+                    //Write stats about total network consumption and total memory consumption by round
+                    //Sent:
+                    String localStatsSentdirNameMa = baseFilename + "+localstatssentMa";
+                    createDir(localStatsSentdirNameMa);
+                    String localStatsSentFileNameMa = "./" + localStatsSentdirNameMa + "/" + baseFilename + "+" + getFileName() + "+sentMa.csv";
 
+                    PrintWriter escribirLocalStatsSentMa = null;
+                    try {
+                        escribirLocalStatsSentMa = new PrintWriter(new BufferedWriter(new FileWriter(localStatsSentFileNameMa, true)));
+                        //System.out.println("writing " + dataReplEsc.getNetworkAndMemoryStats());
+                        SortedSet<Integer> worldRoundSetMa = new TreeSet<>(world.getNumberMessagesSentMa().keySet());
+                        //totalNMsgSentRound|totalSMsgSentRound                        
+                        for (Integer r : worldRoundSetMa) {
+                            localNetworkStatsSentMa = world.getNumberMessagesSentMa().get(r) + "," + world.getSizeMessagesSentMa().get(r);
+                            escribirLocalStatsSentMa.println(r + "," + localNetworkStatsSentMa);
+                        }
+                        escribirLocalStatsSentMa.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    
+                    
                     //Recv: 
                     String localNetworkStatsRecv;
                     String localStatsRecvdirName = baseFilename + "+localstatsrecv";
@@ -281,18 +312,10 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     try {
                         escribirLocalStatsRecv = new PrintWriter(new BufferedWriter(new FileWriter(localStatsRecvFileName, true)));
                         //System.out.println("writing " + dataReplEsc.getNetworkAndMemoryStats());
-                        SortedSet<Integer> worldRoundSet = new TreeSet<>(dataReplEsc.getLocalStatsByRound().keySet());
-
-                        //totalNMsgRecvRound|numberAverageNMsgSentRound|numberMaxNMsgRecvRound|numberMinNMsgRecvRound|numberStdevNMsgRecvRound|
-                        //totalSMsgRecvRound|numberAverageSMsgSentRound|numberMaxSMsgRecvRound|numberMinSMsgRecvRound|numberStdevSMsgRecvRound                                        
+                        SortedSet<Integer> worldRoundSet = new TreeSet<>(world.getNumberMessagesRecv().keySet());
+                        //totalNMsgRecvRound|totalSMsgRecvRound
                         for (int r : worldRoundSet) {
-                            localStatsNode = dataReplEsc.getLocalStatsByRound().get(r);
-                            localNetworkStatsRecv = localStatsNode.get("totalNMsgRecvRound") + "," + localStatsNode.get("numberAverageNMsgRecvRound") + "," + localStatsNode.get("numberMaxNMsgRecvRound") + ","
-                                    + localStatsNode.get("numberMinNMsgRecvRound") + "," + localStatsNode.get("numberStdevNMsgRecvRound") + ","
-                                    + localStatsNode.get("totalSMsgRecvRound") + ","  + localStatsNode.get("numberAverageSMsgRecvRound") + "," + localStatsNode.get("numberMaxSMsgRecvRound") + ","
-                                    + localStatsNode.get("numberMinSMsgRecvRound") + "," + localStatsNode.get("numberStdevSMsgRecvRound");
-
-                            //System.out.println("writting stat" + x);
+                            localNetworkStatsRecv = world.getNumberMessagesRecv().get(r) + "," + world.getSizeMessagesRecv().get(r);
                             escribirLocalStatsRecv.println(r + "," + localNetworkStatsRecv);
                         }
                         escribirLocalStatsRecv.close();
@@ -300,6 +323,29 @@ public class DataReplicationNodeFailingObserver implements Observer {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
+                    
+                     //Recv: 
+                    String localNetworkStatsRecvMa;
+                    String localStatsRecvdirNameMa = baseFilename + "+localstatsrecvMa";
+                    createDir(localStatsRecvdirNameMa);
+                    String localStatsRecvFileNameMa = "./" + localStatsRecvdirNameMa + "/" + baseFilename + "+" + getFileName()+ "+recvMa.csv";
+
+                    PrintWriter escribirLocalStatsRecvMa = null;
+                    try {
+                        escribirLocalStatsRecvMa = new PrintWriter(new BufferedWriter(new FileWriter(localStatsRecvFileNameMa, true)));
+                        //System.out.println("writing " + dataReplEsc.getNetworkAndMemoryStats());
+                        SortedSet<Integer> worldRoundSetMa = new TreeSet<>(world.getNumberMessagesRecvMa().keySet());
+                        //totalNMsgRecvRound|totalSMsgRecvRound
+                        for (int r : worldRoundSetMa) {
+                            localNetworkStatsRecvMa = world.getNumberMessagesRecvMa().get(r) + "," + world.getSizeMessagesRecvMa().get(r);
+                            escribirLocalStatsRecvMa.println(r + "," + localNetworkStatsRecvMa);
+                        }
+                        escribirLocalStatsRecvMa.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    
+                    
                     //System.out.println("pasoooo!");
                     //Statistics regarding messages received by node.
                     StatisticsProviderReplicationNodeFailing sti = new StatisticsProviderReplicationNodeFailing(baseFilename);

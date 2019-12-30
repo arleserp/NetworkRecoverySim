@@ -428,13 +428,16 @@ public class Node extends Agent {
         int sizeNetworkData = getNetworkdata().get(getName()).size();
         double totalSizeMsgSent = sizeNetworkData * 56;
 
-        env.increaseTotalSizeMsgSent(totalSizeMsgSent);  //a ping is 56 bytes sent
+        //a ping is 56 bytes sent
         increaseMessagesSentByRound(totalSizeMsgSent, sizeNetworkData);
 
         int topologyDataSize = topologyData.size();
         double totalSizeMsgRecv = topologyDataSize * 56.0;
-        env.increaseTotalSizeMsgRecv(totalSizeMsgRecv); //response of nodes
+        
+    
+         //response of nodes
         increaseMessagesRecvByRound(totalSizeMsgRecv, topologyDataSize);
+        //System.out.println(topologyDataSize + " vs " + sizeNetworkData);
 
         if (getNetworkdata().containsKey(getName())) {
             List<String> nd = new ArrayList((Collection) getNetworkdata().get(getName()));

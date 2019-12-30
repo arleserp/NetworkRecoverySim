@@ -47,7 +47,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
                 }
                 if (args.length > 14) {
-                    SimulationParameters.wsize = Integer.valueOf(args[14]);
+                    SimulationParameters.redundancyFactor = Integer.valueOf(args[14]);
                 }
                 if (args.length > 15) {
                     SimulationParameters.nofailRounds = Integer.valueOf(args[15]);
@@ -88,7 +88,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
                 }
                 if (args.length > 14) {
-                    SimulationParameters.wsize = Integer.valueOf(args[14]);
+                    SimulationParameters.redundancyFactor = Integer.valueOf(args[14]);
                 }
                 if (args.length > 15) {
                     SimulationParameters.nofailRounds = Integer.valueOf(args[15]);
@@ -122,7 +122,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
                 }
                 if (args.length > 14) {
-                    SimulationParameters.wsize = Integer.valueOf(args[14]);
+                    SimulationParameters.redundancyFactor = Integer.valueOf(args[14]);
                 }
                 if (args.length > 15) {
                     SimulationParameters.nofailRounds = Integer.valueOf(args[15]);
@@ -162,7 +162,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[14]);
                 }
                 if (args.length > 15) {
-                    SimulationParameters.wsize = Integer.valueOf(args[15]);
+                    SimulationParameters.redundancyFactor = Integer.valueOf(args[15]);
                 }
                 if (args.length > 16) {
                     SimulationParameters.nofailRounds = Integer.valueOf(args[16]);
@@ -200,7 +200,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
                 }
                 if (args.length > 14) {
-                    SimulationParameters.wsize = Integer.valueOf(args[14]);
+                    SimulationParameters.redundancyFactor = Integer.valueOf(args[14]);
                 }
                 if (args.length > 15) {
                     SimulationParameters.nofailRounds = Integer.valueOf(args[15]);
@@ -237,7 +237,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[12]);
                 }
                 if (args.length > 13) {
-                    SimulationParameters.wsize = Integer.valueOf(args[13]);
+                    SimulationParameters.redundancyFactor = Integer.valueOf(args[13]);
                 }
                 if (args.length > 14) {
                     SimulationParameters.nofailRounds = Integer.valueOf(args[14]);
@@ -274,7 +274,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[12]);
                 }
                 if (args.length > 13) {
-                    SimulationParameters.wsize = Integer.valueOf(args[13]);
+                    SimulationParameters.redundancyFactor = Integer.valueOf(args[13]);
                 }
                 if (args.length > 14) {
                     SimulationParameters.nofailRounds = Integer.valueOf(args[14]);
@@ -312,7 +312,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
                 }
                 if (args.length > 14) {
-                    SimulationParameters.wsize = Integer.valueOf(args[14]);
+                    SimulationParameters.redundancyFactor = Integer.valueOf(args[14]);
                 }
                 if (args.length > 15) {
                     SimulationParameters.nofailRounds = Integer.valueOf(args[15]);
@@ -349,7 +349,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
                 }
                 if (args.length > 14) {
-                    SimulationParameters.wsize = Integer.valueOf(args[14]);
+                    SimulationParameters.redundancyFactor = Integer.valueOf(args[14]);
                 }
                 if (args.length > 15) {
                     SimulationParameters.nofailRounds = Integer.valueOf(args[15]);
@@ -386,7 +386,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.nhopsChain = Integer.valueOf(args[12]);
                 }
                 if (args.length > 13) {
-                    SimulationParameters.wsize = Integer.valueOf(args[13]);
+                    SimulationParameters.redundancyFactor = Integer.valueOf(args[13]);
                 }
                 if (args.length > 14) {
                     SimulationParameters.nofailRounds = Integer.valueOf(args[14]);

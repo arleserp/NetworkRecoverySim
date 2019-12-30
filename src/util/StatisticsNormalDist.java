@@ -18,6 +18,12 @@ public class StatisticsNormalDist {
     private ArrayList<Double> data;
     private int size;
     
+    public StatisticsNormalDist(ArrayList<Double> arr){
+        data = arr;
+        size = arr.size();
+    }
+    
+    
     public StatisticsNormalDist(ArrayList<Double> arr, int s){
         data = arr;
         size = s;

@@ -7,12 +7,14 @@ package graphmetrics;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Shape;
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,6 +28,7 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import observer.DataReplicationNodeFailingObserver;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -38,7 +41,6 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.util.Log;
 import org.jfree.util.LogContext;
-import org.jfree.util.ShapeUtilities;
 import util.StatisticsNormalDist;
 
 /**
@@ -46,7 +48,7 @@ import util.StatisticsNormalDist;
  *
  * @author Arles Rodriguez
  */
-public class NetworkConsumptionLocalSizeSent extends ApplicationFrame {
+public class NetworkConsumptionLocalSizeRecvMa extends ApplicationFrame {
 
     private static String experimentsDir = ".";
     private static String minRoundForall = "off";
@@ -56,7 +58,7 @@ public class NetworkConsumptionLocalSizeSent extends ApplicationFrame {
     /**
      * Access to logging facilities.
      */
-    private static final LogContext LOGGER = Log.createContext(NetworkConsumptionLocalSizeSent.class);
+    private static final LogContext LOGGER = Log.createContext(NetworkConsumptionLocalSizeRecvMa.class);
 
     public static <T extends Comparable<? super T>> List<T> asSortedList(Collection<T> c) {
         List<T> list = new ArrayList<>(c);
@@ -69,7 +71,7 @@ public class NetworkConsumptionLocalSizeSent extends ApplicationFrame {
      *
      * @param title the frame title.
      */
-    public NetworkConsumptionLocalSizeSent(final String title) {
+    public NetworkConsumptionLocalSizeRecvMa(final String title) {
         super(title);
 
         String extension;
@@ -78,12 +80,12 @@ public class NetworkConsumptionLocalSizeSent extends ApplicationFrame {
         File[] files = f.listFiles();
 
         for (File file : files) {
-            if (file.isDirectory() && file.getName().endsWith("localstatssent")) {
+            if (file.isDirectory() && file.getName().endsWith("localstatsrecvMa")) {
                 //System.out.println("new seriiiiieeeeeeeeeee" + file);
                 XYSeriesCollection juegoDatos = new XYSeriesCollection();
-                XYSeries minimum = new XYSeries("MinNumberMsgSent");
-                XYSeries maximum = new XYSeries("MaxNumberMsgSent");
-                XYSeries median = new XYSeries("MedianNumberMsgSent");
+                XYSeries minimum = new XYSeries("MinNumberMsgRecv");
+                XYSeries maximum = new XYSeries("MaxNumberMsgRecv");
+                XYSeries median = new XYSeries("MedianNumberMsgRecv");
                 juegoDatos.addSeries(minimum);
                 juegoDatos.addSeries(maximum);
                 juegoDatos.addSeries(median);
@@ -104,7 +106,7 @@ public class NetworkConsumptionLocalSizeSent extends ApplicationFrame {
                         String[] splittt = f1name.split(Pattern.quote("+"));
                         String[] splittt2 = f2name.split(Pattern.quote("+"));
                         Date date1 = null, date2 = null;
-                        
+
                         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
                         String dateInString = f1name.split(Pattern.quote("+"))[splittt.length - 2];
                         String dateInString2 = f2name.split(Pattern.quote("+"))[splittt2.length - 2];
@@ -112,7 +114,7 @@ public class NetworkConsumptionLocalSizeSent extends ApplicationFrame {
                             date1 = sdf.parse(dateInString);
                             date2 = sdf.parse(dateInString2);
                         } catch (ParseException ex) {
-                            Logger.getLogger(NetworkConsumptionLocalSizeSent.class.getName()).log(Level.SEVERE, null, ex);
+                            Logger.getLogger(NetworkConsumptionLocalSizeRecvMa.class.getName()).log(Level.SEVERE, null, ex);
                         }
                         System.out.println("date1:" + date1 + ", date2:" + date2);
                         return date1.compareTo(date2);
@@ -129,7 +131,7 @@ public class NetworkConsumptionLocalSizeSent extends ApplicationFrame {
                     }
                     System.out.println("jaakak" + fileInfo.isFile());
                     // System.out.println(file.getName() + "extension" + extension);
-                    if (fileInfo.isFile() && extension.equals("csv") && fileInfo.getName().startsWith("exp") && fileInfo.getName().contains("sent")) {
+                    if (fileInfo.isFile() && extension.equals("csv") && fileInfo.getName().startsWith("exp") && fileInfo.getName().contains("recvMa")) {
                         System.out.println("entraaaaaaaaaaaaaaa");
                         ArrayList Data;
                         System.out.println(fileInfo.getName());
@@ -153,7 +155,7 @@ public class NetworkConsumptionLocalSizeSent extends ApplicationFrame {
                             sc = new Scanner(fileInfo);
 
                         } catch (FileNotFoundException ex) {
-                            Logger.getLogger(NetworkConsumptionLocalSizeSent.class
+                            Logger.getLogger(NetworkConsumptionLocalSizeRecvMa.class
                                     .getName()).log(Level.SEVERE, null, ex);
                         }
 
@@ -164,13 +166,13 @@ public class NetworkConsumptionLocalSizeSent extends ApplicationFrame {
                             System.out.println("line:" + line);
                             data = line.split(",");
                             int round = Integer.valueOf(data[0]);
-                                                        
-                            Double numberTotalMsgSent =(double)Math.round(Double.valueOf(data[2]) * 100d) / 100d;
+
+                            Double numberTotalMsgRecv = (double) Math.round(Double.valueOf(data[2]) * 100d) / 100d;
                             // Dictionary<round, memory>
                             if (!datainRound.containsKey(round)) {
                                 datainRound.put(round, new ArrayList<Double>());
                             }
-                            datainRound.get(round).add(numberTotalMsgSent);
+                            datainRound.get(round).add(numberTotalMsgRecv);
                             last_round = round;
                         }
                         sc.close();
@@ -185,16 +187,36 @@ public class NetworkConsumptionLocalSizeSent extends ApplicationFrame {
                 }
                 Collection<Integer> unsorted = datainRound.keySet();
                 List<Integer> sorted = asSortedList(unsorted);
+
+                String localNetworkStatsRecv;
+                String localStatsRecvdirName = "localstatsrecv+Total+MobileAgents";
+                Scanner sca = new Scanner(System.in);
+                String localStatsRecvFileName = "./" + file.getName() + localStatsRecvdirName + "+recv.csv";
+                
+
+                PrintWriter escribirLocalStatsRecv = null;
+
                 for (int k : sorted) {
                     System.out.println("xxxxxxxx");
                     StatisticsNormalDist st = new StatisticsNormalDist(datainRound.get(k), datainRound.get(k).size());
                     minimum.add(k, st.getMin());
                     maximum.add(k, st.getMax());
                     median.add(k, st.getMedian());
+                    try {
+                        escribirLocalStatsRecv = new PrintWriter(new BufferedWriter(new FileWriter(localStatsRecvFileName, true)));
+                        //System.out.println("writing " + dataReplEsc.getNetworkAndMemoryStats());
+                        //totalNMsgRecvRound|totalSMsgRecvRound
+                        escribirLocalStatsRecv.println(st.getMin() + "," + st.getMedian() + "," + st.getMax());
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                    escribirLocalStatsRecv.close();
+
                 }
 
                 JFreeChart chart = ChartFactory.createXYLineChart(
-                        "Time vs Size of Messages Sent by Round" + file.getName(), "Time", "Size of Messages in bytes",
+                        "Time vs Size of Messages Recv by Round Mobile Agents" + file.getName(), "Time", "Size of Messages in bytes",
                         juegoDatos, PlotOrientation.VERTICAL,
                         true, true, false);
 
@@ -231,12 +253,12 @@ public class NetworkConsumptionLocalSizeSent extends ApplicationFrame {
 
                 FileOutputStream output;
                 try {
-                    output = new FileOutputStream(file.getName() + "localSizeMsgSent" + ".jpg");
+                    output = new FileOutputStream(file.getName() + "localSizeMsgRecvMa" + ".jpg");
                     ChartUtilities.writeChartAsJPEG(output, 1.0f, chart, sizeX, sizeY, null);
                 } catch (FileNotFoundException ex) {
-                    Logger.getLogger(NetworkConsumptionLocalSizeSent.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(NetworkConsumptionLocalSizeRecvMa.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IOException ex) {
-                    Logger.getLogger(NetworkConsumptionLocalSizeSent.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(NetworkConsumptionLocalSizeRecvMa.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
@@ -259,6 +281,6 @@ public class NetworkConsumptionLocalSizeSent extends ApplicationFrame {
         if (args.length > 2) {
             sizeY = Integer.valueOf(args[3]);
         }
-        final NetworkConsumptionLocalSizeSent demo = new NetworkConsumptionLocalSizeSent("Local Number of Messages Sent vs Time");
+        final NetworkConsumptionLocalSizeRecvMa demo = new NetworkConsumptionLocalSizeRecvMa("Local Number of Messages Received vs Time");
     }
 }

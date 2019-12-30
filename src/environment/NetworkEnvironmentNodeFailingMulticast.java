@@ -58,7 +58,7 @@ public class NetworkEnvironmentNodeFailingMulticast extends NetworkEnvironment {
                 msgnet[1] = String.valueOf(n.getVertex().getName());
                 StringSerializer s = new StringSerializer();
                 msgnet[2] = s.serialize(n.getNetworkdata());
-                
+
                 if (!NetworkNodeMessageBuffer.getInstance().putMessage(neigbour, msgnet)) {
                     System.out.println("node is down: " + neigbour);
                 }
@@ -73,14 +73,14 @@ public class NetworkEnvironmentNodeFailingMulticast extends NetworkEnvironment {
 
                         if (SimulationParameters.activateReplication.equals("replalgon")) {
                             //receives data
-                            if (inbox[0].equals("networkdata")) {                                
+                            if (inbox[0].equals("networkdata")) {
                                 //completes and updates data
                                 StringSerializer s = new StringSerializer();
                                 HashMap<String, ArrayList> recvData = (HashMap<String, ArrayList>) s.deserialize(inbox[2]);
                                 n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), recvData));
-                               
+
                                 double sizeRecv = inbox[0].length() + inbox[1].length() + inbox[2].length();
-  
+
                             }
                             if (inbox[0].equals("connect")) {
                                 //message msgnodediff: connect|level|nodeid|nodetoconnect                                
@@ -98,6 +98,7 @@ public class NetworkEnvironmentNodeFailingMulticast extends NetworkEnvironment {
             }
             if (n.status != Action.DIE) {
                 n.evaluateNodeCreation(this);
+                addLocalConsumptionNode(n);
             }
         }
         return false;

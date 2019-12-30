@@ -6,6 +6,7 @@
 package trickle;
 
 import java.util.concurrent.ThreadLocalRandom;
+import networkrecoverysim.SimulationParameters;
 
 /**
  *
@@ -26,7 +27,7 @@ public class Trickle {
     public Trickle() {
         intervalMin = 1;
         intervalMax = 2 << 16;
-        redundancyFactorK = 3;
+        redundancyFactorK = SimulationParameters.redundancyFactor;
     }
 
     public Trickle(int iMin, int iFactor, int redunFactor) {

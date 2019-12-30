@@ -44,7 +44,7 @@ public class LocationService {
     public static void main(String[] args) {
         int mobileAgentsNumber = 10;
         String dir = args[0]; //current dir 
-        mobileAgentsNumber = Integer.valueOf(args[1]);  //number of locations to generate
+        //mobileAgentsNumber = Integer.valueOf(args[1]);  //number of locations to generate
 
         File f = new File(dir);
         String extension;
@@ -67,7 +67,7 @@ public class LocationService {
                 System.out.println("get: " + file.getName());
                 String output = file.getName().replace(extension, "");
                 output += "loc";
-                
+                mobileAgentsNumber = g.getVertexCount();
                 for (int k = 0; k < mobileAgentsNumber; k++) {
                     locations.add(getLocation(g));
                 }

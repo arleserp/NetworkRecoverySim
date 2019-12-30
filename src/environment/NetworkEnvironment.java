@@ -7,13 +7,16 @@ import edu.uci.ics.jung.graph.*;
 import graphutil.GraphCreator;
 import graphutil.MyVertex;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -27,9 +30,7 @@ import staticagents.Node;
 import staticagents.NodeFailingProgram;
 import trickle.Trickle;
 import unalcol.agents.simulate.util.SimpleLanguage;
-import util.AtomicDouble;
 import util.HashMapOperations;
-import util.StatisticsNormalDist;
 
 public abstract class NetworkEnvironment extends Environment {
 
@@ -40,13 +41,14 @@ public abstract class NetworkEnvironment extends Environment {
     protected final int[][] adyacenceMatrix; //network as a adyacence matrix   
     protected final int[][] initialAdyacenceMatrix; //network as a adyacence matrix   
     protected final Semaphore available = new Semaphore(1);
+    protected final Semaphore availableMa = new Semaphore(1);
     private final ArrayList<Double> nodeAverageLife;
     protected final Map<String, Integer> nodeVersion; // Map of node vs current version
-    private final AtomicDouble totalMsgSent; //number of messages sent
-    private final AtomicDouble totalMsgRecv; //number of messages received
-    private final AtomicDouble totalSizeMsgSent; //number of messages sent
-    private final AtomicDouble totalSizeMsgRecv; //number of messages received
-    private final AtomicDouble totalMemory; //amount of memory
+    //private final AtomicDouble totalMsgSent; //number of messages sent
+    //private final AtomicDouble totalMsgRecv; //number of messages received
+    // private final AtomicDouble totalSizeMsgSent; //number of messages sent
+    // private final AtomicDouble totalSizeMsgRecv; //number of messages received
+    //private final AtomicDouble totalMemory; //amount of memory
     private final AtomicLong simulationTime = new AtomicLong(0); // Counter of time
     private final long startingTime; // Starting time
     private final AtomicInteger idMa = new AtomicInteger(10000);
@@ -57,10 +59,59 @@ public abstract class NetworkEnvironment extends Environment {
     protected HashMap<String, Integer> nametoAdyLocation = new HashMap<>();  //dictionary of vertexname: id
     protected HashMap<Integer, String> locationtoVertexName = new HashMap<>(); // dictionary of id: vertexname
     private final AtomicInteger round = new AtomicInteger(0);
-
     private final AtomicInteger numberFailures = new AtomicInteger(0);
-
     private HashMap<String, Long> networkDelays; //used to administrate delays in messages
+
+    /*Following are data Structures to store */
+    private Map<Integer, Double> numberMessagesSent = Collections.synchronizedMap(new HashMap<>());
+    private Map<Integer, Double> numberMessagesRecv = Collections.synchronizedMap(new HashMap<>());
+    private Map<Integer, Double> sizeMessagesSent = Collections.synchronizedMap(new HashMap<>());
+    private Map<Integer, Double> sizeMessagesRecv = Collections.synchronizedMap(new HashMap<>());
+    private Map<Integer, Double> memoryConsumption = Collections.synchronizedMap(new HashMap<>());
+
+    /*Following are data Structures to store */
+    private Map<Integer, Double> numberMessagesSentMa = Collections.synchronizedMap(new HashMap<>());
+    private Map<Integer, Double> numberMessagesRecvMa = Collections.synchronizedMap(new HashMap<>());
+    private Map<Integer, Double> sizeMessagesSentMa = Collections.synchronizedMap(new HashMap<>());
+    private Map<Integer, Double> sizeMessagesRecvMa = Collections.synchronizedMap(new HashMap<>());
+    private Map<Integer, Double> memoryConsumptionMa = Collections.synchronizedMap(new HashMap<>());
+
+    private Map<Integer, HashSet<String>> alreadyReported = Collections.synchronizedMap(new HashMap<>());
+
+    /*Following are data Structures to store different metrics for the same node in rounds */
+    private Map<String, ArrayList<Double>> mapNumberMessagesSent = Collections.synchronizedMap(new HashMap<>());
+    private Map<String, ArrayList<Double>> mapNumberMessagesRecv = Collections.synchronizedMap(new HashMap<>());
+    private Map<String, ArrayList<Double>> mapSizeMessagesSent = Collections.synchronizedMap(new HashMap<>());
+    private Map<String, ArrayList<Double>> mapSizeMessagesRecv = Collections.synchronizedMap(new HashMap<>());
+    private Map<String, Double> mapMemoryConsumption = Collections.synchronizedMap(new HashMap<>());
+
+    Set<String> setNodesReported = new HashSet<String>();
+    /*Following are data Structures to store number of messages of Mobile Agents*/
+    Set synsetNodesReported = Collections.synchronizedSet(setNodesReported);
+    /*Following are data Structures to store different metrics for the same mobile agent in rounds */
+    private Map<Integer, ArrayList<Double>> mapNumberMessagesSentMa = Collections.synchronizedMap(new HashMap<>());
+    private Map<Integer, ArrayList<Double>> mapNumberMessagesRecvMa = Collections.synchronizedMap(new HashMap<>());
+    private Map<Integer, ArrayList<Double>> mapSizeMessagesSentMa = Collections.synchronizedMap(new HashMap<>());
+    private Map<Integer, ArrayList<Double>> mapSizeMessagesRecvMa = Collections.synchronizedMap(new HashMap<>());
+    private Map<Integer, ArrayList<Double>> mapMemoryConsumptionMa = Collections.synchronizedMap(new HashMap<>());
+
+    //metrics are stored in a matrix of size age/numberOfNodes
+    private double[][] memoryConsumptionMatrix;
+    private double[][] numberMessagesReceivedMatrix;
+    private double[][] sizeMessagesReceivedMatrix;
+    private double[][] numberMessagesSentMatrix;
+    private double[][] sizeMessagesSentMatrix;
+
+    //mobile agents metrics
+    private double[][] memoryConsumptionMaMatrix;
+    private double[][] numberMessagesReceivedMaMatrix;
+    private double[][] sizeMessagesReceivedMaMatrix;
+    private double[][] numberMessagesSentMaMatrix;
+    private double[][] sizeMessagesSentMaMatrix;
+
+    public Set getSynsetNodesReported() {
+        return synsetNodesReported;
+    }
 
     /**
      *
@@ -116,12 +167,25 @@ public abstract class NetworkEnvironment extends Environment {
         nodeLanguage = _nlanguage;
         mobileAgentLanguage = _alanguage;
         nodeAverageLife = new ArrayList<>();
-        totalMsgRecv = new AtomicDouble();
-        totalSizeMsgRecv = new AtomicDouble();
-        totalSizeMsgSent = new AtomicDouble();
-        totalMsgSent = new AtomicDouble();
+//        totalMsgRecv = new AtomicDouble();
+//        totalSizeMsgRecv = new AtomicDouble();
+//        totalSizeMsgSent = new AtomicDouble();
+//        totalMsgSent = new AtomicDouble();
         startingTime = System.currentTimeMillis();
-        totalMemory = new AtomicDouble();
+        //        totalMemory = new AtomicDouble();
+        //Experiment with matrix
+        memoryConsumptionMatrix = new double[adyacenceMatrix.length][SimulationParameters.maxIter + 1];
+        numberMessagesReceivedMatrix = new double[adyacenceMatrix.length][SimulationParameters.maxIter + 1];
+        sizeMessagesReceivedMatrix = new double[adyacenceMatrix.length][SimulationParameters.maxIter + 1];
+        numberMessagesSentMatrix = new double[adyacenceMatrix.length][SimulationParameters.maxIter + 1];
+        sizeMessagesSentMatrix = new double[adyacenceMatrix.length][SimulationParameters.maxIter + 1];
+
+        memoryConsumptionMaMatrix = new double[SimulationParameters.popSize * 500][SimulationParameters.maxIter + 1];
+        numberMessagesReceivedMaMatrix = new double[SimulationParameters.popSize * 500][SimulationParameters.maxIter + 1];;
+        sizeMessagesReceivedMaMatrix = new double[SimulationParameters.popSize * 500][SimulationParameters.maxIter + 1];;
+        numberMessagesSentMaMatrix = new double[SimulationParameters.popSize * 500][SimulationParameters.maxIter + 1];
+        sizeMessagesSentMaMatrix = new double[SimulationParameters.popSize * 500][SimulationParameters.maxIter + 1];;
+
     }
 
     /**
@@ -268,7 +332,6 @@ public abstract class NetworkEnvironment extends Environment {
         //increase messages sent
         double pingSent = neigdiff.size() * pingSize;
         currentNode.increaseMessagesSentByRound(pingSent, neigdiff.size());
-        increaseTotalSizeMsgSent(neigdiff.size() * pingSize); //56 bytes is the size of a ping         
 
         double pingRecv = 0;
         int numberRecv = 0;
@@ -283,7 +346,6 @@ public abstract class NetworkEnvironment extends Environment {
 
         //increase messages received
         currentNode.increaseMessagesRecvByRound(pingRecv, numberRecv);
-        increaseTotalSizeMsgRecv(pingRecv);
 
         if (!nodesAlive.isEmpty() && nodesAlive.get(0).contains("p")) {
             String min = Collections.min(nodesAlive, (o1, o2)
@@ -319,7 +381,12 @@ public abstract class NetworkEnvironment extends Environment {
         a.setNetworkdata(HashMapOperations.JoinSets(location.getNetworkdata(), a.getNetworkdata()));
         a.setArchitecture(this);
         agents.add(a);
+
         mobileAgents.put(id, a);
+        a.live();
+        Thread tma = new Thread(a);
+        a.setThread(tma);
+        tma.start();
         return a;
     }
 
@@ -332,6 +399,7 @@ public abstract class NetworkEnvironment extends Environment {
      */
     public void createNewNode(Node creator, String nodeId, List<String> neigdiff) {
         synchronized (TopologySingleton.getInstance()) {
+
             System.out.println("env round:" + this.getAge() + ", node " + creator + " is creating new node " + nodeId);
             MyVertex dvertex = findVertex(nodeId);
             if (dvertex != null) { //can ping node and avoid creation         
@@ -369,12 +437,13 @@ public abstract class NetworkEnvironment extends Environment {
                 nod.setVertex(newVertex);
                 nod.setArchitecture(this);
 
+                //of simulation must clean previously buffer 
+                NetworkNodeMessageBuffer.getInstance().clearBuffer(nod.getName());
+
                 StringSerializer serializer = new StringSerializer();
                 String aprox = serializer.serialize(creator.getNetworkdata()); //not sure about this!
-
-                increaseTotalSizeMsgSent(aprox.length());
                 creator.increaseMessagesSentByRound(aprox.length(), 1);
-                increaseTotalSizeMsgRecv(aprox.length());
+
                 nod.setNetworkdata(new HashMap(creator.getNetworkdata()));
                 nod.increaseMessagesRecvByRound(aprox.length(), 1);
 
@@ -398,7 +467,6 @@ public abstract class NetworkEnvironment extends Environment {
                             msgconnect[2] = nodeId;
                             double msgConnectSize = getMessageSize(msgconnect);
                             //increase number of messages sent
-                            increaseTotalSizeMsgSent(msgConnectSize);
                             creator.increaseMessagesSentByRound(msgConnectSize, 1);
                             NetworkNodeMessageBuffer.getInstance().putMessage(neig, msgconnect);
                         }
@@ -418,14 +486,9 @@ public abstract class NetworkEnvironment extends Environment {
                 nod.setThread(t);
                 t.start();
 
-
-                if (SimulationParameters.simMode.equals("mobileAgents") && Math.random() < ((double)(SimulationParameters.popSize)/(double)SimulationParameters.vertexNumber)) {
+                if (SimulationParameters.simMode.equals("mobileAgents")) { // && Math.random() < ((double) (SimulationParameters.popSize) / (double) SimulationParameters.vertexNumber)) {
                     //System.out.println("crea agenteeeeee");
-                    MobileAgent ma = createNewMobileAgent(nod);
-                    ma.live();
-                    Thread tma = new Thread(ma);
-                    ma.setThread(tma);
-                    tma.start();
+                    createNewMobileAgent(nod);
                 }
             }
             setChanged();
@@ -465,6 +528,7 @@ public abstract class NetworkEnvironment extends Environment {
     public void KillNode(Node n) {
         synchronized (TopologySingleton.getInstance()) {
             //Add node life to node average life structure  
+            NetworkNodeMessageBuffer.getInstance().clearBuffer(n.getName());
             nodeAverageLife.add((double) n.getRounds());
             setChanged();
             notifyObservers(n);
@@ -478,7 +542,7 @@ public abstract class NetworkEnvironment extends Environment {
             }
             System.out.println("Node " + n.getName() + " has failed.");
             //clear buffer of node n
-            NetworkNodeMessageBuffer.getInstance().clearBuffer(n.getName());
+
             removeVertex(n.getVertex());
             n.die();
         }
@@ -501,7 +565,22 @@ public abstract class NetworkEnvironment extends Environment {
             try {
                 //Validate that agent is not death 
                 if (getNode(a.getLocation().getName()) != null) {
-                    p.setAttribute("neighbors", getTopology().getNeighbors(a.getLocation()));
+                    Collection<MyVertex> vs = getTopology().getNeighbors(a.getLocation());
+                    p.setAttribute("neighbors", vs);
+                    ArrayList<Node> nodes = new ArrayList<>();
+
+                    for (MyVertex v : vs) {
+                        Node nod = getNode(v.getName());
+                        if (nod != null) {
+                            nodes.add(nod);
+                        }
+                    }
+                    p.setAttribute("nodes", nodes);
+
+                    if (SimulationParameters.motionAlg.equals("FirstNeighbor")) {
+                        a.increaseMessagesSentByRound(6.0, vs.size());
+                        a.increaseMessagesRecvByRound(6.0, vs.size());
+                    }
                 } else {
                     p.setAttribute("nodedeath", true);
                 }
@@ -511,8 +590,8 @@ public abstract class NetworkEnvironment extends Environment {
             }
         }
 
-        if(agent instanceof Node){
-           
+        if (agent instanceof Node) {
+
             p.setAttribute("round", getAge());
         }
         return p;
@@ -648,77 +727,76 @@ public abstract class NetworkEnvironment extends Environment {
         });
     }
 
-    /**
-     * @return total number of messages sent
-     */
-    public double getTotalMsgSent() {
-        return totalMsgSent.getAndAdd(0.0);
-    }
-
-    /**
-     * Total number of messages received
-     *
-     * @return
-     */
-    public double getTotalMsgRecv() {
-        return totalMsgRecv.getAndAdd(0.0);
-    }
-
-    /**
-     *
-     * @return total size of messages received
-     */
-    public double getTotalSizeMsgRecv() {
-        return totalSizeMsgRecv.getAndAdd(0.0);
-    }
-
-    /**
-     * @return total size of messages sent
-     */
-    public double getTotalSizeMsgSent() {
-
-        return totalSizeMsgSent.getAndAdd(0.0);
-    }
-
-    /**
-     * Increase total size messages sent
-     *
-     * @param delta
-     */
-    public void increaseTotalSizeMsgSent(double delta) {
-        synchronized (totalMsgSent) {
-            totalMsgSent.getAndAdd(1.0);
-        }
-        synchronized (totalSizeMsgSent) {
-            totalSizeMsgSent.getAndAdd(delta);
-        }
-    }
-
-    /**
-     * Increase total size of messages received
-     *
-     * @param delta
-     */
-    public void increaseTotalSizeMsgRecv(double delta) {
-        synchronized (totalMsgRecv) {
-            totalMsgRecv.getAndAdd(1.0);
-        }
-        synchronized (totalSizeMsgRecv) {
-            totalSizeMsgRecv.getAndAdd(delta);
-        }
-    }
-
-    /**
-     * Increase memory consumed
-     *
-     * @param delta
-     */
-    public void increaseTotalMemory(double delta) {
-        synchronized (totalMemory) {
-            totalMemory.getAndAdd(delta);
-        }
-    }
-
+//    /**
+//     * @return total number of messages sent
+//     */
+//    public double getTotalMsgSent() {
+//        return totalMsgSent.getAndAdd(0.0);
+//    }
+//
+//    /**
+//     * Total number of messages received
+//     *
+//     * @return
+//     */
+//    public double getTotalMsgRecv() {
+//        return totalMsgRecv.getAndAdd(0.0);
+//    }
+//
+//    /**
+//     *
+//     * @return total size of messages received
+//     */
+//    public double getTotalSizeMsgRecv() {
+//        return totalSizeMsgRecv.getAndAdd(0.0);
+//    }
+//
+//    /**
+//     * @return total size of messages sent
+//     */
+//    public double getTotalSizeMsgSent() {
+//
+//        return totalSizeMsgSent.getAndAdd(0.0);
+//    }
+//
+//    /**
+//     * Increase total size messages sent
+//     *
+//     * @param delta
+//     */
+//    public void increaseTotalSizeMsgSent(double delta) {
+//        synchronized (totalMsgSent) {
+//            totalMsgSent.getAndAdd(1.0);
+//        }
+//        synchronized (totalSizeMsgSent) {
+//            totalSizeMsgSent.getAndAdd(delta);
+//        }
+//    }
+//
+//    /**
+//     * Increase total size of messages received
+//     *
+//     * @param delta
+//     */
+//    public void increaseTotalSizeMsgRecv(double delta) {
+//        synchronized (totalMsgRecv) {
+//            totalMsgRecv.getAndAdd(1.0);
+//        }
+//        synchronized (totalSizeMsgRecv) {
+//            totalSizeMsgRecv.getAndAdd(delta);
+//        }
+//    }
+//
+//    /**
+//     * Increase memory consumed
+//     *
+//     * @param delta
+//     */
+//    public void increaseTotalMemory(double delta) {
+//        synchronized (totalMemory) {
+//            totalMemory.getAndAdd(delta);
+//        }
+//    }
     /**
      * @param n
      * @return
@@ -729,7 +807,105 @@ public abstract class NetworkEnvironment extends Environment {
         }
     }
 
-    public HashMap getLocalStats() {
+    /**
+     *
+     * @param n
+     */
+    public void addLocalConsumptionNode(Node n) {
+        int age = getAge();
+        int rowNodeId = nametoAdyLocation.get(n.getName());
+
+        //System.out.println(n.getName() + " rowNodeId " + rowNodeId);
+        memoryConsumptionMatrix[rowNodeId][age] = n.getMemoryConsumption();
+        numberMessagesReceivedMatrix[rowNodeId][age] += (double) n.getNumberMessagesRecvByRound();
+        sizeMessagesReceivedMatrix[rowNodeId][age] += (double) n.getSizeMessagesRecv();
+        numberMessagesSentMatrix[rowNodeId][age] += (double) n.getNumberMessagesSentByRound();
+        sizeMessagesSentMatrix[rowNodeId][age] += (double) n.getSizeMessagesSent();
+        /*
+        if (alreadyReported.get(age).contains(n.getName())) {
+            /*mapNumberMessagesRecv.get(n.getName()).add((double) n.getNumberMessagesRecvByRound());
+            mapSizeMessagesRecv.get(n.getName()).add((double) n.getSizeMessagesRecv());
+            mapNumberMessagesSent.get(n.getName()).add((double) n.getNumberMessagesSentByRound());
+            mapSizeMessagesSent.get(n.getName()).add((double) n.getSizeMessagesSent());*/
+ /*      } else {
+            //System.out.println(n.getName() + "Received: " + n.getNumberMessagesRecvByRound() + ", sent: "+ n.getNumberMessagesSentByRound());              
+            //number of messages received
+            /*mapMemoryConsumption.put(n.getName(), new ArrayList<>());
+            mapNumberMessagesRecv.put(n.getName(), new ArrayList<>());
+            mapSizeMessagesRecv.put(n.getName(), new ArrayList<>());
+            mapNumberMessagesSent.put(n.getName(), new ArrayList<>());
+            mapSizeMessagesSent.put(n.getName(), new ArrayList<>());
+            mapMemoryConsumption.get(n.getName()).add((double) n.getMemoryConsumption());
+            mapNumberMessagesRecv.get(n.getName()).add((double) n.getNumberMessagesRecvByRound());
+            mapSizeMessagesRecv.get(n.getName()).add((double) n.getSizeMessagesRecv());
+            mapNumberMessagesSent.get(n.getName()).add((double) n.getNumberMessagesSentByRound());
+            mapSizeMessagesSent.get(n.getName()).add((double) n.getSizeMessagesSent());*/
+        //    }
+    }
+
+    /**
+     *
+     * @param n
+     */
+    public void addLocalConsumptionMobileAgent(MobileAgent a) {
+
+        int age = getAge();
+        //int rowNodeId = nametoAdyLocation.get(n.getName());
+        int agentId = a.getId();
+
+        //System.out.println(n.getName() + " rowNodeId " + rowNodeId);
+        memoryConsumptionMaMatrix[agentId][age] = a.getMemoryConsumption();
+        numberMessagesReceivedMaMatrix[agentId][age] += (double) a.getNumberMessagesRecvByRound();
+        sizeMessagesReceivedMaMatrix[agentId][age] += (double) a.getSizeMessagesRecv();
+        numberMessagesSentMaMatrix[agentId][age] += (double) a.getNumberMessagesSentByRound();
+        sizeMessagesSentMaMatrix[agentId][age] += (double) a.getSizeMessagesSent();
+    }
+
+    public void getLocalStats() {
+        for (int colAge = 0; colAge < SimulationParameters.maxIter; colAge++) {
+            double toTalMem = 0.0;
+            double totalNumberMessagesReceived = 0.0;
+            double totalSizeMessagesReceived = 0.0;
+            double totalNumberMessagesSent = 0.0;
+            double totalSizeMessagesSent = 0.0;
+
+            double toTalMemMa = 0.0;
+            double totalNumberMessagesReceivedMa = 0.0;
+            double totalSizeMessagesReceivedMa = 0.0;
+            double totalNumberMessagesSentMa = 0.0;
+            double totalSizeMessagesSentMa = 0.0;
+
+            for (int rowNode = 0; rowNode < memoryConsumptionMatrix.length; rowNode++) {
+                toTalMem += memoryConsumptionMatrix[rowNode][colAge];
+                totalNumberMessagesReceived += numberMessagesReceivedMatrix[rowNode][colAge];
+                totalSizeMessagesReceived += sizeMessagesReceivedMatrix[rowNode][colAge];
+                totalNumberMessagesSent += numberMessagesSentMatrix[rowNode][colAge];
+                totalSizeMessagesSent += sizeMessagesSentMatrix[rowNode][colAge];
+            }
+            //System.out.println("age:" + colAge + "memoty consumption " + toTalMem);
+            memoryConsumption.put(colAge, toTalMem);
+            numberMessagesRecv.put(colAge, totalNumberMessagesReceived);
+            sizeMessagesRecv.put(colAge, totalSizeMessagesReceived);
+            numberMessagesSent.put(colAge, totalNumberMessagesSent);
+            sizeMessagesSent.put(colAge, totalSizeMessagesSent);
+
+            for (int rowNode = 0; rowNode < memoryConsumptionMaMatrix.length; rowNode++) {
+                toTalMemMa += memoryConsumptionMaMatrix[rowNode][colAge];
+                totalNumberMessagesReceivedMa += numberMessagesReceivedMaMatrix[rowNode][colAge];
+                totalSizeMessagesReceivedMa += sizeMessagesReceivedMaMatrix[rowNode][colAge];
+                totalNumberMessagesSentMa += numberMessagesSentMaMatrix[rowNode][colAge];
+                totalSizeMessagesSentMa += sizeMessagesSentMaMatrix[rowNode][colAge];
+            }
+            //System.out.println("age:" + colAge + "memoty consumption " + toTalMem);
+            memoryConsumptionMa.put(colAge, toTalMemMa);
+            numberMessagesRecvMa.put(colAge, totalNumberMessagesReceivedMa);
+            sizeMessagesRecvMa.put(colAge, totalSizeMessagesReceivedMa);
+            numberMessagesSentMa.put(colAge, totalNumberMessagesSentMa);
+            sizeMessagesSentMa.put(colAge, totalSizeMessagesSentMa);
+        }
+    }
+
+    /*public HashMap getLocalStats() {
         HashMap<String, Double> stats = new HashMap();
         Double totalMem = 0.0;
         ArrayList<Double> numberMsgSentRound = new ArrayList<>();
@@ -794,8 +970,8 @@ public abstract class NetworkEnvironment extends Environment {
 
         return stats;
     }
-
-    public double getTotalMemory() {
+   
+                public double getTotalMemory() {
         Double totalMem = 0.0;
         synchronized (nodes) {
             for (Node n : nodes.values()) {
@@ -904,4 +1080,43 @@ public abstract class NetworkEnvironment extends Environment {
         return localNetworkInfo;
     }
 
+    public Map<Integer, Double> getNumberMessagesSent() {
+        return numberMessagesSent;
+    }
+
+    public Map<Integer, Double> getNumberMessagesRecv() {
+        return numberMessagesRecv;
+    }
+
+    public Map<Integer, Double> getSizeMessagesSent() {
+        return sizeMessagesSent;
+    }
+
+    public Map<Integer, Double> getSizeMessagesRecv() {
+        return sizeMessagesRecv;
+    }
+
+    public Map<Integer, Double> getMemoryConsumption() {
+        return memoryConsumption;
+    }
+
+    public Map<Integer, Double> getNumberMessagesSentMa() {
+        return numberMessagesSentMa;
+    }
+
+    public Map<Integer, Double> getNumberMessagesRecvMa() {
+        return numberMessagesRecvMa;
+    }
+
+    public Map<Integer, Double> getSizeMessagesSentMa() {
+        return sizeMessagesSentMa;
+    }
+
+    public Map<Integer, Double> getSizeMessagesRecvMa() {
+        return sizeMessagesRecvMa;
+    }
+
+    public Map<Integer, Double> getMemoryConsumptionMa() {
+        return memoryConsumptionMa;
+    }
 }

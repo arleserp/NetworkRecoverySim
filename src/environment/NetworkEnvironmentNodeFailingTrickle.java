@@ -39,14 +39,26 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
     @Override
     public boolean act(Agent agent, Action action) {
         if (agent instanceof Node) {
+
             try {
                 available.acquire();
             } catch (InterruptedException ex) {
                 Logger.getLogger(NetworkEnvironmentNodeFailingAllInfo.class.getName()).log(Level.SEVERE, null, ex);
             }
             //agent.sleep(20);
-            Node n = (Node) agent;
-
+            //System.out.println("jaaaaaaaaaaaaaaaaaaaaaa");
+            Node n = (Node) agent;          
+            if(getSynsetNodesReported().contains(n.getName())){
+                //System.out.println("al readey");
+                available.release();
+                return false;
+            }
+            
+            getSynsetNodesReported().add(n.getName());
+            
+            
+            
+            //long start  = System.currentTimeMillis();
             n.incRounds();
             n.initCounterMessagesByRound();
 
@@ -59,8 +71,7 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
             //Runnable sendData = () -> {
             //Step 4. Trickle Simple send protocol 
             if (n.getRounds() % n.trickleT == 0 && n.getTrickleAlg().check()) {
-                System.out.println("Trickle [" + n.trickleInterval[0] + " ," + n.trickleInterval[1] + ", " + n.trickleT + "]" + "-" + n.getTrickleAlg().getCounter() + "-" + n.getName() + "-" + n.getRounds());
-
+                //System.out.println("Trickle [" + n.trickleInterval[0] + " ," + n.trickleInterval[1] + ", " + n.trickleT + "]" + "-" + n.getTrickleAlg().getCounter() + "-" + n.getName() + "-" + n.getRounds());
                 //System.out.println("neeeeeeeeeeeeeeeeeeeeeeeeew");
                 ArrayList<String> topologyDatas = new ArrayList(this.getTopologyNames(n.getVertex()));
                 for (String neigbour : topologyDatas) {
@@ -69,6 +80,8 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
                     msgnet[1] = String.valueOf(n.getVertex().getName());
                     StringSerializer s = new StringSerializer();
                     msgnet[2] = s.serialize(n.getNetworkdata());
+                    double msgnetSize = getMessageSize(msgnet);
+                    n.increaseMessagesSentByRound(msgnetSize, 1);
 
                     if (!NetworkNodeMessageBuffer.getInstance().putMessage(neigbour, msgnet)) {
                         System.out.println("node is down: " + neigbour);
@@ -94,26 +107,24 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
                         double inboxSize = getMessageSize(inbox);
                         //increase number of messages received by round
                         n.increaseMessagesRecvByRound(inboxSize, 1);
-                        increaseTotalSizeMsgRecv(inboxSize); //increase total of messages received
 
-                        if (SimulationParameters.activateReplication.equals("replalgon")) {
-                            //receives data
-                            if (inbox[0].equals("networkdata")) {
-                                //completes and updates data
-                                StringSerializer s = new StringSerializer();
-                                HashMap<String, ArrayList> recvData = (HashMap<String, ArrayList>) s.deserialize(inbox[2]);
-                                HashMap<String, ArrayList> localData = n.getNetworkdata();
-                                n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), recvData));
-
-                                //inconsistency detected step 6 trickle
-                                if (!HashMapOperations.calculateDifference(n.getNetworkdata(), localData).isEmpty()) {
-                                    n.trickleInterval = n.getTrickleAlg().reset();
-                                } else {
-                                    //step 3: Whenever Trickle hears a transmission that is "consistent", it increments the counter c.
-                                    n.getTrickleAlg().incr();
-                                }
-                                //double sizeRecv = inbox[0].length() + inbox[1].length() + inbox[2].length();
+                        //receives data
+                        if (inbox[0].equals("networkdata")) {
+                            //completes and updates data
+                            StringSerializer s = new StringSerializer();
+                            HashMap<String, ArrayList> recvData = (HashMap<String, ArrayList>) s.deserialize(inbox[2]);
+                            HashMap<String, ArrayList> localData = n.getNetworkdata();
+                            n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), recvData));
+                            //inconsistency detected step 6 trickle
+                            if (!HashMapOperations.calculateDifference(n.getNetworkdata(), localData).isEmpty()) {
+                                n.trickleInterval = n.getTrickleAlg().reset();
+                            } else {
+                                //step 3: Whenever Trickle hears a transmission that is "consistent", it increments the counter c.
+                                n.getTrickleAlg().incr();
                             }
+                            //double sizeRecv = inbox[0].length() + inbox[1].length() + inbox[2].length();
+                        }
+                        if (SimulationParameters.activateReplication.equals("replalgon")) {
                             if (inbox[0].equals("connect")) {
                                 //message msgnodediff: connect|level|nodeid|nodetoconnect                                
                                 String nodetoConnect = inbox[2];
@@ -131,7 +142,6 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
                                     //increase message size                                    
                                     double msgdatanodeSize = getMessageSize(msgdatanode);
                                     n.increaseMessagesSentByRound(msgdatanodeSize, 1);
-                                    increaseTotalSizeMsgSent(msgdatanodeSize);
                                     NetworkNodeMessageBuffer.getInstance().putMessage(nodetoConnect, msgdatanode);
                                     System.out.println(n.getVertex().getName() + "send networkdatanode to " + nodetoConnect);
                                 }
@@ -151,14 +161,19 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
                     KillNode(n);
                     break;
                 default:
-                    System.out.println("acrtion not specified");
+                    System.out.println("action not specified");
             }
             if (n.status != Action.DIE) {
-                n.evaluateNodeCreation(this);
+                if (SimulationParameters.activateReplication.equals("replalgon")) {
+                    n.evaluateNodeCreation(this);
+                }
+                addLocalConsumptionNode(n);
             }
             if (n.getRounds() % n.trickleInterval[1] == 0) {
                 n.trickleInterval = n.getTrickleAlg().iExpired();
             }
+            // long end = System.currentTimeMillis();
+            //System.out.println("node n " + (end-start)  + " age " + n.getRounds());
             available.release();
         }
         return false;

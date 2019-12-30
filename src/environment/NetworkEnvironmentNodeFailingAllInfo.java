@@ -41,19 +41,20 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
 
     @Override
     public boolean act(Agent agent, Action action) {
-        try {
-            available.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(NetworkEnvironmentNodeFailingAllInfo.class.getName()).log(Level.SEVERE, null, ex);
-        }
+
 //        long actStartTime = System.currentTimeMillis();
         if (agent instanceof Node) {
+            try {
+                available.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(NetworkEnvironmentNodeFailingAllInfo.class.getName()).log(Level.SEVERE, null, ex);
+            }
             Node n = (Node) agent;
             n.incRounds();
 
             //init messages sent and received by node
             n.initCounterMessagesByRound();
-            
+
             //System.out.println(n.getName() + ":" + n.getRounds());
             //This part is primitive send to neigbors 
             String act = action.getCode();
@@ -68,7 +69,6 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                         double inboxSize = getMessageSize(inbox);
                         //increase number of messages received by round
                         n.increaseMessagesRecvByRound(inboxSize, 1);
-                        increaseTotalSizeMsgRecv(inboxSize); //increase total of messages received
 
                         if (SimulationParameters.activateReplication.equals("replalgon")) {
                             //message msgnodediff: connect|nodeid|nodetoconnect                                                            
@@ -89,7 +89,6 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                                     //increase message size                                    
                                     double msgdatanodeSize = getMessageSize(msgdatanode);
                                     n.increaseMessagesSentByRound(msgdatanodeSize, 1);
-                                    increaseTotalSizeMsgSent(msgdatanodeSize);
 
                                     NetworkNodeMessageBuffer.getInstance().putMessage(nodetoConnect, msgdatanode);
                                     System.out.println(n.getVertex().getName() + "send networkdatanode to " + nodetoConnect);
@@ -119,14 +118,16 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                 if (SimulationParameters.activateReplication.equals("replalgon")) {
                     n.evaluateNodeCreation(this);
                 }
+
+                addLocalConsumptionNode(n);
             }
             //System.out.println("recv size:" + n.getSizeMessagesRecv() + ", sent size: " + n.getSizeMessagesSent());
 //            long actStopTime = System.currentTimeMillis();
 //            long timeTaken = actStopTime-actStartTime;            
 //            System.out.println("env age: " + this.getAge() + " node:" + n.getName() + ", round: " + n.getRounds() + ", time taken act " + timeTaken);
+            available.release();
         }
 
-        available.release();
         return false;
     }
 
@@ -147,8 +148,7 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
         }
     }
 
-
-        /**
+    /**
      * load neighobours using bfs
      *
      * @param neighbours neighbours of a node
@@ -177,7 +177,6 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
             v = q.poll();
         }
     }
-
 
     @Override
     /**

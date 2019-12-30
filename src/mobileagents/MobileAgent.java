@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import networkrecoverysim.SimulationParameters;
+import serialization.StringSerializer;
 import unalcol.agents.Action;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
@@ -36,6 +38,31 @@ public class MobileAgent extends Agent implements Serializable {
     private MyVertex prevPrevLocation;
     private ArrayList<String> lastLocations;
     private HashMap<String, ArrayList> networkdata;
+
+    //metrics related to local consumption
+    private int numberMessagesRecvByRound;
+    private int numberMessagesSentByRound;
+    private double sizeMessagesSent;
+    private double sizeMessagesRecv;
+
+    private int redundancyFactorK;
+    private int counter = 0;
+
+    public void incr() {
+        counter++;
+    }
+
+    public void restartCounter() {
+        counter = 0;
+    }
+
+    public boolean check() {
+        return counter < redundancyFactorK;
+    }
+
+    public int getCounter() {
+        return counter;
+    }
 
     public MyVertex getPrevPrevLocation() {
         return prevPrevLocation;
@@ -64,6 +91,7 @@ public class MobileAgent extends Agent implements Serializable {
         localAgentsInNetworkHmap = new ArrayList<>();
         lastLocations = new ArrayList<String>();
         networkdata = new HashMap<>();
+        redundancyFactorK = SimulationParameters.redundancyFactor;
     }
 
     public ArrayList<String> getLastLocations() {
@@ -335,6 +363,79 @@ public class MobileAgent extends Agent implements Serializable {
 
     @Override
     public String toString() {
-        return "MobileAgent{" + " id=" + id + ", networkdata size=" + networkdata.size() + ", round=" + round + ", status "  + status + '}';
+        return "MobileAgent{" + " id=" + id + ", networkdata size=" + networkdata.size() + ", round=" + round + ", status " + status + '}';
+    }
+
+    // Metrics related with consumption of mobile agents
+    public int getMemoryConsumption() {
+        StringSerializer serializer = new StringSerializer();
+        String totalData = serializer.serialize(this.networkdata);
+        return totalData.length();
+    }
+
+    /**
+     * Increase number of messages received by round
+     *
+     * @param sizeMsgRecv size of messages received
+     * @param numberMessages number of messages
+     */
+    public void increaseMessagesRecvByRound(double sizeMsgRecv, int numberMessages) {
+        setSizeMessagesRecv(sizeMsgRecv + getSizeMessagesRecv());
+        setNumberMessagesRecvByRound(getNumberMessagesRecvByRound() + numberMessages);
+    }
+
+    /**
+     * Increase number of messages sent by round
+     *
+     * @param sizeMsgSent size of messages sent
+     * @param numberMessages number of messages sent
+     */
+    public void increaseMessagesSentByRound(double sizeMsgSent, int numberMessages) {
+        setSizeMessagesSent(sizeMsgSent + getSizeMessagesSent());
+        setNumberMessagesSentByRound(getNumberMessagesSentByRound() + numberMessages);
+    }
+
+    /**
+     * Node stats in terms of network
+     *
+     * @return
+     */
+    public int getNumberMessagesRecvByRound() {
+        return numberMessagesRecvByRound;
+    }
+
+    public void setNumberMessagesRecvByRound(int numberMessagesRecvByRound) {
+        this.numberMessagesRecvByRound = numberMessagesRecvByRound;
+    }
+
+    public int getNumberMessagesSentByRound() {
+        return numberMessagesSentByRound;
+    }
+
+    public void setNumberMessagesSentByRound(int numberMessagesSentByRound) {
+        this.numberMessagesSentByRound = numberMessagesSentByRound;
+    }
+
+    public double getSizeMessagesSent() {
+        return sizeMessagesSent;
+    }
+
+    public void setSizeMessagesSent(double sizeMessagesSent) {
+        this.sizeMessagesSent = sizeMessagesSent;
+    }
+
+    public double getSizeMessagesRecv() {
+        return sizeMessagesRecv;
+    }
+
+    public void setSizeMessagesRecv(double sizeMessagesRecv) {
+        this.sizeMessagesRecv = sizeMessagesRecv;
+    }
+
+    public void initCounterMessagesByRound() {
+        sizeMessagesRecv = 0;
+        sizeMessagesSent = 0;
+        numberMessagesRecvByRound = 0;
+        numberMessagesSentByRound = 0;
     }
 }

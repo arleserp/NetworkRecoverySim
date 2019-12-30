@@ -11,12 +11,12 @@ package mobileagents;
  */
 import agents.ActionParameters;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import unalcol.agents.Action;
 import unalcol.agents.AgentProgram;
 import unalcol.agents.Percept;
 import graphutil.MyVertex;
+import staticagents.Node;
 
 /**
  *
@@ -41,17 +41,17 @@ public class FirstNeighborVisited implements AgentProgram {
             return new ActionParameters("die");
         }
 
-        Collection<MyVertex> empty = (Collection<MyVertex>) p.getAttribute("neighbors");
-        Iterator<MyVertex> it = empty.iterator();
+        ArrayList<Node> empty = (ArrayList<Node>) p.getAttribute("nodes");
+        Iterator<Node> it = empty.iterator();
         ArrayList<MyVertex> vs = new ArrayList<>();
         ArrayList<MyVertex> tt = new ArrayList<>();
 
         while (it.hasNext()) {
-            MyVertex v = it.next();
-            tt.add(v);
+            Node v = it.next();
+            tt.add(v.getVertex());
             if (v != null) {
-                if (v.getStatus() != "visited") {
-                    vs.add(v);
+                if (!v.getVisitedStatus().equals("visited")) {
+                    vs.add(v.getVertex());
                 }
             }
         }

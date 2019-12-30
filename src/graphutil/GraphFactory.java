@@ -95,7 +95,7 @@ public class GraphFactory {
                 SimulationParameters.globalData = v.allData;
                 break;
         }
-
+        SimulationParameters.vertexNumber = g.getVertexCount();
         System.out.println("creating g: " + g.toString() + " with method " + topology);
         return g;
     }

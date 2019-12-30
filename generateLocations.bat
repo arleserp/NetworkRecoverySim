@@ -1,2 +1,2 @@
-java   -classpath dist/NetworkRecoverySim.jar mobileagents.LocationService . 50
+java   -classpath dist/NetworkRecoverySim.jar mobileagents.LocationService . 512
 pause

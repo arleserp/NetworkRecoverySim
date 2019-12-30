@@ -102,8 +102,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
     private final JButton redraw;
     Graph<MyVertex, String> initialNetwork;
     HashMap<Integer, Double> similarity;
-    HashMap<Integer, String> networkAndMemoryStats;
-    HashMap<Integer, HashMap> localStatsByRound;
+    //HashMap<Integer, String> networkAndMemoryStats;
+    // HashMap<Integer, HashMap> localStatsByRound;
     HashMap<Integer, Integer> mobileAgentsAlive;
     boolean alreadyPainted = false;
     final Semaphore available = new Semaphore(1);
@@ -147,8 +147,8 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
 //        frame.setVisible(true);
 //        frame2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         similarity = new HashMap<>();
-        networkAndMemoryStats = new HashMap<>();
-        localStatsByRound = new HashMap<>();
+//        networkAndMemoryStats = new HashMap<>();
+//        localStatsByRound = new HashMap<>();
         mobileAgentsAlive = new HashMap<>();
 
     }
@@ -187,14 +187,14 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
 
         if (SimulationParameters.nofailRounds == 0) {
             if (SimulationParameters.simMode.contains("chain")) {
-                fileNamePrefix = "exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+" + SimulationParameters.nhopsChain + "+wsize+" + SimulationParameters.wsize + ".timeout";
+                fileNamePrefix = "exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+" + SimulationParameters.nhopsChain + "+redFactor+" + SimulationParameters.redundancyFactor + ".timeout";
             } else {
-                fileNamePrefix = "exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+wsize+" + SimulationParameters.wsize;
+                fileNamePrefix = "exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+redFactor+" + SimulationParameters.redundancyFactor;
             }
         } else if (SimulationParameters.simMode.contains("chain")) {
-            fileNamePrefix = "exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+" + SimulationParameters.nhopsChain + "+wsize+" + SimulationParameters.wsize + "+nofailr+" + SimulationParameters.nofailRounds;
+            fileNamePrefix = "exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+" + SimulationParameters.nhopsChain + "+redFactor+" + SimulationParameters.redundancyFactor + "+nofailr+" + SimulationParameters.nofailRounds;
         } else {
-            fileNamePrefix = "exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+wsize+" + SimulationParameters.wsize + "+nofailr+" + SimulationParameters.nofailRounds + "";
+            fileNamePrefix = "exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+redFactor+" + SimulationParameters.redundancyFactor + "+nofailr+" + SimulationParameters.nofailRounds + "";
         }
 
         SimulationParameters.reportsFilenamePrefix = fileNamePrefix;
@@ -272,7 +272,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
             case "trickle":
                 world = new NetworkEnvironmentNodeFailingTrickle(agents, nodeLanguaje, g);
                 world.addNodes(nodes);
-                for(Node n : world.getNodes()) {
+                for (Node n : world.getNodes()) {
                     n.setNetworkdata(((NetworkEnvironmentNodeFailingTrickle) world).loadPartialNetwork(0, n));
                     n.setTrickleAlg(new Trickle()); //Initializes trickle
                     n.trickleInterval = n.getTrickleAlg().next();         //create interval {random, I]            
@@ -315,12 +315,11 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         @Override
         public void run() {
             try {
+                //System.out.println("entra_");
                 available.acquire();
                 long currentTime = world.updateAndGetSimulationTime();
-                world.updateWorldAge();
-
-                System.out.println("wa: " + world.getAge() + " simulation time: "
-                        + currentTime + " nodes " + world.getNodesAlive() + " mobile: " + world.getMobileAgents().size());
+                //System.out.println("wa: " + world.getAge() + " simulation time: "
+                //        + currentTime + " nodes " + world.getNodesAlive() + " mobile: " + world.getMobileAgents().size());
                 isDrawing = true;
 
                 //                System.out.println("xxxxxx");
@@ -329,43 +328,54 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 } else {
 //                  int agentsAlive = n.getAgentsAlive();
                     int nodesAlive = environment.getNodesAlive();
+
                     //System.out.println("n" + n.getAge() + "," + agentsAlive);
                     //System.out.println("n" + n.getAge() + "," + nodesAlive);
                     if (nodesAlive == 0) {
                         System.out.println("no nodes alive.");
                     } else if (environment != null) {
-                        nodesLive.add(environment.getSimulationTime(), nodesAlive);
-                        GraphComparator gnm = new GraphComparator();
-                        double sim = 0;
+                       // System.out.println("set size: " + world.getSynsetNodesReported().size() + " vs " + nodesAlive + " wa:" + world.getAge());
+                        if (world.getSynsetNodesReported().size() >= nodesAlive) {
+                            world.updateWorldAge();
+                            System.out.println("wa: " + world.getAge() + " simulation time: "
+                                    + currentTime + " nodes " + world.getNodesAlive() + " mobile: " + world.getMobileAgents().size());
+                            world.getSynsetNodesReported().clear();
+                            nodesLive.add(environment.getSimulationTime(), nodesAlive);
+                            
+                            GraphComparator gnm = new GraphComparator();
+                            double sim = 0;
 
-                        int worldRound = environment.getAge();
+                            int worldRound = environment.getAge();
 
-                        sim = gnm.calculateSimilarity(environment);
-                        neighborMatchingSim.add(worldRound, sim);
-                        similarity.put(worldRound, sim);
+                            sim = gnm.calculateSimilarity(environment);
+                            neighborMatchingSim.add(worldRound, sim);
+                            similarity.put(worldRound, sim);
 
-                        mobileAgentsAlive.put(worldRound, environment.getMobileAgents().size());
-
-                        String netAndMemStats;
-                        HashMap localNodeStatsByRound = environment.getLocalStats();
-                        //totalMemory|totalMsgSent|sizeMsgSent|totalMsgReceived|sizeMsgRecv
-                        netAndMemStats = localNodeStatsByRound.get("totalMemory") + "," + environment.getTotalMsgSent() + ","
-                                + environment.getTotalSizeMsgSent() + "," + environment.getTotalMsgRecv() + "," + environment.getTotalSizeMsgRecv();
-
-                        networkAndMemoryStats.put(worldRound, netAndMemStats);
-                        localStatsByRound.put(worldRound, localNodeStatsByRound);
-                        if (environment.getAge() >= (SimulationParameters.maxIter - 100) && !alreadyPainted) {
-                            String baseFilename = SimulationParameters.reportsFilenamePrefix;
-                            String dir = "cmpgraph";
-                            createDir(dir);
-                            GraphSerialization.saveSerializedGraph("./" + dir + "/" + getFileName() + "+" + baseFilename + "+round+" + worldRound + ".graph", world.getTopology());
-                            alreadyPainted = true;
+                            mobileAgentsAlive.put(worldRound, environment.getMobileAgents().size());
+                            
+                            if (environment.getAge() >= (SimulationParameters.maxIter - 100) && !alreadyPainted) {
+                                String baseFilename = SimulationParameters.reportsFilenamePrefix;
+                                String dir = "cmpgraph";
+                                createDir(dir);
+                                GraphSerialization.saveSerializedGraph("./" + dir + "/" + getFileName() + "+" + baseFilename + "+round+" + worldRound + ".graph", world.getTopology());
+                                alreadyPainted = true;
+                            }
                         }
+
+//                        String netAndMemStats;
+//                        HashMap localNodeStatsByRound = environment.getLocalStats();
+//                        //totalMemory|totalMsgSent|sizeMsgSent|totalMsgReceived|sizeMsgRecv
+//                        netAndMemStats = localNodeStatsByRound.get("totalMemory") + "," + environment.getTotalMsgSent() + ","
+//                                + environment.getTotalSizeMsgSent() + "," + environment.getTotalMsgRecv() + "," + environment.getTotalSizeMsgRecv();
+//
+//                        networkAndMemoryStats.put(worldRound, netAndMemStats);
+//                        localStatsByRound.put(worldRound, localNodeStatsByRound);
                     }
                 }
                 available.release();
-            } catch (InterruptedException ex) {
+            } catch (Exception ex) {
                 System.out.println("Error obtaining live statistics" + ex.toString());
+                ex.printStackTrace();
             }
         }
     }
@@ -389,6 +399,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
             //fgup.start();
         }
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        //System.out.println("v:"+ );
         ScheduledFuture<?> result = executor.scheduleAtFixedRate(fgup, 0, 20, TimeUnit.MILLISECONDS);
     }
 
@@ -471,14 +482,13 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         return reportDate;
     }
 
-    public HashMap<Integer, String> getNetworkAndMemoryStats() {
-        return networkAndMemoryStats;
-    }
-
-    public HashMap<Integer, HashMap> getLocalStatsByRound() {
-        return localStatsByRound;
-    }
-
+//    public HashMap<Integer, String> getNetworkAndMemoryStats() {
+//        return networkAndMemoryStats;
+//    }
+//
+//    public HashMap<Integer, HashMap> getLocalStatsByRound() {
+//        return localStatsByRound;
+//    }
     public HashMap<Integer, Integer> getMobileAgentsAlive() {
         return mobileAgentsAlive;
     }
