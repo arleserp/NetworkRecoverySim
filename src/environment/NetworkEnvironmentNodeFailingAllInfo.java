@@ -49,11 +49,16 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
             } catch (InterruptedException ex) {
                 Logger.getLogger(NetworkEnvironmentNodeFailingAllInfo.class.getName()).log(Level.SEVERE, null, ex);
             }
-            Node n = (Node) agent;
-            n.incRounds();
 
-            //init messages sent and received by node
-            n.initCounterMessagesByRound();
+            Node n = (Node) agent;
+            
+            if (getSynsetNodesReported().contains(n.getName())) {
+                //System.out.println("al readey");
+                available.release();
+                return false;
+            }
+
+            getSynsetNodesReported().add(n.getName());
 
             //System.out.println(n.getName() + ":" + n.getRounds());
             //This part is primitive send to neigbors 

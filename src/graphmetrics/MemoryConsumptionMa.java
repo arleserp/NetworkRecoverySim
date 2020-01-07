@@ -9,10 +9,13 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Shape;
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,6 +29,7 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import observer.DataReplicationNodeFailingObserver;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -185,12 +189,23 @@ public class MemoryConsumptionMa extends ApplicationFrame {
                 }
                 Collection<Integer> unsorted = MemoryVsSimulation.keySet();
                 List<Integer> sorted = asSortedList(unsorted);
+                
+                String localStatsMemMaFileName = "./" + file.getName() + "memoryConsumptionMa" + ".csv";
+                PrintWriter escribirLocalStatsMemMa = null;
+
                 for (int k : sorted) {
                     //System.out.println("xxxxxxxx");
                     StatisticsNormalDist st = new StatisticsNormalDist(MemoryVsSimulation.get(k), MemoryVsSimulation.get(k).size());
                     minimum.add(k, st.getMin());
                     maximum.add(k, st.getMax());
                     median.add(k, st.getMedian());
+                    try {
+                        escribirLocalStatsMemMa = new PrintWriter(new BufferedWriter(new FileWriter(localStatsMemMaFileName, true)));
+                        escribirLocalStatsMemMa.println(st.getMin() + "," + st.getMedian() + "," + st.getMax());
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    escribirLocalStatsMemMa.close();
                 }
 
                 JFreeChart chart = ChartFactory.createXYLineChart(

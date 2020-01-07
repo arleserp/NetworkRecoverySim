@@ -1,6 +1,6 @@
 REM for /L %%x in (1, 1, 30) do (
 
-Java -d64 -Xms3G -Xmx3G  -XX:+UseG1GC  -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=20 -XX:ConcGCThreads=5 -XX:InitiatingHeapOccupancyPercent=70  -classpath dist/NetworkRecoverySim.jar networkrecoverysim.DataReplicationNodeFailingMain load as19981231.graph 512 0 FirstNeighbor as19981231.loc 100 replalgon NODELAY  0.5 4 mobileAgents 4 5 0 zeropf-30-50
+Java -d64 -Xms3G -Xmx3G  -XX:+UseG1GC  -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=20 -XX:ConcGCThreads=5 -XX:InitiatingHeapOccupancyPercent=70  -classpath dist/NetworkRecoverySim.jar networkrecoverysim.DataReplicationNodeFailingMain load as19981231.graph 64 0 FirstNeighbor as19981231.loc 100 replalgon NODELAY  0.5 4 mobileAgents 4 5 0 zeropf-30-50
 
 REM pause
 REM load as19981231.graph 0 0 carriersrep as19981231.graph 1500 replalgon NODELAY  0.5 4 allinfo 4 5 0 backtolowpf1000

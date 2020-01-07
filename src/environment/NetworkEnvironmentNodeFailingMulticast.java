@@ -45,7 +45,6 @@ public class NetworkEnvironmentNodeFailingMulticast extends NetworkEnvironment {
             //agent.sleep(20);
             Node n = (Node) agent;
 
-            n.incRounds();
 
             String act = action.getCode();
 

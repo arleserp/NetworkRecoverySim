@@ -192,19 +192,16 @@ public class NetworkConsumptionLocalSizeRecv extends ApplicationFrame {
                 Collection<Integer> unsorted = datainRound.keySet();
                 List<Integer> sorted = asSortedList(unsorted);
 
-                String localNetworkStatsRecv;
-                String localStatsRecvdirName = "localstatsrecv+Total+Node";
-                String localStatsRecvFileName = "./" + file.getName() + localStatsRecvdirName + "+SizeRecv.csv";
+                String localStatsSizeMsgRecv = "./" + file.getName() + "localSizeMsgRecv" + ".csv";
                 PrintWriter escribirLocalStatsRecv = null;
 
                 for (int k : sorted) {
-                    System.out.println("xxxxxxxx");
                     StatisticsNormalDist st = new StatisticsNormalDist(datainRound.get(k), datainRound.get(k).size());
                     minimum.add(k, st.getMin());
                     maximum.add(k, st.getMax());
                     median.add(k, st.getMedian());
                     try {
-                        escribirLocalStatsRecv = new PrintWriter(new BufferedWriter(new FileWriter(localStatsRecvFileName, true)));
+                        escribirLocalStatsRecv = new PrintWriter(new BufferedWriter(new FileWriter(localStatsSizeMsgRecv, true)));
                         //System.out.println("writing " + dataReplEsc.getNetworkAndMemoryStats());
                         //totalNMsgRecvRound|totalSMsgRecvRound
                         escribirLocalStatsRecv.println(st.getMin() + "," + st.getMedian() + "," + st.getMax());

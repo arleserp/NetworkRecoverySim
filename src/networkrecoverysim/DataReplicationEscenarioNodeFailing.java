@@ -325,6 +325,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 //                System.out.println("xxxxxx");
                 if (world.getNodes().isEmpty()) {
                     System.out.println("no nodes alive.");
+                    world.notifyObs();
                 } else {
 //                  int agentsAlive = n.getAgentsAlive();
                     int nodesAlive = environment.getNodesAlive();
@@ -333,32 +334,75 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                     //System.out.println("n" + n.getAge() + "," + nodesAlive);
                     if (nodesAlive == 0) {
                         System.out.println("no nodes alive.");
+                        world.notifyObs();
                     } else if (environment != null) {
-                       // System.out.println("set size: " + world.getSynsetNodesReported().size() + " vs " + nodesAlive + " wa:" + world.getAge());
-                        if (world.getSynsetNodesReported().size() >= nodesAlive) {
-                            world.updateWorldAge();
-                            System.out.println("wa: " + world.getAge() + " simulation time: "
-                                    + currentTime + " nodes " + world.getNodesAlive() + " mobile: " + world.getMobileAgents().size());
-                            world.getSynsetNodesReported().clear();
-                            nodesLive.add(environment.getSimulationTime(), nodesAlive);
-                            
-                            GraphComparator gnm = new GraphComparator();
-                            double sim = 0;
+                        //System.out.println("set size: " + world.getSynsetNodesReported().size() + " vs " + nodesAlive + ", ma: " + world.getMobileAgents().size() + " vs " + world.getSynsetAgentsReported().size() + " wa:" + world.getAge());
+                        if (SimulationParameters.simMode.equals("mobileAgents")) {
+                            //System.out.println("Khaaaaaaaaaaaaaaaaaa");
+                            if (world.getSynsetNodesReported().size() >= nodesAlive && world.getSynsetAgentsReported().size() >= world.getMobileAgents().size()) {
+                                // System.out.println("entraaa");
+                                world.updateWorldAge();
+                                System.out.println("wa: " + world.getAge() + " simulation time: "
+                                        + currentTime + " nodes " + world.getNodesAlive() + " mobile: " + world.getMobileAgents().size());
+                                world.getSynsetNodesReported().clear();
+                                world.getSynsetAgentsReported().clear();
 
-                            int worldRound = environment.getAge();
+                                synchronized (world.objBlock) {
+                                    world.objBlock.notifyAll();
+                                }
 
-                            sim = gnm.calculateSimilarity(environment);
-                            neighborMatchingSim.add(worldRound, sim);
-                            similarity.put(worldRound, sim);
+                                nodesLive.add(environment.getSimulationTime(), nodesAlive);
 
-                            mobileAgentsAlive.put(worldRound, environment.getMobileAgents().size());
-                            
-                            if (environment.getAge() >= (SimulationParameters.maxIter - 100) && !alreadyPainted) {
-                                String baseFilename = SimulationParameters.reportsFilenamePrefix;
-                                String dir = "cmpgraph";
-                                createDir(dir);
-                                GraphSerialization.saveSerializedGraph("./" + dir + "/" + getFileName() + "+" + baseFilename + "+round+" + worldRound + ".graph", world.getTopology());
-                                alreadyPainted = true;
+                                GraphComparator gnm = new GraphComparator();
+                                double sim = 0;
+
+                                int worldRound = environment.getAge();
+
+                                sim = gnm.calculateSimilarity(environment);
+                                neighborMatchingSim.add(worldRound, sim);
+                                similarity.put(worldRound, sim);
+
+                                mobileAgentsAlive.put(worldRound, environment.getMobileAgents().size());
+
+                                if (environment.getAge() >= (SimulationParameters.maxIter - 100) && !alreadyPainted) {
+                                    String baseFilename = SimulationParameters.reportsFilenamePrefix;
+                                    String dir = "cmpgraph";
+                                    createDir(dir);
+                                    GraphSerialization.saveSerializedGraph("./" + dir + "/" + getFileName() + "+" + baseFilename + "+round+" + worldRound + ".graph", world.getTopology());
+                                    alreadyPainted = true;
+                                }
+                            }
+                        } else {
+                            if (world.getSynsetNodesReported().size() >= nodesAlive) {
+                                world.updateWorldAge();
+                                System.out.println("wa: " + world.getAge() + " simulation time: "
+                                        + currentTime + " nodes " + world.getNodesAlive() + " mobile: " + world.getMobileAgents().size());
+                                world.getSynsetNodesReported().clear();
+
+                                synchronized (world.objBlock) {
+                                    world.objBlock.notifyAll();
+                                }
+
+                                nodesLive.add(environment.getSimulationTime(), nodesAlive);
+
+                                GraphComparator gnm = new GraphComparator();
+                                double sim = 0;
+
+                                int worldRound = environment.getAge();
+
+                                sim = gnm.calculateSimilarity(environment);
+                                neighborMatchingSim.add(worldRound, sim);
+                                similarity.put(worldRound, sim);
+
+                                mobileAgentsAlive.put(worldRound, environment.getMobileAgents().size());
+
+                                if (environment.getAge() >= (SimulationParameters.maxIter - 100) && !alreadyPainted) {
+                                    String baseFilename = SimulationParameters.reportsFilenamePrefix;
+                                    String dir = "cmpgraph";
+                                    createDir(dir);
+                                    GraphSerialization.saveSerializedGraph("./" + dir + "/" + getFileName() + "+" + baseFilename + "+round+" + worldRound + ".graph", world.getTopology());
+                                    alreadyPainted = true;
+                                }
                             }
                         }
 

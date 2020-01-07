@@ -188,16 +188,11 @@ public class NetworkConsumptionLocalSizeRecvMa extends ApplicationFrame {
                 Collection<Integer> unsorted = datainRound.keySet();
                 List<Integer> sorted = asSortedList(unsorted);
 
-                String localNetworkStatsRecv;
-                String localStatsRecvdirName = "localstatsrecv+Total+MobileAgents";
-                Scanner sca = new Scanner(System.in);
-                String localStatsRecvFileName = "./" + file.getName() + localStatsRecvdirName + "+recv.csv";
-                
+                String localStatsRecvFileName = "./" +file.getName() + "localSizeMsgRecvMa" + ".csv";                
 
                 PrintWriter escribirLocalStatsRecv = null;
 
                 for (int k : sorted) {
-                    System.out.println("xxxxxxxx");
                     StatisticsNormalDist st = new StatisticsNormalDist(datainRound.get(k), datainRound.get(k).size());
                     minimum.add(k, st.getMin());
                     maximum.add(k, st.getMax());
@@ -210,9 +205,7 @@ public class NetworkConsumptionLocalSizeRecvMa extends ApplicationFrame {
                     } catch (IOException ex) {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
-
                     escribirLocalStatsRecv.close();
-
                 }
 
                 JFreeChart chart = ChartFactory.createXYLineChart(

@@ -41,26 +41,26 @@ public class FirstNeighborVisited implements AgentProgram {
             return new ActionParameters("die");
         }
 
-        ArrayList<Node> empty = (ArrayList<Node>) p.getAttribute("nodes");
-        Iterator<Node> it = empty.iterator();
-        ArrayList<MyVertex> vs = new ArrayList<>();
-        ArrayList<MyVertex> tt = new ArrayList<>();
+        try {
+            ArrayList<Node> empty = (ArrayList<Node>) p.getAttribute("nodes");
+            Iterator<Node> it = empty.iterator();
+            ArrayList<MyVertex> vs = new ArrayList<>();
+            ArrayList<MyVertex> tt = new ArrayList<>();
 
-        while (it.hasNext()) {
-            Node v = it.next();
-            tt.add(v.getVertex());
-            if (v != null) {
-                if (!v.getVisitedStatus().equals("visited")) {
-                    vs.add(v.getVertex());
+            while (it.hasNext()) {
+                Node v = it.next();
+                tt.add(v.getVertex());
+                if (v != null) {
+                    if (!v.getVisitedStatus().equals("visited")) {
+                        vs.add(v.getVertex());
+                    }
                 }
             }
-        }
 
-        if (vs.size() == 0) {
-            vs = tt;
-        }
+            if (vs.size() == 0) {
+                vs = tt;
+            }
 
-        try {
             boolean isSet = false;
             do {
                 pos = (int) (Math.random() * vs.size());
@@ -72,10 +72,11 @@ public class FirstNeighborVisited implements AgentProgram {
             } while (!isSet);
             //System.out.println("location" + vs.toArray()[pos]);
         } catch (Exception ex) {
-            // System.out.println("this cannot happen!!! agent fail because node is not running or was killed determining new movement." + vs);
-            //return new ActionParameters("die");
+            System.out.println("this cannot happen!!! agent fail because node is not running or was killed determining new movement.");
+            return new ActionParameters("die");
             // System.out.println("Inform node that possibly a node is death: " + ex.getLocalizedMessage());
-            return new ActionParameters("informfailure");
+
+            //return new ActionParameters("informfailure");
         }
         //System.out.println("act:" + act.getCode());
         return act;
@@ -86,4 +87,3 @@ public class FirstNeighborVisited implements AgentProgram {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
-

@@ -39,7 +39,6 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
     @Override
     public boolean act(Agent agent, Action action) {
         if (agent instanceof Node) {
-
             try {
                 available.acquire();
             } catch (InterruptedException ex) {
@@ -53,15 +52,8 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
                 available.release();
                 return false;
             }
-            
             getSynsetNodesReported().add(n.getName());
-            
-            
-            
-            //long start  = System.currentTimeMillis();
-            n.incRounds();
-            n.initCounterMessagesByRound();
-
+                   
             //n.trickleT = //(n.trickleInterval[0] + n.trickleInterval[1]) / 2;
             String act = action.getCode();
 

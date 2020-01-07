@@ -9,10 +9,13 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Shape;
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,6 +29,7 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import observer.DataReplicationNodeFailingObserver;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -104,7 +108,7 @@ public class NetworkConsumptionLocalNRecvMa extends ApplicationFrame {
                         String[] splittt = f1name.split(Pattern.quote("+"));
                         String[] splittt2 = f2name.split(Pattern.quote("+"));
                         Date date1 = null, date2 = null;
-                        
+
                         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
                         String dateInString = f1name.split(Pattern.quote("+"))[splittt.length - 2];
                         String dateInString2 = f2name.split(Pattern.quote("+"))[splittt2.length - 2];
@@ -164,8 +168,8 @@ public class NetworkConsumptionLocalNRecvMa extends ApplicationFrame {
                             System.out.println("line:" + line);
                             data = line.split(",");
                             int round = Integer.valueOf(data[0]);
-                                                        
-                            Double numberTotalMsgRecv =(double)Math.round(Double.valueOf(data[1]) * 100d) / 100d;
+
+                            Double numberTotalMsgRecv = (double) Math.round(Double.valueOf(data[1]) * 100d) / 100d;
                             // Dictionary<round, memory>
                             if (!datainRound.containsKey(round)) {
                                 datainRound.put(round, new ArrayList<Double>());
@@ -183,16 +187,24 @@ public class NetworkConsumptionLocalNRecvMa extends ApplicationFrame {
                         simulation++;
                     }
                 }
+
+                String localStatsNumberMsgRecvMa = "./" + file.getName() + "localNumberMsgRecvMa" + ".csv";
+                PrintWriter escribirLocalStatsNumberMsgRecvMa = null;
+
                 Collection<Integer> unsorted = datainRound.keySet();
                 List<Integer> sorted = asSortedList(unsorted);
                 for (int k : sorted) {
-                    System.out.println("xxxxxxxx");
                     StatisticsNormalDist st = new StatisticsNormalDist(datainRound.get(k), datainRound.get(k).size());
                     minimum.add(k, st.getMin());
                     maximum.add(k, st.getMax());
                     median.add(k, st.getMedian());
-                    
-                    
+                    try {
+                        escribirLocalStatsNumberMsgRecvMa = new PrintWriter(new BufferedWriter(new FileWriter(localStatsNumberMsgRecvMa, true)));
+                        escribirLocalStatsNumberMsgRecvMa.println(st.getMin() + "," + st.getMedian() + "," + st.getMax());
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    escribirLocalStatsNumberMsgRecvMa.close();
                 }
 
                 JFreeChart chart = ChartFactory.createXYLineChart(

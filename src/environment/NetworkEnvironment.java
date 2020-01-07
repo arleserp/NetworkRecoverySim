@@ -20,6 +20,8 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import mobileagents.MobileAgent;
 import mobileagents.MotionProgramSimpleFactory;
 import mobileagents.NetworkMessageMobileAgentBuffer;
@@ -52,6 +54,8 @@ public abstract class NetworkEnvironment extends Environment {
     private final AtomicLong simulationTime = new AtomicLong(0); // Counter of time
     private final long startingTime; // Starting time
     private final AtomicInteger idMa = new AtomicInteger(10000);
+
+    public final static Object objBlock = new Object();
 
     public int[][] getInitialAdyacenceMatrix() {
         return initialAdyacenceMatrix;
@@ -88,6 +92,10 @@ public abstract class NetworkEnvironment extends Environment {
     Set<String> setNodesReported = new HashSet<String>();
     /*Following are data Structures to store number of messages of Mobile Agents*/
     Set synsetNodesReported = Collections.synchronizedSet(setNodesReported);
+
+    Set<String> setAgentsReported = new HashSet<String>();
+    Set synsetAgentReported = Collections.synchronizedSet(setAgentsReported);
+
     /*Following are data Structures to store different metrics for the same mobile agent in rounds */
     private Map<Integer, ArrayList<Double>> mapNumberMessagesSentMa = Collections.synchronizedMap(new HashMap<>());
     private Map<Integer, ArrayList<Double>> mapNumberMessagesRecvMa = Collections.synchronizedMap(new HashMap<>());
@@ -111,6 +119,10 @@ public abstract class NetworkEnvironment extends Environment {
 
     public Set getSynsetNodesReported() {
         return synsetNodesReported;
+    }
+
+    public Set getSynsetAgentsReported() {
+        return synsetAgentReported;
     }
 
     /**
@@ -496,6 +508,11 @@ public abstract class NetworkEnvironment extends Environment {
         }
     }
 
+    public void notifyObs() {
+        setChanged();
+        notifyObservers();
+    }
+
     /**
      * Remove a vertex
      *
@@ -562,6 +579,21 @@ public abstract class NetworkEnvironment extends Environment {
 
         if (agent instanceof MobileAgent) {
             MobileAgent a = (MobileAgent) agent;
+
+            if (getSynsetAgentsReported().contains(a.getId())) {
+                //System.out.println("al readey");
+                //available.release();
+                synchronized (objBlock) {
+                    try {
+                        objBlock.wait();
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(NetworkEnvironment.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                //return false;
+            }
+            getSynsetAgentsReported().add(a.getId());
+
             try {
                 //Validate that agent is not death 
                 if (getNode(a.getLocation().getName()) != null) {
@@ -584,14 +616,17 @@ public abstract class NetworkEnvironment extends Environment {
                 } else {
                     p.setAttribute("nodedeath", true);
                 }
-            } catch (NullPointerException ex) {
+            } catch (Exception ex) {
                 System.out.println("Killing agent sensing null node: " + a.getId() + " ex: " + ex);
                 killMobileAgent(a);
             }
         }
 
         if (agent instanceof Node) {
-
+            Node n = (Node) agent;
+            //long start  = System.currentTimeMillis();
+            n.incRounds();
+            n.initCounterMessagesByRound();
             p.setAttribute("round", getAge());
         }
         return p;
@@ -814,7 +849,6 @@ public abstract class NetworkEnvironment extends Environment {
     public void addLocalConsumptionNode(Node n) {
         int age = getAge();
         int rowNodeId = nametoAdyLocation.get(n.getName());
-
         //System.out.println(n.getName() + " rowNodeId " + rowNodeId);
         memoryConsumptionMatrix[rowNodeId][age] = n.getMemoryConsumption();
         numberMessagesReceivedMatrix[rowNodeId][age] += (double) n.getNumberMessagesRecvByRound();
@@ -848,7 +882,6 @@ public abstract class NetworkEnvironment extends Environment {
      * @param n
      */
     public void addLocalConsumptionMobileAgent(MobileAgent a) {
-
         int age = getAge();
         //int rowNodeId = nametoAdyLocation.get(n.getName());
         int agentId = a.getId();
