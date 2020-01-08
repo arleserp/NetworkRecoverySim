@@ -29,7 +29,6 @@ import util.HashMapOperations;
  * @author arlese.rodriguezp
  */
 public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
-
     HashMap<String, ArrayList> networkInfo;
     boolean loaded;
 
@@ -51,14 +50,6 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
             }
 
             Node n = (Node) agent;
-            
-            if (getSynsetNodesReported().contains(n.getName())) {
-                //System.out.println("al readey");
-                available.release();
-                return false;
-            }
-
-            getSynsetNodesReported().add(n.getName());
 
             //System.out.println(n.getName() + ":" + n.getRounds());
             //This part is primitive send to neigbors 
@@ -123,14 +114,22 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                 if (SimulationParameters.activateReplication.equals("replalgon")) {
                     n.evaluateNodeCreation(this);
                 }
-
-                addLocalConsumptionNode(n);
             }
             //System.out.println("recv size:" + n.getSizeMessagesRecv() + ", sent size: " + n.getSizeMessagesSent());
 //            long actStopTime = System.currentTimeMillis();
 //            long timeTaken = actStopTime-actStartTime;            
 //            System.out.println("env age: " + this.getAge() + " node:" + n.getName() + ", round: " + n.getRounds() + ", time taken act " + timeTaken);
             available.release();
+            if (getSynsetNodesReported().contains(n.getName())) {
+                try {
+                    synchronized (objBlock) {
+                        objBlock.wait();
+                    }
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(NetworkEnvironmentNodeFailingMobileAgents.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            getSynsetNodesReported().add(n.getName());
         }
 
         return false;

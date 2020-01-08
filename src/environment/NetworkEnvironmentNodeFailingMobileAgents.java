@@ -43,40 +43,27 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
 
     @Override
     public boolean act(Agent agent, Action action) {
-        try {
-            available.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(NetworkEnvironmentNodeFailingMobileAgents.class.getName()).log(Level.SEVERE, null, ex);
-        }
+
         try {
             if (agent instanceof MobileAgent) {
+                try {
+                    available.acquire();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(NetworkEnvironmentNodeFailingMobileAgents.class.getName()).log(Level.SEVERE, null, ex);
+                }
 
-//                try {
-//                    availableMa.acquire();
-//                } catch (InterruptedException ex) {
-//                    Logger.getLogger(NetworkEnvironmentNodeFailingMobileAgents.class.getName()).log(Level.SEVERE, null, ex);
-//                }
                 MobileAgent a = (MobileAgent) agent;
-                //System.out.println("Here is running" + a.toString() + " info size " + a.getNetworkdata().size());
-                a.initCounterMessagesByRound();
                 Node c = getNode(a.getLocation().getName());
                 if (c == null) { //node failed                    
                     killMobileAgent(a);
                 } else {
-                    //if (SimulationParameters.activateReplication.equals("replalgon")) {
-                    //System.out.println("wa:" + getAge() + " Mobile Agent: " + a.getId() + " sends networkdatanode to: " + c.getName());
-                    //Obtain data from node
-                    //HashMap<String, ArrayList<String>> localNetworkData = new HashMap<>(); 
-                    //increase messages received in the current node
-                    //c.increaseMessagesRecvByRound(1, a.getMemoryConsumption());
-                    //Send data to current node
                     String[] msgdatanode = new String[4];
                     msgdatanode[0] = "networkdatanode";
                     msgdatanode[1] = String.valueOf(c.getName());
                     StringSerializer s = new StringSerializer();
                     msgdatanode[2] = s.serialize(a.getNetworkdata());
                     msgdatanode[3] = "mobileAgent";
-                    
+
                     NetworkNodeMessageBuffer.getInstance().putMessage(c.getName(), msgdatanode); //local communication
                     //a.increaseMessagesSentByRound(msgnetSize, 1);
 
@@ -109,18 +96,15 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
                             if (n == null) { //node failed
                                 killMobileAgent(a);
                             } else {
-
                                 String[] msgMobileAgentArrived = new String[2];
                                 msgMobileAgentArrived[0] = "mobileAgentArrived";
                                 msgMobileAgentArrived[1] = a.getMemoryConsumption() + "";
                                 NetworkNodeMessageBuffer.getInstance().putMessage(n.getName(), msgMobileAgentArrived);
                                 a.increaseMessagesSentByRound(a.getMemoryConsumption(), 1);
 
-                                //n.increaseMessagesSentByRound(1, a.getMemoryConsumption());
                                 n.setVisitedStatus("visited");      //to use in first and second neighbour               
                                 a.setPheromone((float) (a.getPheromone() + 0.01f * (0.5f - a.getPheromone()))); //update pheromone amount
                                 a.getLocation().setPh(a.getLocation().getPh() + 0.01f * (a.getPheromone() - a.getLocation().getPh()));
-                                a.setRound(a.getRound() + 1);
                             }
                             break;
                         case 1: //die
@@ -135,7 +119,7 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
                     }
                 }
                 a.setRound(a.getRound() + 1);
-                addLocalConsumptionMobileAgent(a);
+                available.release();
             }
             //availableMa.release();
         } catch (Exception ex) {
@@ -146,26 +130,15 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
 //      long actStartTime = System.currentTimeMillis();
         if (agent instanceof Node) {
             Node n = (Node) agent;
-            if (getSynsetNodesReported().contains(n.getName())) {
-                //System.out.println("al readey");
-                available.release();
-                try {
-                    synchronized (objBlock) {
-                        objBlock.wait();
-                    }
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(NetworkEnvironmentNodeFailingMobileAgents.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                //return false;
-            }
-            getSynsetNodesReported().add(n.getName());
 
-            //System.out.println(n.getName() + ":" + n.getRounds());
-            //This part is primitive send to neigbors 
+            try {
+                available.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(NetworkEnvironmentNodeFailingMobileAgents.class.getName()).log(Level.SEVERE, null, ex);
+            }
             String act = action.getCode();
 
             //1. process messages from others
-            //System.out.println("action" + act + ", code:" + nodeLanguage.getActionIndex(act));
             switch (nodeLanguage.getActionIndex(act)) {
                 case 0: //Communicate
                     /* A node process messages */
@@ -173,7 +146,6 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
                     //boolean created = false;
                     while ((inbox = NetworkNodeMessageBuffer.getInstance().getMessage(n.getVertex().getName())) != null) {
                         if (inbox[0].equals("mobileAgentArrived")) {
-                            //System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaayyyyyyyyyyyyyyyyyyy");
                             n.increaseMessagesRecvByRound(Double.valueOf(inbox[1]), 1);
                         } else {
                             if (SimulationParameters.activateReplication.equals("replalgon")) {
@@ -181,7 +153,7 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
                                     double inboxSize = getMessageSize(inbox);
                                     //increase number of messages received by round
                                     n.increaseMessagesRecvByRound(inboxSize, 1);
-                                    
+
                                     //increase amount of messages received                                
                                     String nodetoConnect = inbox[2];
                                     connect(n.getVertex(), nodetoConnect);
@@ -199,13 +171,12 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
 
                                     NetworkNodeMessageBuffer.getInstance().putMessage(nodetoConnect, msgdatanode);
                                     System.out.println(n.getVertex().getName() + "send networkdatanode to " + nodetoConnect);
-
                                 }
                             }
 
-                            if (inbox[0].equals("networkdatanode")) { //receive topology data from mobile agent
+                            if (inbox[0].equals("networkdatanode")) { //receive topology data from mobile agent or node
                                 double inboxSize = getMessageSize(inbox);
-                                if (inbox.length < 4) {
+                                if (inbox.length < 4) { // received by other node
                                     n.increaseMessagesRecvByRound(inboxSize, 1);
                                 }
                                 String source = inbox[1]; //origin of message
@@ -231,15 +202,20 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
                 if (SimulationParameters.activateReplication.equals("replalgon")) {
                     n.evaluateNodeCreation(this);
                 }
-                addLocalConsumptionNode(n);
             }
-//System.out.println("recv size:" + n.getSizeMessagesRecv() + ", sent size: " + n.getSizeMessagesSent());
-//            long actStopTime = System.currentTimeMillis();
-//            long timeTaken = actStopTime-actStartTime;            
-//            System.out.println("env age: " + this.getAge() + " node:" + n.getName() + ", round: " + n.getRounds() + ", time taken act " + timeTaken);
+            available.release();
+            if (getSynsetNodesReported().contains(n.getName())) {
+                try {
+                    synchronized (objBlock) {
+                        objBlock.wait();
+                    }
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(NetworkEnvironmentNodeFailingMobileAgents.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            getSynsetNodesReported().add(n.getName());
 
         }
-        available.release();
         return false;
     }
 

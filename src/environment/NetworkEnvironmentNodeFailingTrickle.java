@@ -39,24 +39,14 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
     @Override
     public boolean act(Agent agent, Action action) {
         if (agent instanceof Node) {
+            Node n = (Node) agent;
             try {
                 available.acquire();
             } catch (InterruptedException ex) {
                 Logger.getLogger(NetworkEnvironmentNodeFailingAllInfo.class.getName()).log(Level.SEVERE, null, ex);
             }
-            //agent.sleep(20);
-            //System.out.println("jaaaaaaaaaaaaaaaaaaaaaa");
-            Node n = (Node) agent;          
-            if(getSynsetNodesReported().contains(n.getName())){
-                //System.out.println("al readey");
-                available.release();
-                return false;
-            }
-            getSynsetNodesReported().add(n.getName());
-                   
-            //n.trickleT = //(n.trickleInterval[0] + n.trickleInterval[1]) / 2;
-            String act = action.getCode();
 
+            String act = action.getCode();
             n.trickleT = n.getTrickleAlg().getT(n.trickleInterval[0], n.trickleInterval[1]);
 
             //https://www.researchgate.net/publication/318344774_Development_of_Thread-compatible_Open_Source_Stack/figures?lo=1
@@ -81,27 +71,18 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
                 }
             }
 
-            //n.sleep(50);
-            //};
-            //ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
-            //ses.schedule(sendData, n.trickleT, TimeUnit.MILLISECONDS); //Time t send data
-            //Runnable iExpired = () -> {
-            //    n.trickleInterval = n.getTrickleAlg().iExpired();
-            //};
-            //ScheduledExecutorService ses2 = Executors.newScheduledThreadPool(1);
-            //ses2.schedule(iExpired, n.trickleInterval[1], TimeUnit.MILLISECONDS); // i expired reset timer
             //1. process messages from an agent
             switch (nodeLanguage.getActionIndex(act)) {
                 case 0: //Communicate
                     /* A node process messages */
                     String[] inbox;
                     while ((inbox = NetworkNodeMessageBuffer.getInstance().getMessage(n.getVertex().getName())) != null) {
-                        double inboxSize = getMessageSize(inbox);
-                        //increase number of messages received by round
-                        n.increaseMessagesRecvByRound(inboxSize, 1);
 
                         //receives data
                         if (inbox[0].equals("networkdata")) {
+                            double inboxSize = getMessageSize(inbox);
+                            //increase number of messages received by round
+                            n.increaseMessagesRecvByRound(inboxSize, 1);
                             //completes and updates data
                             StringSerializer s = new StringSerializer();
                             HashMap<String, ArrayList> recvData = (HashMap<String, ArrayList>) s.deserialize(inbox[2]);
@@ -121,6 +102,9 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
                                 //message msgnodediff: connect|level|nodeid|nodetoconnect                                
                                 String nodetoConnect = inbox[2];
                                 connect(n.getVertex(), nodetoConnect);
+                                double inboxSize = getMessageSize(inbox);
+                                //increase number of messages received by round
+                                n.increaseMessagesRecvByRound(inboxSize, 1);
 
                                 //When n connects to nodetoConnect n also sends its network topology
                                 // msg: networkdatainnode: networkdatanode|source|networkdata
@@ -137,14 +121,16 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
                                     NetworkNodeMessageBuffer.getInstance().putMessage(nodetoConnect, msgdatanode);
                                     System.out.println(n.getVertex().getName() + "send networkdatanode to " + nodetoConnect);
                                 }
-
-                                if (SimulationParameters.simMode.equals("nhopsinfo") && inbox[0].equals("networkdatanode")) {
-                                    String source = inbox[1]; //origin of message
-                                    StringSerializer s = new StringSerializer();
-                                    HashMap<String, ArrayList> ndata = (HashMap) s.deserialize(inbox[2]); //networkdata
-                                    n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), ndata));
-                                    n.pruneInformation(SimulationParameters.nhopsChain); //use nhops to prune data
-                                }
+                            }
+                            if (SimulationParameters.simMode.equals("nhopsinfo") && inbox[0].equals("networkdatanode")) {
+                                double inboxSize = getMessageSize(inbox);
+                                //increase number of messages received by round
+                                n.increaseMessagesRecvByRound(inboxSize, 1);
+                                String source = inbox[1]; //origin of message
+                                StringSerializer s = new StringSerializer();
+                                HashMap<String, ArrayList> ndata = (HashMap) s.deserialize(inbox[2]); //networkdata
+                                n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), ndata));
+                                n.pruneInformation(SimulationParameters.nhopsChain); //use nhops to prune data
                             }
                         }
                     }
@@ -159,7 +145,6 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
                 if (SimulationParameters.activateReplication.equals("replalgon")) {
                     n.evaluateNodeCreation(this);
                 }
-                addLocalConsumptionNode(n);
             }
             if (n.getRounds() % n.trickleInterval[1] == 0) {
                 n.trickleInterval = n.getTrickleAlg().iExpired();
@@ -167,6 +152,17 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
             // long end = System.currentTimeMillis();
             //System.out.println("node n " + (end-start)  + " age " + n.getRounds());
             available.release();
+            if (getSynsetNodesReported().contains(n.getName())) {
+                try {
+                    synchronized (objBlock) {
+                        objBlock.wait();
+                    }
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(NetworkEnvironmentNodeFailingMobileAgents.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            getSynsetNodesReported().add(n.getName());
+
         }
         return false;
     }

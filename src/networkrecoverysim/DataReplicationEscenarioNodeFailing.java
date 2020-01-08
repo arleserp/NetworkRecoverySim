@@ -341,7 +341,6 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                             //System.out.println("Khaaaaaaaaaaaaaaaaaa");
                             if (world.getSynsetNodesReported().size() >= nodesAlive && world.getSynsetAgentsReported().size() >= world.getMobileAgents().size()) {
                                 // System.out.println("entraaa");
-                                world.updateWorldAge();
                                 System.out.println("wa: " + world.getAge() + " simulation time: "
                                         + currentTime + " nodes " + world.getNodesAlive() + " mobile: " + world.getMobileAgents().size());
                                 world.getSynsetNodesReported().clear();
@@ -350,7 +349,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                                 synchronized (world.objBlock) {
                                     world.objBlock.notifyAll();
                                 }
-
+                                world.updateWorldAge();
                                 nodesLive.add(environment.getSimulationTime(), nodesAlive);
 
                                 GraphComparator gnm = new GraphComparator();
@@ -387,7 +386,6 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
 
                                 GraphComparator gnm = new GraphComparator();
                                 double sim = 0;
-
                                 int worldRound = environment.getAge();
 
                                 sim = gnm.calculateSimilarity(environment);

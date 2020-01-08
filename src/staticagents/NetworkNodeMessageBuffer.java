@@ -6,7 +6,8 @@
 package staticagents;
 
 import environment.NetworkEnvironment;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Hashtable;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,7 +20,7 @@ import networkrecoverysim.SimulationParameters;
  */
 public class NetworkNodeMessageBuffer {
 
-    ConcurrentHashMap<String, LinkedBlockingQueue> mbuffer;
+    Hashtable<String, LinkedBlockingQueue> mbuffer;
     static final int MAXQUEUE = 5; //Max input buffer size by process
 
     private static class Holder {
@@ -28,7 +29,7 @@ public class NetworkNodeMessageBuffer {
     }
 
     private NetworkNodeMessageBuffer() {
-        mbuffer = new ConcurrentHashMap<>();
+        mbuffer = new Hashtable<>();
     }
 
     public static NetworkNodeMessageBuffer getInstance() {
@@ -96,9 +97,11 @@ public class NetworkNodeMessageBuffer {
             return false;
         }
         try {
-            mbuffer.get(pid).add(msg);
+            mbuffer.get(pid).put(msg);
         } catch (NullPointerException ex) {
             System.out.println("error leyendo buffer:" + pid + "ex: " + ex.getMessage());
+        } catch (InterruptedException ex) {
+            Logger.getLogger(NetworkNodeMessageBuffer.class.getName()).log(Level.SEVERE, null, ex);
         }
         return true;
     }

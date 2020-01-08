@@ -170,7 +170,7 @@ public class NetworkConsumptionLocalNSentMa extends ApplicationFrame {
                             data = line.split(",");
                             int round = Integer.valueOf(data[0]);
 
-                            Double numberTotalMsgSent = (double) Math.round(Double.valueOf(data[1]) * 100d) / 100d;
+                            Double numberTotalMsgSent = Double.valueOf(data[1]);
                             // Dictionary<round, memory>
                             if (!datainRound.containsKey(round)) {
                                 datainRound.put(round, new ArrayList<Double>());

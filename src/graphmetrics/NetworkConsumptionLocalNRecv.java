@@ -167,7 +167,7 @@ public class NetworkConsumptionLocalNRecv extends ApplicationFrame {
                             data = line.split(",");
                             int round = Integer.valueOf(data[0]);
 
-                            Double numberTotalMsgRecv = (double) Math.round(Double.valueOf(data[1]) * 100d) / 100d;
+                            Double numberTotalMsgRecv = Double.valueOf(data[1]);
                             // Dictionary<round, memory>
                             if (!datainRound.containsKey(round)) {
                                 datainRound.put(round, new ArrayList<Double>());
@@ -197,6 +197,7 @@ public class NetworkConsumptionLocalNRecv extends ApplicationFrame {
                     minimum.add(k, st.getMin());
                     maximum.add(k, st.getMax());
                     median.add(k, st.getMedian());
+                    
                     try {
                         escribirLocalStatsNumberMsgRecv = new PrintWriter(new BufferedWriter(new FileWriter(localStatsNumberMsgRecv, true)));
                         escribirLocalStatsNumberMsgRecv.println(st.getMin() + "," + st.getMedian() + "," + st.getMax());

@@ -169,7 +169,7 @@ public class MemoryConsumptionMa extends ApplicationFrame {
                             data = line.split(",");
                             int round = Integer.valueOf(data[0]);
                                                         
-                            Double memory =(double)Math.round(Double.valueOf(data[1]) * 100d) / 100d;
+                            Double memory = Double.valueOf(data[1]);
                             // Dictionary<round, memory>
                             if (!MemoryVsSimulation.containsKey(round)) {
                                 MemoryVsSimulation.put(round, new ArrayList<Double>());

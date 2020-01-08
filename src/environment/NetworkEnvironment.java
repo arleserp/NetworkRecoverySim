@@ -581,8 +581,6 @@ public abstract class NetworkEnvironment extends Environment {
             MobileAgent a = (MobileAgent) agent;
 
             if (getSynsetAgentsReported().contains(a.getId())) {
-                //System.out.println("al readey");
-                //available.release();
                 synchronized (objBlock) {
                     try {
                         objBlock.wait();
@@ -593,6 +591,9 @@ public abstract class NetworkEnvironment extends Environment {
                 //return false;
             }
             getSynsetAgentsReported().add(a.getId());
+            addLocalConsumptionMobileAgent(a);
+            a.initCounterMessagesByRound();
+            a.setRound(a.getRound() + 1);
 
             try {
                 //Validate that agent is not death 
@@ -604,6 +605,7 @@ public abstract class NetworkEnvironment extends Environment {
                     for (MyVertex v : vs) {
                         Node nod = getNode(v.getName());
                         if (nod != null) {
+                            nod.increaseMessagesRecvByRound(7.0, 1);
                             nodes.add(nod);
                         }
                     }
@@ -611,7 +613,6 @@ public abstract class NetworkEnvironment extends Environment {
 
                     if (SimulationParameters.motionAlg.equals("FirstNeighbor")) {
                         a.increaseMessagesSentByRound(6.0, vs.size());
-                        a.increaseMessagesRecvByRound(6.0, vs.size());
                     }
                 } else {
                     p.setAttribute("nodedeath", true);
@@ -625,8 +626,9 @@ public abstract class NetworkEnvironment extends Environment {
         if (agent instanceof Node) {
             Node n = (Node) agent;
             //long start  = System.currentTimeMillis();
-            n.incRounds();
+            addLocalConsumptionNode(n);
             n.initCounterMessagesByRound();
+            n.incRounds();
             p.setAttribute("round", getAge());
         }
         return p;
