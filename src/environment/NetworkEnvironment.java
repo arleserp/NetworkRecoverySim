@@ -579,18 +579,6 @@ public abstract class NetworkEnvironment extends Environment {
 
         if (agent instanceof MobileAgent) {
             MobileAgent a = (MobileAgent) agent;
-
-            if (getSynsetAgentsReported().contains(a.getId())) {
-                synchronized (objBlock) {
-                    try {
-                        objBlock.wait();
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(NetworkEnvironment.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-                //return false;
-            }
-            getSynsetAgentsReported().add(a.getId());
             addLocalConsumptionMobileAgent(a);
             a.initCounterMessagesByRound();
             a.setRound(a.getRound() + 1);
@@ -844,6 +832,19 @@ public abstract class NetworkEnvironment extends Environment {
         }
     }
 
+    /*public void printMatrix() {
+        double[][] mat = memoryConsumptionMatrix;
+        Node hub = getNode("p27");
+        System.out.println("hub data: "  + hub.getNetworkdata() + " len " + hub.getNetworkdata().size() + ", size serialized: " + hub.getMemoryConsumption());
+        System.out.println("------------------------------------" + getAge()  + "-------------------------------");
+        for (int row = 0; row < mat.length; row++) {
+            for (int col = 0; col < mat[0].length; col++) {
+                System.out.print(mat[row][col] + " ");
+            }
+            System.out.println("");
+        }
+        System.out.println("------------------------------------");
+    }*/
     /**
      *
      * @param n
@@ -852,6 +853,7 @@ public abstract class NetworkEnvironment extends Environment {
         int age = getAge();
         int rowNodeId = nametoAdyLocation.get(n.getName());
         //System.out.println(n.getName() + " rowNodeId " + rowNodeId);
+
         memoryConsumptionMatrix[rowNodeId][age] = n.getMemoryConsumption();
         numberMessagesReceivedMatrix[rowNodeId][age] += (double) n.getNumberMessagesRecvByRound();
         sizeMessagesReceivedMatrix[rowNodeId][age] += (double) n.getSizeMessagesRecv();

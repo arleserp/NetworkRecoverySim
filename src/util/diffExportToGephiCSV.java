@@ -23,7 +23,7 @@ import java.util.logging.Logger;
  * @author arlese.rodriguezp
  */
 public class diffExportToGephiCSV {
-    static Graph<MyVertex, String> A;
+    static Graph<MyVertex, String> originalNetwork;
     static Graph<MyVertex, String> B;
 
     public static void main(String[] args) {
@@ -46,8 +46,8 @@ public class diffExportToGephiCSV {
                 File f = new File(graphCmpDiff);
                 File[] files = f.listFiles();
                 System.out.println("loading.... " + fileA);
-                A = GraphSerialization.loadDeserializeGraph(fileA);
-                System.out.println("A" + A);
+                originalNetwork = GraphSerialization.loadDeserializeGraph(fileA);
+                System.out.println("A" + originalNetwork);
                 createDir("csvdiff");
                 System.out.println("Loading cmpgraph... " + files.length);
                 for (File fileB : files) {
@@ -61,7 +61,7 @@ public class diffExportToGephiCSV {
                     //spoke condition added for spokecommunitycircle+v+100+beta+0.5+degree+4+clusters+4+sp+10+length+3
                     // communitycircle+v+100+beta+0.5+degree+4+clusters+4 is substring
                     if (fileB.isFile() && extension.equals("graph") && fileB.getName().contains(fileA) && fileA.contains("spoke") == fileB.getName().contains("spoke")) {
-                        if (A == null) {
+                        if (originalNetwork == null) {
                             System.out.println("You must load network A");
                         }
                         try {
@@ -75,19 +75,19 @@ public class diffExportToGephiCSV {
 
                             PrintWriter nodeCSVFile;
                             nodeCSVFile = new PrintWriter(new BufferedWriter(new FileWriter(nodeCSV, true)));
-                            int nodeId = 0;
-                            HashMap<String, Integer> dictIds = new HashMap<>();
-                            nodeCSVFile.println("Id,Label,State");
+                            
+                            //HashMap<String, Integer> dictIds = new HashMap<>();
+                            nodeCSVFile.println("Id,State");
 
                             // draw the vertices in the graph
-                            for (MyVertex v : A.getVertices()) {
+                            for (MyVertex v : originalNetwork.getVertices()) {
                                 // Get the position of the vertex                
                                 if (containsVertex(B, v.getName())) {
-                                    nodeCSVFile.println(nodeId + "," + v.getName() + ",Recovered");
+                                    nodeCSVFile.println(v.getName() + ",Recovered");
                                 } else {
-                                    nodeCSVFile.println(nodeId + "," + v.getName() + ",Failed");
+                                    nodeCSVFile.println(v.getName() + ",Failed");
                                 }
-                                dictIds.put(v.getName(), nodeId++);
+                                //dictIds.put(v.getName());
                             }
 
                             try (PrintWriter edgeCSVFile = new PrintWriter(new BufferedWriter(new FileWriter(edgeCSV, true)))) {
@@ -95,10 +95,10 @@ public class diffExportToGephiCSV {
                                 
                                 // draw the edges
                                 //problem of implementation????? when i repair network structure I rename edges!
-                                A.getEdges().stream().forEach((ed) -> {
+                                originalNetwork.getEdges().stream().forEach((ed) -> {
                                     //System.out.println("edge"+ ed);
                                     // get the end points of the edge
-                                    Pair<MyVertex> endpoints = A.getEndpoints(ed);
+                                    Pair<MyVertex> endpoints = originalNetwork.getEndpoints(ed);
                                     
                                     //due to I generate edges with a different name! :(
                                     String newname = "e" + endpoints.getFirst().getName() + endpoints.getSecond().getName();
@@ -106,9 +106,9 @@ public class diffExportToGephiCSV {
                                     String newnameC = "eb" + endpoints.getFirst().getName() + endpoints.getSecond().getName();
                                     String newnameD = "eb" + endpoints.getSecond().getName() + endpoints.getFirst().getName();
                                     if (!B.containsEdge(ed) && !B.containsEdge(newname) && !B.containsEdge(newnameB) && !B.containsEdge(newnameC) && !B.containsEdge(newnameD)) {
-                                        edgeCSVFile.println(dictIds.get(endpoints.getFirst().getName()) + "," + dictIds.get(endpoints.getSecond().getName()) + ",Undirected,EdgeFailed");
+                                        edgeCSVFile.println(endpoints.getFirst().getName() + "," + endpoints.getSecond().getName() + ",Undirected,EdgeFailed");
                                     } else {
-                                        edgeCSVFile.println(dictIds.get(endpoints.getFirst().getName()) + "," + dictIds.get(endpoints.getSecond().getName()) + ",Undirected,EdgeRecovered");
+                                        edgeCSVFile.println(endpoints.getFirst().getName() + "," + endpoints.getSecond().getName() + ",Undirected,EdgeRecovered");
                                     }
                                 });
                                 nodeCSVFile.close();

@@ -89,11 +89,13 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
                             HashMap<String, ArrayList> localData = n.getNetworkdata();
                             n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), recvData));
                             //inconsistency detected step 6 trickle
-                            if (!HashMapOperations.calculateDifference(n.getNetworkdata(), localData).isEmpty()) {
-                                n.trickleInterval = n.getTrickleAlg().reset();
-                            } else {
+                            //if (!HashMapOperations.calculateDifference(n.getNetworkdata(), localData).isEmpty()) { comment Jan 27
+                            
+                            if(HashMapOperations.isContained(recvData, localData) && HashMapOperations.isContained(localData, recvData)){
                                 //step 3: Whenever Trickle hears a transmission that is "consistent", it increments the counter c.
                                 n.getTrickleAlg().incr();
+                            } else {
+                                n.trickleInterval = n.getTrickleAlg().reset();
                             }
                             //double sizeRecv = inbox[0].length() + inbox[1].length() + inbox[2].length();
                         }
@@ -152,16 +154,16 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
             // long end = System.currentTimeMillis();
             //System.out.println("node n " + (end-start)  + " age " + n.getRounds());
             available.release();
-            if (getSynsetNodesReported().contains(n.getName())) {
-                try {
-                    synchronized (objBlock) {
-                        objBlock.wait();
-                    }
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(NetworkEnvironmentNodeFailingMobileAgents.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
+            //if (getSynsetNodesReported().contains(n.getName())) {
             getSynsetNodesReported().add(n.getName());
+            try {
+                synchronized (objBlock) {
+                    objBlock.wait();
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(NetworkEnvironmentNodeFailingMobileAgents.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            //}
 
         }
         return false;

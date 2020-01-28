@@ -345,11 +345,11 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                                         + currentTime + " nodes " + world.getNodesAlive() + " mobile: " + world.getMobileAgents().size());
                                 world.getSynsetNodesReported().clear();
                                 world.getSynsetAgentsReported().clear();
+                                world.updateWorldAge();
 
                                 synchronized (world.objBlock) {
                                     world.objBlock.notifyAll();
                                 }
-                                world.updateWorldAge();
                                 nodesLive.add(environment.getSimulationTime(), nodesAlive);
 
                                 GraphComparator gnm = new GraphComparator();
@@ -363,7 +363,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
 
                                 mobileAgentsAlive.put(worldRound, environment.getMobileAgents().size());
 
-                                if (environment.getAge() >= (SimulationParameters.maxIter - 100) && !alreadyPainted) {
+                                if (environment.getAge() >= (SimulationParameters.maxIter - 2) && !alreadyPainted) {
                                     String baseFilename = SimulationParameters.reportsFilenamePrefix;
                                     String dir = "cmpgraph";
                                     createDir(dir);
@@ -373,10 +373,11 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                             }
                         } else {
                             if (world.getSynsetNodesReported().size() >= nodesAlive) {
-                                world.updateWorldAge();
+                                //world.printMatrix();
                                 System.out.println("wa: " + world.getAge() + " simulation time: "
                                         + currentTime + " nodes " + world.getNodesAlive() + " mobile: " + world.getMobileAgents().size());
                                 world.getSynsetNodesReported().clear();
+                                world.updateWorldAge();
 
                                 synchronized (world.objBlock) {
                                     world.objBlock.notifyAll();
@@ -394,7 +395,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
 
                                 mobileAgentsAlive.put(worldRound, environment.getMobileAgents().size());
 
-                                if (environment.getAge() >= (SimulationParameters.maxIter - 100) && !alreadyPainted) {
+                                if (environment.getAge() >= (SimulationParameters.maxIter - 2) && !alreadyPainted) {
                                     String baseFilename = SimulationParameters.reportsFilenamePrefix;
                                     String dir = "cmpgraph";
                                     createDir(dir);

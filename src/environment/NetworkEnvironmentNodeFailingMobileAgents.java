@@ -68,10 +68,12 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
                     //a.increaseMessagesSentByRound(msgnetSize, 1);
 
                     HashMap<String, ArrayList> localData = a.getNetworkdata();
-                    a.setNetworkdata(HashMapOperations.JoinSets(a.getNetworkdata(), c.getNetworkdata()));
+                    HashMap<String, ArrayList> recvData = c.getNetworkdata();
+                    a.setNetworkdata(HashMapOperations.JoinSets(a.getNetworkdata(), recvData));
 
                     //inconsistency detected step 6 trickle
-                    if (HashMapOperations.calculateDifference(a.getNetworkdata(), localData).isEmpty()) {
+                    //if (HashMapOperations.calculateDifference(a.getNetworkdata(), localData).isEmpty()) {
+                    if (HashMapOperations.isContained(recvData, localData) && HashMapOperations.isContained(localData, recvData)) {
                         //System.out.println("increase!");
                         a.incr();
                     } else {
@@ -110,7 +112,6 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
                         case 1: //die
                             System.out.println("action: kill ");
                             killMobileAgent(a);
-                            return false;
                         default:
                             String msg = "[Unknown action " + act
                                     + ". Action not executed]";
@@ -118,8 +119,17 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
                             break;
                     }
                 }
-                a.setRound(a.getRound() + 1);
+                //a.setRound(a.getRound() + 1);
                 available.release();
+                getSynsetAgentsReported().add(a.getId());
+                synchronized (objBlock) {
+                    try {
+                        objBlock.wait();
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(NetworkEnvironment.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                //return false;
             }
             //availableMa.release();
         } catch (Exception ex) {
@@ -204,17 +214,14 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
                 }
             }
             available.release();
-            if (getSynsetNodesReported().contains(n.getName())) {
-                try {
-                    synchronized (objBlock) {
-                        objBlock.wait();
-                    }
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(NetworkEnvironmentNodeFailingMobileAgents.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
             getSynsetNodesReported().add(n.getName());
-
+            try {
+                synchronized (objBlock) {
+                    objBlock.wait();
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(NetworkEnvironmentNodeFailingMobileAgents.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         return false;
     }
