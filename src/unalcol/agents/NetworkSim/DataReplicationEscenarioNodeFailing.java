@@ -365,7 +365,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                     while (true) {
                         //!world.isFinished()) {
                         Thread.sleep(50);
-                       // Logger.getLogger(DataReplicationEscenarioNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
+                        // Logger.getLogger(DataReplicationEscenarioNodeFailing.class.getName()).log(Level.SEVERE, null, ex);
 
                         //System.out.println("n visited nodes size" + n.visitedNodes.size());
                         // vv.getRenderContext().setVertexFillPaintTransformer(n.vertexColor);
@@ -393,9 +393,14 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                                 similarity.put(n.getAge(), sim);
                                 frame2.repaint();
 
-                                if (n.getAge() >= 5900 && !alreadyPainted) {
+                                //if (n.getAge() >= 5900 && !alreadyPainted) {
+                                //if (n.getAge() >= (SimulationParameters.maxIter-100) && !alreadyPainted) {
+                                
+                                if (n.getAge() % ((SimulationParameters.maxIter)/10)==0 || (n.getAge() >= (SimulationParameters.maxIter-100) && !alreadyPainted)) {
                                     System.out.println("saving serialized graph");
-                                    alreadyPainted = true;
+                                    if(n.getAge() >= (SimulationParameters.maxIter-100)){
+                                        alreadyPainted = true;
+                                    }
                                     String baseFilename = SimulationParameters.genericFilenameTimeouts;
                                     baseFilename = baseFilename.replace(".timeout", "");
                                     baseFilename = baseFilename.replace("timeout+", "");
@@ -403,7 +408,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable, ActionList
                                     String dir = "cmpgraph";
                                     createDir(dir);
                                     GraphSerialization.saveSerializedGraph("./" + dir + "/" + getFileName() + "+" + baseFilename + "+round+" + n.getAge() + ".graph", g);
-                                    
+
                                 }
                             }
                         } // System.out.println("entra:" + n.getAge());
