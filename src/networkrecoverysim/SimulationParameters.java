@@ -36,7 +36,7 @@ public class SimulationParameters {
     public static float npf = 0;
     public static int nhops = 2;
     public static String simMode = "default";
-    public static int nhopsChain = 2;
+    public static int nhopsPrune = 0;
     public static long averageDelay = 30;
     public static String filenameDelays = "";
     public static String reportsFilenamePrefix = "";
@@ -47,7 +47,7 @@ public class SimulationParameters {
     public static long stopTime;
 
     public static String printParameters() {
-        return "SimulationParameters{" + "graphMode=" + graphMode + "\n, popSize=" + popSize + "\n, channelNumber=" + channelNumber + "\n, vertexNumber=" + vertexNumber + "\n, pf=" + pf + "\n, beta=" + beta + "\n, rows=" + rows + "\n, columns=" + columns + "\n, motionAlg=" + motionAlg + "\n, filename=" + filename + "\n, maxIter=" + maxIter + "\n, clusters=" + clusters + "\n, startNodesScaleFree=" + startNodesScaleFree + "\n, edgesToAttachScaleFree=" + edgesToAttachScaleFree + "\n, numSteps=" + numSteps + "\n, degree=" + degree + "\n, filenameLoc=" + filenameLoc + "\n, globalData=" + globalData + "\n, activateReplication=" + activateReplication + "\n, nodeDelay=" + nodeDelay + "\n, npf=" + npf + "\n, nhops=" + nhops + "\n, simMode=" + simMode + "\n, nhopsChain=" + nhopsChain + "\n, averageDelay=" + averageDelay + "\n, filenameDelays=" + filenameDelays + "\n, genericFilenameTimeouts=" + reportsFilenamePrefix + "\n, redundFactor=" + redundancyFactor + "\n, nofailRounds=" + nofailRounds + "\n failureProfile=" + failureProfile +"}";
+        return "SimulationParameters{" + "graphMode=" + graphMode + "\n, popSize=" + popSize + "\n, channelNumber=" + channelNumber + "\n, vertexNumber=" + vertexNumber + "\n, pf=" + pf + "\n, beta=" + beta + "\n, rows=" + rows + "\n, columns=" + columns + "\n, motionAlg=" + motionAlg + "\n, filename=" + filename + "\n, maxIter=" + maxIter + "\n, clusters=" + clusters + "\n, startNodesScaleFree=" + startNodesScaleFree + "\n, edgesToAttachScaleFree=" + edgesToAttachScaleFree + "\n, numSteps=" + numSteps + "\n, degree=" + degree + "\n, filenameLoc=" + filenameLoc + "\n, globalData=" + globalData + "\n, activateReplication=" + activateReplication + "\n, nodeDelay=" + nodeDelay + "\n, npf=" + npf + "\n, nhops=" + nhops + "\n, simMode=" + simMode + "\n, hHopsPrune=" + nhopsPrune + "\n, averageDelay=" + averageDelay + "\n, filenameDelays=" + filenameDelays + "\n, genericFilenameTimeouts=" + reportsFilenamePrefix + "\n, redundFactor=" + redundancyFactor + "\n, nofailRounds=" + nofailRounds + "\n failureProfile=" + failureProfile +"}";
     }
 
 }

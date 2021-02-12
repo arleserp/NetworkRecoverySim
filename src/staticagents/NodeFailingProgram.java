@@ -32,10 +32,10 @@ public class NodeFailingProgram implements AgentProgram {
     @Override
     public Action compute(Percept p) {
 
-        if (SimulationParameters.failureProfile.contains("zeropf")) {
-            String[] zeroPfInterval = SimulationParameters.failureProfile.split("-");
-            int initialRound = Integer.valueOf(zeroPfInterval[1]);
-            int endRound = Integer.valueOf(zeroPfInterval[2]);
+        if (SimulationParameters.failureProfile.contains("FailIntv")) { // Defines failure interval
+            String[] FailureInterval = SimulationParameters.failureProfile.split("-");
+            int initialRound = Integer.valueOf(FailureInterval[1]);
+            int endRound = Integer.valueOf(FailureInterval[2]);
             int round = (Integer)(p.getAttribute("round"));
             
             if (Math.random() < pf && (round >= initialRound && round <= endRound) ) {

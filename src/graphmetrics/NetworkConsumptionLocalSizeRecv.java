@@ -7,7 +7,6 @@ package graphmetrics;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -26,8 +25,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -39,12 +36,12 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.util.Log;
 import org.jfree.util.LogContext;
-import org.jfree.util.ShapeUtilities;
 import util.StatisticsNormalDist;
 
 /**
@@ -59,6 +56,7 @@ public class NetworkConsumptionLocalSizeRecv extends ApplicationFrame {
     private static double maxXvalue = 0.0;
     private static Integer sizeX = 1200;
     private static Integer sizeY = 800;
+    private static Integer scale = -1;
     /**
      * Access to logging facilities.
      */
@@ -87,9 +85,9 @@ public class NetworkConsumptionLocalSizeRecv extends ApplicationFrame {
             if (file.isDirectory() && file.getName().endsWith("localstatsrecv")) {
                 //System.out.println("new seriiiiieeeeeeeeeee" + file);
                 XYSeriesCollection juegoDatos = new XYSeriesCollection();
-                XYSeries minimum = new XYSeries("MinNumberMsgRecv");
-                XYSeries maximum = new XYSeries("MaxNumberMsgRecv");
-                XYSeries median = new XYSeries("MedianNumberMsgRecv");
+                XYSeries minimum = new XYSeries("Min");
+                XYSeries maximum = new XYSeries("Max");
+                XYSeries median = new XYSeries("Median");
                 juegoDatos.addSeries(minimum);
                 juegoDatos.addSeries(maximum);
                 juegoDatos.addSeries(median);
@@ -197,9 +195,17 @@ public class NetworkConsumptionLocalSizeRecv extends ApplicationFrame {
 
                 for (int k : sorted) {
                     StatisticsNormalDist st = new StatisticsNormalDist(datainRound.get(k), datainRound.get(k).size());
-                    minimum.add(k, st.getMin());
-                    maximum.add(k, st.getMax());
-                    median.add(k, st.getMedian());
+
+                    if (scale == -1) {
+                        minimum.add(k, st.getMin());
+                        maximum.add(k, st.getMax());
+                        median.add(k, st.getMedian());
+                    } else {
+                        minimum.add(k, st.getMin() / scale);
+                        maximum.add(k, st.getMax() / scale);
+                        median.add(k, st.getMedian() / scale);
+                    }
+
                     try {
                         escribirLocalStatsRecv = new PrintWriter(new BufferedWriter(new FileWriter(localStatsSizeMsgRecv, true)));
                         //System.out.println("writing " + dataReplEsc.getNetworkAndMemoryStats());
@@ -208,15 +214,27 @@ public class NetworkConsumptionLocalSizeRecv extends ApplicationFrame {
                     } catch (IOException ex) {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
-
                     escribirLocalStatsRecv.close();
-
                 }
-
-                JFreeChart chart = ChartFactory.createXYLineChart(
-                        "Time vs Size of Messages Recv by Round" + file.getName(), "Time", "Size of Messages in bytes",
-                        juegoDatos, PlotOrientation.VERTICAL,
-                        true, true, false);
+                
+                JFreeChart chart;
+                if (scale == -1) {
+                    chart = ChartFactory.createXYLineChart(
+                            "Time vs Size of Messages Recv by Round" + file.getName(), "Time (rounds)", "Bandwidth Overhead",
+                            juegoDatos, PlotOrientation.VERTICAL,
+                            true, true, false);
+                } else {
+                    chart = ChartFactory.createXYLineChart(
+                            "Time vs Size of Messages Recv by Round" + file.getName(), "Time (rounds)", "Bandwidth Overhead in " + ByteScales.prefixMB.get(scale),
+                            juegoDatos, PlotOrientation.VERTICAL,
+                            true, true, false);
+                }
+                
+                LegendTitle legend = chart.getLegend();
+                Font legendFont = legend.getItemFont();
+                float legendFontSize = legendFont.getSize();
+                Font newLegendFont = legendFont.deriveFont(legendFontSize * 1.5f);
+                legend.setItemFont(newLegendFont);
 
                 //chart.setBackgroundPaint(Color.white);
                 final XYPlot plot = chart.getXYPlot();
@@ -237,9 +255,8 @@ public class NetworkConsumptionLocalSizeRecv extends ApplicationFrame {
                 plot.setRenderer(renderer);
 
                 NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
-                Font font3 = new Font("Dialog", Font.PLAIN, 12);
+                Font font3 = new Font("Dialog", Font.PLAIN, 18);
                 domainAxis.setLabelFont(font3);
-
                 NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
                 rangeAxis.setLabelFont(font3);
 
@@ -276,8 +293,12 @@ public class NetworkConsumptionLocalSizeRecv extends ApplicationFrame {
             sizeX = Integer.valueOf(args[2]);
         }
 
-        if (args.length > 2) {
+        if (args.length > 3) {
             sizeY = Integer.valueOf(args[3]);
+        }
+
+        if (args.length > 4) {
+            scale = Integer.valueOf(args[4]);
         }
         final NetworkConsumptionLocalSizeRecv demo = new NetworkConsumptionLocalSizeRecv("Local Number of Messages Received vs Time");
     }

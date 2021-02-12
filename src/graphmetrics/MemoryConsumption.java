@@ -7,7 +7,6 @@ package graphmetrics;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -37,12 +36,12 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.util.Log;
 import org.jfree.util.LogContext;
-import org.jfree.util.ShapeUtilities;
 import util.StatisticsNormalDist;
 
 /**
@@ -57,6 +56,8 @@ public class MemoryConsumption extends ApplicationFrame {
     private static double maxXvalue = 0.0;
     private static Integer sizeX = 1200;
     private static Integer sizeY = 800;
+    private static Integer scale = -1;
+
     /**
      * Access to logging facilities.
      */
@@ -196,9 +197,17 @@ public class MemoryConsumption extends ApplicationFrame {
                 for (int k : sorted) {
                     System.out.println("xxxxxxxx");
                     StatisticsNormalDist st = new StatisticsNormalDist(MemoryVsSimulation.get(k), MemoryVsSimulation.get(k).size());
-                    minimum.add(k, st.getMin());
-                    maximum.add(k, st.getMax());
-                    median.add(k, st.getMedian());
+
+                    if (scale == -1) {
+                        minimum.add(k, st.getMin());
+                        maximum.add(k, st.getMax());
+                        median.add(k, st.getMedian());
+                    } else {
+                        minimum.add(k, st.getMin() / scale);
+                        maximum.add(k, st.getMax() / scale);
+                        median.add(k, st.getMedian() / scale);
+                    }
+
                     try {
                         escribirLocalStatsMem = new PrintWriter(new BufferedWriter(new FileWriter(localStatsMemFileName, true)));
                         escribirLocalStatsMem.println(st.getMin() + "," + st.getMedian() + "," + st.getMax());
@@ -210,10 +219,25 @@ public class MemoryConsumption extends ApplicationFrame {
 
                 }
 
-                JFreeChart chart = ChartFactory.createXYLineChart(
-                        "Time vs Memory Consumption" + file.getName(), "Time", "Memory (bytes)",
-                        juegoDatos, PlotOrientation.VERTICAL,
-                        true, true, false);
+                JFreeChart chart;
+
+                if (scale == -1) {
+                    chart = ChartFactory.createXYLineChart(
+                            "Time vs Memory Consumption" + file.getName(), "Time (rounds)", "Memory",
+                            juegoDatos, PlotOrientation.VERTICAL,
+                            true, true, false);
+                } else {
+                    chart = ChartFactory.createXYLineChart(
+                            "Time vs Memory Consumption" + file.getName(), "Time (rounds)", "Memory " + ByteScales.prefixMB.get(scale),
+                            juegoDatos, PlotOrientation.VERTICAL,
+                            true, true, false);
+                }
+
+                LegendTitle legend = chart.getLegend();
+                Font legendFont = legend.getItemFont();
+                float legendFontSize = legendFont.getSize();
+                Font newLegendFont = legendFont.deriveFont(legendFontSize * 1.5f);
+                legend.setItemFont(newLegendFont);
 
                 //chart.setBackgroundPaint(Color.white);
                 final XYPlot plot = chart.getXYPlot();
@@ -230,15 +254,14 @@ public class MemoryConsumption extends ApplicationFrame {
                 //Shape cross = ShapeUtilities.createDiagonalCross(3, 1);
                 //renderer.setSeriesShape(0, cross);
                 //renderer.setSeriesPaint(0, Color.MAGENTA);
-
                 plot.setRenderer(renderer);
 
                 NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
-                Font font3 = new Font("Dialog", Font.PLAIN, 12);
-                domainAxis.setLabelFont(font3);
+                Font font = new Font("Dialog", Font.PLAIN, 18);
+                domainAxis.setLabelFont(font);
 
                 NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-                rangeAxis.setLabelFont(font3);
+                rangeAxis.setLabelFont(font);
 
                 //chart.getLegend().setItemFont(new Font("Palatino", Font.PLAIN, 14));
                 if (maxXvalue != 0) {
@@ -262,20 +285,26 @@ public class MemoryConsumption extends ApplicationFrame {
     public static void main(final String[] args) {
 
         if (args.length > 0) {
-            minRoundForall = args[0];
+            minRoundForall = args[0]; //minimum round 
         }
 
         if (args.length > 1) {
-            maxXvalue = Double.valueOf(args[1]);
+            maxXvalue = Double.valueOf(args[1]); //maximum value for x
         }
 
         if (args.length > 2) {
-            sizeX = Integer.valueOf(args[2]);
+            sizeX = Integer.valueOf(args[2]); //width of graph
         }
 
-        if (args.length > 2) {
-            sizeY = Integer.valueOf(args[3]);
+        if (args.length > 3) {
+            sizeY = Integer.valueOf(args[3]); //height of graph
         }
+
+        if (args.length > 4) {
+            scale = Integer.valueOf(args[4]); //scale of graph
+        }
+
         final MemoryConsumption demo = new MemoryConsumption("Resources Comsumption vs Simulations sorted by date");
     }
+
 }

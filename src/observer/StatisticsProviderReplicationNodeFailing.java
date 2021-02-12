@@ -46,12 +46,12 @@ public class StatisticsProviderReplicationNodeFailing {
         return Statistics;
     }
 
-    void printStatistics(NetworkEnvironment w) {
+    void printStatistics(NetworkEnvironment w, double finalSim) {
         Hashtable st = getStatisticsInteger(w);
         try {
             PrintWriter escribir;
             escribir = new PrintWriter(new BufferedWriter(new FileWriter(reportFile+".csv", true)));
-            escribir.println(st.get("numberFailures") + "," + st.get("avgNodeLife") + "," + st.get("stdNodeLife") + "," + st.get("round"));
+            escribir.println(st.get("numberFailures") + "," + st.get("avgNodeLife") + "," + st.get("stdNodeLife") + "," + st.get("round") + ","  + finalSim);
             escribir.close();
         } catch (IOException ex) {
             Logger.getLogger(StatisticsProviderReplicationNodeFailing.class.getName()).log(Level.SEVERE, null, ex);

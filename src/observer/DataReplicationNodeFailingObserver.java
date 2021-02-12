@@ -133,7 +133,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     System.out.println("base filename:" + baseFilename);
 
                     if (SimulationParameters.simMode.equals("nhopsinfo")) {
-                        String roundVsInfoFileName = baseFilename + "+nhopsInfo+" + SimulationParameters.nhopsChain + "+roundVsInfo";
+                        String roundVsInfoFileName = baseFilename + "+nhopsInfo+" + SimulationParameters.nhopsPrune + "+roundVsInfo";
                         createDir(roundVsInfoFileName);
                         String roundVsInfoStats = "./" + roundVsInfoFileName + "/" + baseFilename + "+" + getFileName() + "+roundVsInfo.csv";
                         PrintWriter writeRoundVsInfo = null;
@@ -152,10 +152,10 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     //Write similarity metrics by round by simulation
                     //write last similarity reported
                     GraphComparator gnm = new GraphComparator();
-                    double sim = 0;
-                    sim = gnm.calculateSimilarity(world);
-                    System.out.println("Final Similarity:" + sim);
-                    dataReplEsc.getSimilarity().put(world.getAge(), sim);
+                    double finalSimilarity = 0;
+                    finalSimilarity = gnm.calculateSimilarity(world);
+                    System.out.println("Final Similarity:" + finalSimilarity);
+                    dataReplEsc.getSimilarity().put(world.getAge(), finalSimilarity);
 
                     //Write similarity metrics
                     String graphSimilarity = baseFilename + "+similarity";
@@ -351,7 +351,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     StatisticsProviderReplicationNodeFailing sti = new StatisticsProviderReplicationNodeFailing(baseFilename);
 
                     //ToFix: Statistis
-                    sti.printStatistics(world);
+                    sti.printStatistics(world, finalSimilarity);
 
                     SimulationParameters.stopTime = System.currentTimeMillis();
                     System.out.println("The end" + world.getAge() + " time of simulation:" + (SimulationParameters.stopTime - SimulationParameters.startTime) + " number of node failures: " + world.getNumberFailures());

@@ -19,6 +19,7 @@ public class GephiToGraph {
         File srcDir = new File("./csvgephi");
         File[] filesSrcDir = srcDir.listFiles();
 
+
         for (File fileSrc : filesSrcDir) {
             String fileA = fileSrc.getName();
             int i = fileA.lastIndexOf('.');
@@ -53,9 +54,10 @@ public class GephiToGraph {
 
                 GraphCreator.EdgeFactory edge_factory = new GraphCreator.EdgeFactory();
                 while ((st = edbr.readLine()) != null) {
+                    System.out.println("st:" + st);
                     String[] l = st.split(",");
                     if (!l[0].equals("Source")) {                        
-                        Integer dest = Integer.parseInt(l[1]);
+                        //Integer dest = Integer.parseInt(l[1]);
                         g.addEdge(edge_factory.create(), vertices.get(l[0]), vertices.get(l[1]));
                     }
                 }

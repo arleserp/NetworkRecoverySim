@@ -457,6 +457,12 @@ public abstract class NetworkEnvironment extends Environment {
                 creator.increaseMessagesSentByRound(aprox.length(), 1);
 
                 nod.setNetworkdata(new HashMap(creator.getNetworkdata()));
+
+                //Prune data
+                if (SimulationParameters.simMode.equals("trickleP")) {
+                    nod.pruneInformation(SimulationParameters.nhopsPrune);
+                }
+
                 nod.increaseMessagesRecvByRound(aprox.length(), 1);
 
                 synchronized (nodeVersion) {
@@ -488,7 +494,7 @@ public abstract class NetworkEnvironment extends Environment {
 
                 creator.replicasCreated++;
                 this.agents.add(nod);
-                if (SimulationParameters.simMode.equals("trickle")) {
+                if (SimulationParameters.simMode.contains("trickle")) {
                     //System.out.println("initializes trickleeeeeeeeeeeeeeeeeeeeee");
                     nod.setTrickleAlg(new Trickle());
                     nod.trickleInterval = nod.getTrickleAlg().next();
@@ -498,7 +504,7 @@ public abstract class NetworkEnvironment extends Environment {
                 nod.setThread(t);
                 t.start();
 
-                if (SimulationParameters.simMode.equals("mobileAgents")) { // && Math.random() < ((double) (SimulationParameters.popSize) / (double) SimulationParameters.vertexNumber)) {
+                if (SimulationParameters.simMode.contains("mobileAgents")) { // && Math.random() < ((double) (SimulationParameters.popSize) / (double) SimulationParameters.vertexNumber)) {
                     //System.out.println("crea agenteeeeee");
                     createNewMobileAgent(nod);
                 }
@@ -600,7 +606,7 @@ public abstract class NetworkEnvironment extends Environment {
                     p.setAttribute("nodes", nodes);
 
                     if (SimulationParameters.motionAlg.equals("FirstNeighbor")) {
-                        a.increaseMessagesSentByRound(6.0, vs.size());
+                        a.increaseMessagesSentByRound(7.0, vs.size());
                     }
                 } else {
                     p.setAttribute("nodedeath", true);
@@ -1059,16 +1065,14 @@ public abstract class NetworkEnvironment extends Environment {
      * load neighobours using bfs
      *
      * @param neighbours neighbours of a node
-     * @param nhopsChain number of hops
+     * @param nhops number of hops
      * @param v node to load neighbour
      * @param distances //distances to a determined node
      */
-    private void loadNeighboursBFS(ArrayList<MyVertex> neighbours, int nhopsChain, MyVertex v, HashMap<MyVertex, Integer> distances) {
-        //System.out.println("nopsChain:" + nhopsChain);
-        int lvls = 1;
+    private void loadNeighboursBFS(ArrayList<MyVertex> neighbours, int nhops, MyVertex v, HashMap<MyVertex, Integer> distances) {
         Deque<MyVertex> q = new LinkedList<>();
         distances.put(v, 0);
-        if (nhopsChain == 0) {
+        if (nhops == 0) {
             return;
         }
         while (v != null) {
@@ -1086,34 +1090,31 @@ public abstract class NetworkEnvironment extends Environment {
     }
 
     /**
-     * For each node load the neighbourhood in hops nhopsChain of n
-     *
-     * @param nhopsChain number of hops
+     * For each node load the neighbourhood in n hops of n
+     * @param nhops number of hops
      * @param n node
      * @return
      */
-    public HashMap<String, ArrayList> loadPartialNetwork(int nhopsChain, Node n) {
+    public HashMap<String, ArrayList> loadPartialNetwork(int nhops, Node n) {
         HashMap<String, ArrayList> localNetworkInfo = new HashMap<>();
         HashMap<MyVertex, Integer> distances = new HashMap<>();
         ArrayList<MyVertex> neighbours = new ArrayList<>();
         neighbours.add(n.getVertex());
 
-        //loadNeighboursRecursively(neighbours, nhopsChain, n.getVertex()); //slow!
-        loadNeighboursBFS(neighbours, nhopsChain, n.getVertex(), distances);
+        loadNeighboursBFS(neighbours, nhops, n.getVertex(), distances);
 
         n.setDistancesToNode(distances);
         for (MyVertex v : distances.keySet()) {
-            if (!neighbours.contains(v) && distances.get(v) <= nhopsChain) {
+            if (!neighbours.contains(v) && distances.get(v) <= nhops) {
                 neighbours.add(v);
             }
         }
-        System.out.println("node" + n + "neigh: " + neighbours + " neigh size:" + neighbours.size());
-        System.out.println("");
+        System.out.println("node" + n + " neigh size:" + neighbours.size());
+        //System.out.println("");
         for (MyVertex v : neighbours) {
             localNetworkInfo.put(v.getName(), new ArrayList<>(getTopologyNames(v)));
         }
-        System.out.println("node" + n + "info = " + localNetworkInfo);
-
+        //System.out.println("node" + n + "info = " + localNetworkInfo);
         return localNetworkInfo;
     }
 

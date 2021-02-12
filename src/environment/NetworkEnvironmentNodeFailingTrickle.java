@@ -53,7 +53,7 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
             //Runnable sendData = () -> {
             //Step 4. Trickle Simple send protocol 
             if (n.getRounds() % n.trickleT == 0 && n.getTrickleAlg().check()) {
-                //System.out.println("Trickle [" + n.trickleInterval[0] + " ," + n.trickleInterval[1] + ", " + n.trickleT + "]" + "-" + n.getTrickleAlg().getCounter() + "-" + n.getName() + "-" + n.getRounds());
+                System.out.println("Trickle [" + n.trickleInterval[0] + " ," + n.trickleInterval[1] + ", " + n.trickleT + "]" + "-" + n.getTrickleAlg().getCounter() + "-" + n.getName() + "-" + n.getRounds());
                 //System.out.println("neeeeeeeeeeeeeeeeeeeeeeeeew");
                 ArrayList<String> topologyDatas = new ArrayList(this.getTopologyNames(n.getVertex()));
                 for (String neigbour : topologyDatas) {
@@ -86,53 +86,70 @@ public class NetworkEnvironmentNodeFailingTrickle extends NetworkEnvironment {
                             //completes and updates data
                             StringSerializer s = new StringSerializer();
                             HashMap<String, ArrayList> recvData = (HashMap<String, ArrayList>) s.deserialize(inbox[2]);
+
+                            //Prune data
+                            if (SimulationParameters.simMode.equals("trickleP")) {
+                                recvData = n.pruneReceivedData(SimulationParameters.nhopsPrune, recvData);
+                            }
+
                             HashMap<String, ArrayList> localData = n.getNetworkdata();
+
                             n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), recvData));
+
                             //inconsistency detected step 6 trickle
                             //if (!HashMapOperations.calculateDifference(n.getNetworkdata(), localData).isEmpty()) { comment Jan 27
-                            
-                            if(HashMapOperations.isContained(recvData, localData) && HashMapOperations.isContained(localData, recvData)){
+                            if (SimulationParameters.simMode.equals("trickleP") && HashMapOperations.isContained(recvData, localData)) {
                                 //step 3: Whenever Trickle hears a transmission that is "consistent", it increments the counter c.
+                                //System.out.println("is contained!");
+                                n.getTrickleAlg().incr();
+                            } else if (HashMapOperations.isContained(recvData, localData) && HashMapOperations.isContained(localData, recvData)) {
+                                //step 3: Whenever Trickle hears a transmission that is "consistent", it increments the counter c.
+                                //System.out.println("is contained!");
                                 n.getTrickleAlg().incr();
                             } else {
                                 n.trickleInterval = n.getTrickleAlg().reset();
                             }
                             //double sizeRecv = inbox[0].length() + inbox[1].length() + inbox[2].length();
+
                         }
                         if (SimulationParameters.activateReplication.equals("replalgon")) {
                             if (inbox[0].equals("connect")) {
-                                //message msgnodediff: connect|level|nodeid|nodetoconnect                                
-                                String nodetoConnect = inbox[2];
-                                connect(n.getVertex(), nodetoConnect);
                                 double inboxSize = getMessageSize(inbox);
                                 //increase number of messages received by round
                                 n.increaseMessagesRecvByRound(inboxSize, 1);
+
+                                //increase amount of messages received                                
+                                String nodetoConnect = inbox[2];
+                                connect(n.getVertex(), nodetoConnect);
 
                                 //When n connects to nodetoConnect n also sends its network topology
                                 // msg: networkdatainnode: networkdatanode|source|networkdata
-                                if (SimulationParameters.simMode.equals("nhopsinfo")) {
-                                    String[] msgdatanode = new String[3];
-                                    msgdatanode[0] = "networkdatanode";
-                                    msgdatanode[1] = String.valueOf(n.getVertex().getName());
-                                    StringSerializer s = new StringSerializer();
-                                    msgdatanode[2] = s.serialize(n.getNetworkdata());
+                                String[] msgdatanode = new String[3];
+                                msgdatanode[0] = "networkdatanode";
+                                msgdatanode[1] = String.valueOf(n.getVertex().getName());
+                                StringSerializer s = new StringSerializer();
+                                msgdatanode[2] = s.serialize(n.getNetworkdata());
+                                //increase message size                                    
+                                double msgdatanodeSize = getMessageSize(msgdatanode);
+                                n.increaseMessagesSentByRound(msgdatanodeSize, 1);
 
-                                    //increase message size                                    
-                                    double msgdatanodeSize = getMessageSize(msgdatanode);
-                                    n.increaseMessagesSentByRound(msgdatanodeSize, 1);
-                                    NetworkNodeMessageBuffer.getInstance().putMessage(nodetoConnect, msgdatanode);
-                                    System.out.println(n.getVertex().getName() + "send networkdatanode to " + nodetoConnect);
-                                }
+                                NetworkNodeMessageBuffer.getInstance().putMessage(nodetoConnect, msgdatanode);
+                                System.out.println(n.getVertex().getName() + "send networkdatanode to " + nodetoConnect);
                             }
-                            if (SimulationParameters.simMode.equals("nhopsinfo") && inbox[0].equals("networkdatanode")) {
+
+                            if (inbox[0].equals("networkdatanode")) { //receive topology data from mobile agent or node
                                 double inboxSize = getMessageSize(inbox);
-                                //increase number of messages received by round
-                                n.increaseMessagesRecvByRound(inboxSize, 1);
+                                if (inbox.length < 4) { // received by other node
+                                    n.increaseMessagesRecvByRound(inboxSize, 1);
+                                }
                                 String source = inbox[1]; //origin of message
                                 StringSerializer s = new StringSerializer();
-                                HashMap<String, ArrayList> ndata = (HashMap) s.deserialize(inbox[2]); //networkdata
-                                n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), ndata));
-                                n.pruneInformation(SimulationParameters.nhopsChain); //use nhops to prune data
+                                HashMap<String, ArrayList> recvData = (HashMap) s.deserialize(inbox[2]); //networkdata
+                                //Prune data
+                                if (SimulationParameters.simMode.equals("trickleP")) {
+                                    recvData = n.pruneReceivedData(SimulationParameters.nhopsPrune, recvData);
+                                }
+                                n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), recvData));
                             }
                         }
                     }

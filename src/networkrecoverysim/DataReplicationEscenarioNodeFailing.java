@@ -187,12 +187,12 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
 
         if (SimulationParameters.nofailRounds == 0) {
             if (SimulationParameters.simMode.contains("chain")) {
-                fileNamePrefix = "exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+" + SimulationParameters.nhopsChain + "+redFactor+" + SimulationParameters.redundancyFactor + ".timeout";
+                fileNamePrefix = "exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+" + SimulationParameters.nhopsPrune + "+redFactor+" + SimulationParameters.redundancyFactor + ".timeout";
             } else {
                 fileNamePrefix = "exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+redFactor+" + SimulationParameters.redundancyFactor;
             }
         } else if (SimulationParameters.simMode.contains("chain")) {
-            fileNamePrefix = "exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+" + SimulationParameters.nhopsChain + "+redFactor+" + SimulationParameters.redundancyFactor + "+nofailr+" + SimulationParameters.nofailRounds;
+            fileNamePrefix = "exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+" + SimulationParameters.nhopsPrune + "+redFactor+" + SimulationParameters.redundancyFactor + "+nofailr+" + SimulationParameters.nofailRounds;
         } else {
             fileNamePrefix = "exp+ps+" + population + "+pf+" + SimulationParameters.npf + "+mode+" + SimulationParameters.motionAlg + "+maxIter+" + SimulationParameters.maxIter + "+e+" + g.getEdges().size() + "+v+" + g.getVertices().size() + "+" + graphType + "+" + SimulationParameters.activateReplication + "+" + SimulationParameters.nodeDelay + "+" + SimulationParameters.simMode + "+redFactor+" + SimulationParameters.redundancyFactor + "+nofailr+" + SimulationParameters.nofailRounds + "";
         }
@@ -211,7 +211,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
             nodes.add(n);
         }
 
-        if (SimulationParameters.simMode.equals("mobileAgents")) {
+        if (SimulationParameters.simMode.contains("mobileAgents")) {
             if (SimulationParameters.filenameLoc.length() > 1) {
                 loadLocations();
                 //loadNetworkDelays();
@@ -263,13 +263,23 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 }
                 break;
             case "nhopsinfo":
+                
                 world = new NetworkEnvironmentNodeFailingAllInfo(agents, nodeLanguaje, g);
                 world.addNodes(nodes);
                 for (Node n : world.getNodes()) {
-                    n.setNetworkdata(((NetworkEnvironmentNodeFailingAllInfo) world).loadPartialNetwork(SimulationParameters.nhopsChain, n));
+                    n.setNetworkdata(((NetworkEnvironmentNodeFailingAllInfo) world).loadPartialNetwork(SimulationParameters.nhopsPrune, n));
                 }
                 break;
             case "trickle":
+                world = new NetworkEnvironmentNodeFailingTrickle(agents, nodeLanguaje, g);
+                world.addNodes(nodes);
+                for (Node n : world.getNodes()) {
+                    n.setNetworkdata(((NetworkEnvironmentNodeFailingTrickle) world).loadPartialNetwork(0, n));
+                    n.setTrickleAlg(new Trickle()); //Initializes trickle
+                    n.trickleInterval = n.getTrickleAlg().next();         //create interval {random, I]            
+                }
+                break;
+            case "trickleP":
                 world = new NetworkEnvironmentNodeFailingTrickle(agents, nodeLanguaje, g);
                 world.addNodes(nodes);
                 for (Node n : world.getNodes()) {
@@ -337,7 +347,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                         world.notifyObs();
                     } else if (environment != null) {
                         //System.out.println("set size: " + world.getSynsetNodesReported().size() + " vs " + nodesAlive + ", ma: " + world.getMobileAgents().size() + " vs " + world.getSynsetAgentsReported().size() + " wa:" + world.getAge());
-                        if (SimulationParameters.simMode.equals("mobileAgents")) {
+                        if (SimulationParameters.simMode.contains("mobileAgents")) {
                             //System.out.println("Khaaaaaaaaaaaaaaaaaa");
                             if (world.getSynsetNodesReported().size() >= nodesAlive && world.getSynsetAgentsReported().size() >= world.getMobileAgents().size()) {
                                 // System.out.println("entraaa");

@@ -36,6 +36,7 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
@@ -83,9 +84,9 @@ public class NetworkConsumptionLocalNRecv extends ApplicationFrame {
             if (file.isDirectory() && file.getName().endsWith("localstatsrecv")) {
                 //System.out.println("new seriiiiieeeeeeeeeee" + file);
                 XYSeriesCollection juegoDatos = new XYSeriesCollection();
-                XYSeries minimum = new XYSeries("MinNumberMsgRecv");
-                XYSeries maximum = new XYSeries("MaxNumberMsgRecv");
-                XYSeries median = new XYSeries("MedianNumberMsgRecv");
+                XYSeries minimum = new XYSeries("Min");
+                XYSeries maximum = new XYSeries("Max");
+                XYSeries median = new XYSeries("Median");
                 juegoDatos.addSeries(minimum);
                 juegoDatos.addSeries(maximum);
                 juegoDatos.addSeries(median);
@@ -197,7 +198,7 @@ public class NetworkConsumptionLocalNRecv extends ApplicationFrame {
                     minimum.add(k, st.getMin());
                     maximum.add(k, st.getMax());
                     median.add(k, st.getMedian());
-                    
+
                     try {
                         escribirLocalStatsNumberMsgRecv = new PrintWriter(new BufferedWriter(new FileWriter(localStatsNumberMsgRecv, true)));
                         escribirLocalStatsNumberMsgRecv.println(st.getMin() + "," + st.getMedian() + "," + st.getMax());
@@ -209,7 +210,7 @@ public class NetworkConsumptionLocalNRecv extends ApplicationFrame {
                 }
 
                 JFreeChart chart = ChartFactory.createXYLineChart(
-                        "Time vs Number of Messages Recv by Round" + file.getName(), "Time", "Number of Messages",
+                        "Time vs Number of Messages Recv by Round" + file.getName(), "Time (rounds)", "Number of Messages",
                         juegoDatos, PlotOrientation.VERTICAL,
                         true, true, false);
 
@@ -231,8 +232,14 @@ public class NetworkConsumptionLocalNRecv extends ApplicationFrame {
 
                 plot.setRenderer(renderer);
 
+                LegendTitle legend = chart.getLegend();
+                Font legendFont = legend.getItemFont();
+                float legendFontSize = legendFont.getSize();
+                Font newLegendFont = legendFont.deriveFont(legendFontSize * 1.5f);
+                legend.setItemFont(newLegendFont);
+
                 NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
-                Font font3 = new Font("Dialog", Font.PLAIN, 12);
+                Font font3 = new Font("Dialog", Font.PLAIN, 18);
                 domainAxis.setLabelFont(font3);
 
                 NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();

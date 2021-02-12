@@ -44,7 +44,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.simMode = String.valueOf(args[12]);
                 }
                 if (args.length > 13) {
-                    SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
+                    SimulationParameters.nhopsPrune = Integer.valueOf(args[13]);
                 }
                 if (args.length > 14) {
                     SimulationParameters.redundancyFactor = Integer.valueOf(args[14]);
@@ -85,7 +85,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.simMode = String.valueOf(args[12]);
                 }
                 if (args.length > 13) {
-                    SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
+                    SimulationParameters.nhopsPrune = Integer.valueOf(args[13]);
                 }
                 if (args.length > 14) {
                     SimulationParameters.redundancyFactor = Integer.valueOf(args[14]);
@@ -119,7 +119,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.simMode = String.valueOf(args[12]);
                 }
                 if (args.length > 13) {
-                    SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
+                    SimulationParameters.nhopsPrune = Integer.valueOf(args[13]);
                 }
                 if (args.length > 14) {
                     SimulationParameters.redundancyFactor = Integer.valueOf(args[14]);
@@ -159,7 +159,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.simMode = String.valueOf(args[13]);
                 }
                 if (args.length > 14) {
-                    SimulationParameters.nhopsChain = Integer.valueOf(args[14]);
+                    SimulationParameters.nhopsPrune = Integer.valueOf(args[14]);
                 }
                 if (args.length > 15) {
                     SimulationParameters.redundancyFactor = Integer.valueOf(args[15]);
@@ -197,7 +197,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.simMode = String.valueOf(args[12]);
                 }
                 if (args.length > 13) {
-                    SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
+                    SimulationParameters.nhopsPrune = Integer.valueOf(args[13]);
                 }
                 if (args.length > 14) {
                     SimulationParameters.redundancyFactor = Integer.valueOf(args[14]);
@@ -234,7 +234,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.simMode = String.valueOf(args[11]);
                 }
                 if (args.length > 12) {
-                    SimulationParameters.nhopsChain = Integer.valueOf(args[12]);
+                    SimulationParameters.nhopsPrune = Integer.valueOf(args[12]);
                 }
                 if (args.length > 13) {
                     SimulationParameters.redundancyFactor = Integer.valueOf(args[13]);
@@ -271,7 +271,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.simMode = String.valueOf(args[11]);
                 }
                 if (args.length > 12) {
-                    SimulationParameters.nhopsChain = Integer.valueOf(args[12]);
+                    SimulationParameters.nhopsPrune = Integer.valueOf(args[12]);
                 }
                 if (args.length > 13) {
                     SimulationParameters.redundancyFactor = Integer.valueOf(args[13]);
@@ -309,7 +309,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.simMode = String.valueOf(args[12]);
                 }
                 if (args.length > 13) {
-                    SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
+                    SimulationParameters.nhopsPrune = Integer.valueOf(args[13]);
                 }
                 if (args.length > 14) {
                     SimulationParameters.redundancyFactor = Integer.valueOf(args[14]);
@@ -346,7 +346,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.simMode = String.valueOf(args[12]);
                 }
                 if (args.length > 13) {
-                    SimulationParameters.nhopsChain = Integer.valueOf(args[13]);
+                    SimulationParameters.nhopsPrune = Integer.valueOf(args[13]);
                 }
                 if (args.length > 14) {
                     SimulationParameters.redundancyFactor = Integer.valueOf(args[14]);
@@ -383,7 +383,7 @@ public class DataReplicationNodeFailingMain {
                     SimulationParameters.simMode = String.valueOf(args[11]);
                 }
                 if (args.length > 12) {
-                    SimulationParameters.nhopsChain = Integer.valueOf(args[12]);
+                    SimulationParameters.nhopsPrune = Integer.valueOf(args[12]);
                 }
                 if (args.length > 13) {
                     SimulationParameters.redundancyFactor = Integer.valueOf(args[13]);

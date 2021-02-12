@@ -96,7 +96,7 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                                 StringSerializer s = new StringSerializer();
                                 HashMap<String, ArrayList> ndata = (HashMap) s.deserialize(inbox[2]); //networkdata
                                 n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), ndata));
-                                n.pruneInformation(SimulationParameters.nhopsChain); //use nhops to prune data
+                                n.pruneInformation(SimulationParameters.nhopsPrune); //use nhops to prune data
                             }
                         }
                     }
@@ -156,16 +156,15 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
      * load neighobours using bfs
      *
      * @param neighbours neighbours of a node
-     * @param nhopsChain number of hops
+     * @param nhops number of hops
      * @param v node to load neighbour
      * @param distances //distances to a determined node
      */
-    private void loadNeighboursBFS(ArrayList<MyVertex> neighbours, int nhopsChain, MyVertex v, HashMap<MyVertex, Integer> distances) {
-        //System.out.println("nopsChain:" + nhopsChain);
+    private void loadNeighboursBFS(ArrayList<MyVertex> neighbours, int nhops, MyVertex v, HashMap<MyVertex, Integer> distances) {
         int lvls = 1;
         Deque<MyVertex> q = new LinkedList<>();
         distances.put(v, 0);
-        if (nhopsChain == 0) {
+        if (nhops == 0) {
             return;
         }
         while (v != null) {

@@ -8,8 +8,7 @@ package graphmetrics;
 /*
 * Compiled box plot of similarity in networks vs round number.
 *
-*/
-
+ */
 import java.awt.Color;
 import java.awt.Font;
 import java.io.File;
@@ -161,7 +160,7 @@ public class CompiledBoxPlotSimilarityVsRound extends ApplicationFrame {
         int lastRoundReaded = 0;
         String graphtype = "";
         String mode = "";
-        
+
         for (File file : files) {
             if (file.isDirectory() && file.getName().endsWith("similarity")) {
                 HashMap<Integer, ArrayList<Double>> SimilarityVsSimulation = new HashMap<>();
@@ -264,7 +263,7 @@ public class CompiledBoxPlotSimilarityVsRound extends ApplicationFrame {
                             dataset.add(SimilarityVsSimulation.get(r), file.getName(), getTechniqueName(mode) + "\n" + graphtype + "\n" + fn2 + "\n");
                         }
                     }
-                    
+
                     //}
                 }
                 SimilarityVsSimulation = new HashMap<>();
@@ -286,14 +285,14 @@ public class CompiledBoxPlotSimilarityVsRound extends ApplicationFrame {
         renderer.setSeriesOutlinePaint(0, Color.BLACK);
         renderer.setSeriesOutlinePaint(1, Color.BLACK);
         renderer.setUseOutlinePaintForWhiskers(true);
-        Font legendFont = new Font("SansSerif", Font.PLAIN, 16);
+        Font legendFont = new Font("SansSerif", Font.PLAIN, 18);
         renderer.setLegendTextFont(0, legendFont);
         renderer.setLegendTextFont(1, legendFont);
         renderer.setMedianVisible(true);
         renderer.setMeanVisible(false);
         final CategoryPlot plot = new CategoryPlot(dataset, xAxis, yAxis, renderer);
 
-        Font font = new Font("Dialog", Font.PLAIN, 12);
+        Font font = new Font("Dialog", Font.PLAIN, 18);
         xAxis.setTickLabelFont(font);
         yAxis.setTickLabelFont(font);
         yAxis.setLabelFont(font);
@@ -320,6 +319,14 @@ public class CompiledBoxPlotSimilarityVsRound extends ApplicationFrame {
         legendText.setPosition(RectangleEdge.BOTTOM);
         chart.addSubtitle(legendText);
         chart.getLegend().setItemFont(font);
+
+        TextTitle legendTextSim = null;
+        legendTextSim = new TextTitle("Similarity percentage");
+        legendTextSim.setFont(font);
+        legendTextSim.setPosition(RectangleEdge.LEFT);
+        chart.addSubtitle(legendTextSim);
+        chart.getLegend().setItemFont(font);
+        
         FileOutputStream output;
         try {
             output = new FileOutputStream("Similarity vs round" + ".jpg");

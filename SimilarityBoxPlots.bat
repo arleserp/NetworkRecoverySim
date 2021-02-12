@@ -1,11 +1,11 @@
-java -classpath dist/NetworkRecoverySim.jar graphmetrics.BoxPlotSimilarityVsRound . 1000 650 5
-java -classpath dist/NetworkRecoverySim.jar graphmetrics.CompiledBoxPlotSimilarityVsRound . 400 400
-java -classpath dist/NetworkRecoverySim.jar graphmetrics.MemoryConsumption 
+java -classpath dist/NetworkRecoverySim.jar graphmetrics.BoxPlotSimilarityVsRound . 500 300 10
+java -classpath dist/NetworkRecoverySim.jar graphmetrics.CompiledBoxPlotSimilarityVsRound . 400 400 1
+java -classpath dist/NetworkRecoverySim.jar graphmetrics.MemoryConsumption off 0.0 600 400 1000000
 java -classpath dist/NetworkRecoverySim.jar graphmetrics.NetworkConsumptionLocalNSent
-java -classpath dist/NetworkRecoverySim.jar graphmetrics.NetworkConsumptionLocalNRecv
+java -classpath dist/NetworkRecoverySim.jar graphmetrics.NetworkConsumptionLocalNRecv off 0.0 600 400
 REM java -classpath dist/NetworkRecoverySim.jar graphmetrics.NetworkConsumption
 java -classpath dist/NetworkRecoverySim.jar graphmetrics.NetworkConsumptionLocalSizeSent
-java -classpath dist/NetworkRecoverySim.jar graphmetrics.NetworkConsumptionLocalSizeRecv
+java -classpath dist/NetworkRecoverySim.jar graphmetrics.NetworkConsumptionLocalSizeRecv off 0.0 600 400 1000000
 java -classpath dist/NetworkRecoverySim.jar graphmetrics.NumberOfMobileAgents
 
 java -classpath dist/NetworkRecoverySim.jar graphmetrics.MemoryConsumptionMa 

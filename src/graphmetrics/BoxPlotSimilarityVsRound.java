@@ -68,7 +68,7 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
      */
     public BoxPlotSimilarityVsRound(final String title, ArrayList<Double> pf) {
         super(title);
-         createSampleDataset(pf);
+        createSampleDataset(pf);
         /*final CategoryAxis xAxis = new CategoryAxis("");
         //final NumberAxis yAxis = new NumberAxis("Round number");
         final NumberAxis yAxis = new NumberAxis("");
@@ -289,7 +289,7 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
                 renderer.setMeanVisible(false);
                 final CategoryPlot plot = new CategoryPlot(dataset, xAxis, yAxis, renderer);
 
-                Font font = new Font("Dialog", Font.PLAIN, 12);
+                Font font = new Font("Dialog", Font.PLAIN, 16);
                 xAxis.setTickLabelFont(font);
                 yAxis.setTickLabelFont(font);
                 yAxis.setLabelFont(font);
@@ -309,7 +309,7 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
 
                 TextTitle legendText = null;
                 if (Pf.size() == 1) {
-                    legendText = new TextTitle("Time");
+                    legendText = new TextTitle("Time (rounds)");
                 } else {
                     legendText = new TextTitle("Round number - Probability of Failure");
                 }
@@ -317,6 +317,16 @@ public class BoxPlotSimilarityVsRound extends ApplicationFrame {
                 legendText.setFont(font);
                 legendText.setPosition(RectangleEdge.BOTTOM);
                 chart.addSubtitle(legendText);
+                chart.getLegend().setItemFont(font);
+
+                TextTitle legendTextSim = null;
+                if (Pf.size() == 1) {
+                    legendTextSim = new TextTitle("Similarity percentage");
+                }
+
+                legendTextSim.setFont(font);
+                legendTextSim.setPosition(RectangleEdge.LEFT);
+                chart.addSubtitle(legendTextSim);
                 chart.getLegend().setItemFont(font);
 
                 FileOutputStream output;

@@ -36,6 +36,7 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
@@ -210,6 +211,12 @@ public class NetworkConsumptionLocalSizeSent extends ApplicationFrame {
                         juegoDatos, PlotOrientation.VERTICAL,
                         true, true, false);
 
+                LegendTitle legend = chart.getLegend();
+                Font legendFont = legend.getItemFont();
+                float legendFontSize = legendFont.getSize();
+                Font newLegendFont = legendFont.deriveFont(legendFontSize * 1.5f);
+                legend.setItemFont(newLegendFont);
+                
                 //chart.setBackgroundPaint(Color.white);
                 final XYPlot plot = chart.getXYPlot();
                 plot.setBackgroundPaint(Color.WHITE);
@@ -229,7 +236,7 @@ public class NetworkConsumptionLocalSizeSent extends ApplicationFrame {
                 plot.setRenderer(renderer);
 
                 NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
-                Font font3 = new Font("Dialog", Font.PLAIN, 12);
+                Font font3 = new Font("Dialog", Font.PLAIN, 18);
                 domainAxis.setLabelFont(font3);
 
                 NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
