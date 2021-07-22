@@ -67,9 +67,15 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
                     HashMap<String, ArrayList> recvData = c.getNetworkdata();
                     a.setNetworkdata(HashMapOperations.JoinSets(a.getNetworkdata(), recvData));
 
+                    if (SimulationParameters.simMode.equals("mobileAgentsP")){
+                        a.pruneData(c, SimulationParameters.nhopsPrune); //prune data
+                    }
                     //inconsistency detected step 6 trickle
                     //if (HashMapOperations.calculateDifference(a.getNetworkdata(), localData).isEmpty()) {
-                    if (HashMapOperations.isContained(recvData, localData) && HashMapOperations.isContained(localData, recvData)) {
+                    
+                    if (SimulationParameters.simMode.equals("mobileAgentsP") && HashMapOperations.isContained(recvData, localData)) { //increase redundancy 
+                        a.incr();
+                    }else if (HashMapOperations.isContained(recvData, localData) && HashMapOperations.isContained(localData, recvData)) {
                         //System.out.println("increase!");
                         a.incr();
                     } else {
@@ -188,7 +194,11 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
                                 String source = inbox[1]; //origin of message
                                 StringSerializer s = new StringSerializer();
                                 HashMap<String, ArrayList> recvData = (HashMap) s.deserialize(inbox[2]); //networkdata
-                                HashMap<String, ArrayList> localData = n.getNetworkdata();
+
+                                //Prune data
+                                if (SimulationParameters.simMode.equals("mobileAgentsP")) {
+                                    recvData = n.pruneReceivedData(SimulationParameters.nhopsPrune, recvData);
+                                }                               
                                 n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), recvData));
                             }
                         }
@@ -211,6 +221,7 @@ public class NetworkEnvironmentNodeFailingMobileAgents extends NetworkEnvironmen
             }
             available.release();
             getSynsetNodesReported().add(n.getName());
+            
             try {
                 synchronized (objBlock) {
                     objBlock.wait();

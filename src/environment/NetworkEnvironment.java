@@ -6,6 +6,9 @@ import java.util.Vector;
 import edu.uci.ics.jung.graph.*;
 import graphutil.GraphCreator;
 import graphutil.MyVertex;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,6 +36,7 @@ import staticagents.NodeFailingProgram;
 import trickle.Trickle;
 import unalcol.agents.simulate.util.SimpleLanguage;
 import util.HashMapOperations;
+import org.json.JSONObject;
 
 public abstract class NetworkEnvironment extends Environment {
 
@@ -54,7 +58,7 @@ public abstract class NetworkEnvironment extends Environment {
     private final AtomicLong simulationTime = new AtomicLong(0); // Counter of time
     private final long startingTime; // Starting time
     private final AtomicInteger idMa = new AtomicInteger(10000);
-
+    private int nodesNumber;
     public final static Object objBlock = new Object();
 
     public int[][] getInitialAdyacenceMatrix() {
@@ -117,6 +121,9 @@ public abstract class NetworkEnvironment extends Environment {
     private double[][] numberMessagesSentMaMatrix;
     private double[][] sizeMessagesSentMaMatrix;
 
+    //Dictionary with new info
+    JSONObject dataReport;
+
     public Set getSynsetNodesReported() {
         return synsetNodesReported;
     }
@@ -124,6 +131,8 @@ public abstract class NetworkEnvironment extends Environment {
     public Set getSynsetAgentsReported() {
         return synsetAgentReported;
     }
+
+    public HashMap<String, Integer> dictNodeNeighCount;
 
     /**
      *
@@ -136,6 +145,7 @@ public abstract class NetworkEnvironment extends Environment {
         TopologySingleton.getInstance().init(gr);
 
         int size = gr.getVertexCount();
+        nodesNumber = size;
         adyacenceMatrix = new int[size][size];
         initialAdyacenceMatrix = new int[size][size];
         //mapVertex =  new ConcurrentHashMap<>();T
@@ -192,11 +202,17 @@ public abstract class NetworkEnvironment extends Environment {
         numberMessagesSentMatrix = new double[adyacenceMatrix.length][SimulationParameters.maxIter + 1];
         sizeMessagesSentMatrix = new double[adyacenceMatrix.length][SimulationParameters.maxIter + 1];
 
-        memoryConsumptionMaMatrix = new double[SimulationParameters.popSize * 500][SimulationParameters.maxIter + 1];
-        numberMessagesReceivedMaMatrix = new double[SimulationParameters.popSize * 500][SimulationParameters.maxIter + 1];;
-        sizeMessagesReceivedMaMatrix = new double[SimulationParameters.popSize * 500][SimulationParameters.maxIter + 1];;
-        numberMessagesSentMaMatrix = new double[SimulationParameters.popSize * 500][SimulationParameters.maxIter + 1];
-        sizeMessagesSentMaMatrix = new double[SimulationParameters.popSize * 500][SimulationParameters.maxIter + 1];;
+        memoryConsumptionMaMatrix = new double[SimulationParameters.popSize * 1000][SimulationParameters.maxIter + 1];
+        numberMessagesReceivedMaMatrix = new double[SimulationParameters.popSize * 1000][SimulationParameters.maxIter + 1];;
+        sizeMessagesReceivedMaMatrix = new double[SimulationParameters.popSize * 1000][SimulationParameters.maxIter + 1];;
+        numberMessagesSentMaMatrix = new double[SimulationParameters.popSize * 1000][SimulationParameters.maxIter + 1];
+        sizeMessagesSentMaMatrix = new double[SimulationParameters.popSize * 1000][SimulationParameters.maxIter + 1];;
+
+        dataReport = new JSONObject();
+        dataReport.append("nhopsPrune", SimulationParameters.nhopsPrune);
+        dataReport.append("maxIter", SimulationParameters.maxIter);
+        dataReport.append("pf", SimulationParameters.npf);
+        dictNodeNeighCount = new HashMap<>();
 
     }
 
@@ -359,14 +375,18 @@ public abstract class NetworkEnvironment extends Environment {
         //increase messages received
         currentNode.increaseMessagesRecvByRound(pingRecv, numberRecv);
 
-        if (!nodesAlive.isEmpty() && nodesAlive.get(0).contains("p")) {
-            String min = Collections.min(nodesAlive, (o1, o2)
-                    -> Integer.valueOf(o1.substring(1)).compareTo(Integer.valueOf(o2.substring(1))));
-            return min;
-        } else {
-            String min = Collections.min(nodesAlive, (o1, o2)
-                    -> Integer.valueOf(o1).compareTo(Integer.valueOf(o2)));
-            return min;
+        try {
+            if (!nodesAlive.isEmpty() && nodesAlive.get(0).contains("p")) {
+                String min = Collections.min(nodesAlive, (o1, o2)
+                        -> Integer.valueOf(o1.substring(1)).compareTo(Integer.valueOf(o2.substring(1))));
+                return min;
+            } else {
+                String min = Collections.min(nodesAlive, (o1, o2)
+                        -> Integer.valueOf(o1).compareTo(Integer.valueOf(o2)));
+                return min;
+            }
+        } catch (Exception e) {
+            return Collections.min(nodesAlive, (o1, o2) -> o1.compareTo(o2));
         }
     }
 
@@ -459,7 +479,7 @@ public abstract class NetworkEnvironment extends Environment {
                 nod.setNetworkdata(new HashMap(creator.getNetworkdata()));
 
                 //Prune data
-                if (SimulationParameters.simMode.equals("trickleP")) {
+                if (SimulationParameters.simMode.equals("trickleP") || SimulationParameters.simMode.equals("mobileAgentsP") || SimulationParameters.simMode.equals("nhopsinfo")) {
                     nod.pruneInformation(SimulationParameters.nhopsPrune);
                 }
 
@@ -710,6 +730,9 @@ public abstract class NetworkEnvironment extends Environment {
         synchronized (nodes) {
             for (Node n : lnodes) {
                 nodes.put(n.getName(), n);
+                if (SimulationParameters.nhopsPrune > 0) {
+                    dictNodeNeighCount.put(n.getName(), getNNeighboursHop(n));
+                }
             }
         }
     }
@@ -1069,7 +1092,7 @@ public abstract class NetworkEnvironment extends Environment {
      * @param v node to load neighbour
      * @param distances //distances to a determined node
      */
-    private void loadNeighboursBFS(ArrayList<MyVertex> neighbours, int nhops, MyVertex v, HashMap<MyVertex, Integer> distances) {
+    private void loadNeighboursBFS(int nhops, MyVertex v, HashMap<MyVertex, Integer> distances) {
         Deque<MyVertex> q = new LinkedList<>();
         distances.put(v, 0);
         if (nhops == 0) {
@@ -1091,6 +1114,7 @@ public abstract class NetworkEnvironment extends Environment {
 
     /**
      * For each node load the neighbourhood in n hops of n
+     *
      * @param nhops number of hops
      * @param n node
      * @return
@@ -1098,23 +1122,19 @@ public abstract class NetworkEnvironment extends Environment {
     public HashMap<String, ArrayList> loadPartialNetwork(int nhops, Node n) {
         HashMap<String, ArrayList> localNetworkInfo = new HashMap<>();
         HashMap<MyVertex, Integer> distances = new HashMap<>();
-        ArrayList<MyVertex> neighbours = new ArrayList<>();
-        neighbours.add(n.getVertex());
 
-        loadNeighboursBFS(neighbours, nhops, n.getVertex(), distances);
-
-        n.setDistancesToNode(distances);
+        loadNeighboursBFS(nhops, n.getVertex(), distances);
+        //System.out.println(n.getName() + ", bfs:" + distances);
+        //dfs(nhops, n.getVertex(), distances);
+        //System.out.println(n.getName() + ", dfs:" + distances);
+        //System.out.print("BFS " + n.getName() + ":");
         for (MyVertex v : distances.keySet()) {
-            if (!neighbours.contains(v) && distances.get(v) <= nhops) {
-                neighbours.add(v);
+            if (distances.get(v) <= nhops) {
+                //System.out.print(v.getName() + ":" + distances.get(v) + " ");
+                localNetworkInfo.put(v.getName(), new ArrayList<>(getTopologyNames(v)));
             }
         }
-        System.out.println("node" + n + " neigh size:" + neighbours.size());
-        //System.out.println("");
-        for (MyVertex v : neighbours) {
-            localNetworkInfo.put(v.getName(), new ArrayList<>(getTopologyNames(v)));
-        }
-        //System.out.println("node" + n + "info = " + localNetworkInfo);
+        //System.out.println();
         return localNetworkInfo;
     }
 
@@ -1157,4 +1177,51 @@ public abstract class NetworkEnvironment extends Environment {
     public Map<Integer, Double> getMemoryConsumptionMa() {
         return memoryConsumptionMa;
     }
+
+    public void fillDataReport() throws IOException {
+        JSONObject roundData = new JSONObject();
+        synchronized (nodes) {
+            HashMap<String, Node> nodesInfo = new HashMap<>(nodes);
+            JSONObject nodesData = new JSONObject();
+
+            for (String id : nodesInfo.keySet()) {
+                JSONObject nodeData = new JSONObject();
+                Node n = nodesInfo.get(id);
+                int nn = dictNodeNeighCount.get(n.getName());
+                int sizeInfo = n.getNetworkdata().size();
+                nodeData.put("status", n.getVertex().getStatus());
+                //System.out.println(n.getName() + ":" + sizeInfo + "--" + nn);
+                nodeData.put("sizeinfo", sizeInfo);
+                nodeData.put("nneignhops", nn);
+                nodeData.put("percinfo", (double) sizeInfo / nodesNumber);
+                nodeData.put("percinfohop", (double) sizeInfo / nn);
+                //System.out.println("nn::"+nn);
+                nodesData.put(id, nodeData);
+            }
+            dataReport.put("" + getAge(), nodesData);
+            //System.out.println(dataReport);
+        }
+    }
+
+    public JSONObject getDataReport() {
+        return dataReport;
+    }
+
+    public int getNNeighboursHop(Node n) {
+        HashMap<MyVertex, Integer> distances = new HashMap<>();
+        loadNeighboursBFS(SimulationParameters.nhopsPrune, n.getVertex(), distances);
+        //System.out.println(n.getName() + ", bfs:" + distances);
+        //dfs(nhops, n.getVertex(), distances);
+        //System.out.println(n.getName() + ", dfs:" + distances);
+        //System.out.print("BFS " + n.getName() + ":");
+        int cont = 0;
+        for (MyVertex v : distances.keySet()) {
+            if (distances.get(v) <= SimulationParameters.nhopsPrune) {
+                cont++;
+            }
+        }
+        //dfs(SimulationParameters.nhopsPrune, n.getVertex(), distances);
+        return cont;
+    }
+
 }

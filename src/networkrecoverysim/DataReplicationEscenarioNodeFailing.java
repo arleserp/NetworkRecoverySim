@@ -255,6 +255,20 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
 //                world = new NetworkEnvironmentPheromoneReplicationNodeFailingChain(agents, agentsLanguage, nodeLanguaje, g);
 //                ((NetworkEnvironmentPheromoneReplicationNodeFailingChain) world).addNodes(nodes);
                 break;
+            case "mobileAgentsP":
+                world = new NetworkEnvironmentNodeFailingMobileAgents(agents, nodeLanguaje, mobileAgentsLanguage, g);
+                world.addNodes(nodes);
+                world.addMobileAgents(mobileAgents);
+                for (Node n : world.getNodes()) {
+                    n.setNetworkdata(world.loadPartialNetwork(0, n)); //load current neighbourhood in hop 0
+                    //System.out.println("n" +n);
+                }
+
+//            case "chain":
+//            case "chainnoloop":
+//                world = new NetworkEnvironmentPheromoneReplicationNodeFailingChain(agents, agentsLanguage, nodeLanguaje, g);
+//                ((NetworkEnvironmentPheromoneReplicationNodeFailingChain) world).addNodes(nodes);
+                break;
             case "allinfo":
                 world = new NetworkEnvironmentNodeFailingAllInfo(agents, nodeLanguaje, g);
                 world.addNodes(nodes);
@@ -263,7 +277,6 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 }
                 break;
             case "nhopsinfo":
-                
                 world = new NetworkEnvironmentNodeFailingAllInfo(agents, nodeLanguaje, g);
                 world.addNodes(nodes);
                 for (Node n : world.getNodes()) {
@@ -276,7 +289,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 for (Node n : world.getNodes()) {
                     n.setNetworkdata(((NetworkEnvironmentNodeFailingTrickle) world).loadPartialNetwork(0, n));
                     n.setTrickleAlg(new Trickle()); //Initializes trickle
-                    n.trickleInterval = n.getTrickleAlg().next();         //create interval {random, I]            
+                    n.trickleInterval = n.getTrickleAlg().next();         //create interval {random, I]      
                 }
                 break;
             case "trickleP":
@@ -285,7 +298,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                 for (Node n : world.getNodes()) {
                     n.setNetworkdata(((NetworkEnvironmentNodeFailingTrickle) world).loadPartialNetwork(0, n));
                     n.setTrickleAlg(new Trickle()); //Initializes trickle
-                    n.trickleInterval = n.getTrickleAlg().next();         //create interval {random, I]            
+                    n.trickleInterval = n.getTrickleAlg().next();         //create interval {random, I]                      
                 }
                 break;
 //            default:
@@ -355,6 +368,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                                         + currentTime + " nodes " + world.getNodesAlive() + " mobile: " + world.getMobileAgents().size());
                                 world.getSynsetNodesReported().clear();
                                 world.getSynsetAgentsReported().clear();
+
+                                //here we can obtain any info we want
+                                world.fillDataReport();
+                                System.out.println("JSON: " + world.getDataReport());
                                 world.updateWorldAge();
 
                                 synchronized (world.objBlock) {
@@ -387,6 +404,10 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                                 System.out.println("wa: " + world.getAge() + " simulation time: "
                                         + currentTime + " nodes " + world.getNodesAlive() + " mobile: " + world.getMobileAgents().size());
                                 world.getSynsetNodesReported().clear();
+                                //here we can obtain any info we want
+
+                                world.fillDataReport();
+                                //System.out.println("JSON: " + world.getDataReport());
                                 world.updateWorldAge();
 
                                 synchronized (world.objBlock) {

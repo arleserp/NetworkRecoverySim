@@ -139,17 +139,22 @@ public class MyVertex implements Comparable<MyVertex>, Serializable {
     }
 
     /**
-     * Compare two vertex named p#id 
-     * @param f1  
+     * Compare two vertex named p#id
+     *
+     * @param f1
      * @param f2
      * @return compareTo of vertex
      */
     @Override
     public int compareTo(MyVertex t) {
-        if(t.getName().contains("p")){
-            return Integer.valueOf(this.getName().substring(1)).compareTo(Integer.valueOf(t.getName().substring(1)));                
-        }else{
-            return ((Integer)(Integer.parseInt(this.getName()))).compareTo(Integer.parseInt(t.getName()));                
+        try {
+            if (t.getName().contains("p")) {
+                return Integer.valueOf(this.getName().substring(1)).compareTo(Integer.valueOf(t.getName().substring(1)));
+            } else {
+                return ((Integer) (Integer.parseInt(this.getName()))).compareTo(Integer.parseInt(t.getName()));
+            }
+        } catch (Exception ex) {
+            return this.getName().compareTo(t.getName());
         }
     }
 }

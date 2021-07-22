@@ -263,11 +263,9 @@ public class CompiledBoxPlotSimilarityVsRound extends ApplicationFrame {
                             dataset.add(SimilarityVsSimulation.get(r), file.getName(), getTechniqueName(mode) + "\n" + graphtype + "\n" + fn2 + "\n");
                         }
                     }
-
                     //}
                 }
                 SimilarityVsSimulation = new HashMap<>();
-
             }
         }
 

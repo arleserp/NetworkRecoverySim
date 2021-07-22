@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import networkrecoverysim.SimulationParameters;
 import serialization.StringSerializer;
+import staticagents.Node;
 import unalcol.agents.Action;
 import unalcol.agents.Agent;
 import unalcol.agents.AgentProgram;
@@ -437,5 +438,31 @@ public class MobileAgent extends Agent implements Serializable {
         sizeMessagesSent = 0;
         numberMessagesRecvByRound = 0;
         numberMessagesSentByRound = 0;
+    }
+
+    /**
+     * Prune data in the memory of a mobile agent
+     * @param c
+     * @param nhops 
+     */
+    public void pruneData(Node c, int nhops) {
+        ArrayList<String> neighbours = new ArrayList<>();
+        neighbours.add(c.getVertex().getName());
+        HashMap<String, Integer> distances = new HashMap<>();
+        c.getListNeighboursHop(nhops, c.getName(), distances);
+        
+        for (String neig : distances.keySet()) {
+            if (!neighbours.contains(neig) && distances.get(neig) <= nhops) {
+                neighbours.add(neig);
+            }
+        }
+        
+        HashMap<String, ArrayList> networkDatatmp = new HashMap<>();
+        for (String s : neighbours) {
+            if (networkdata.containsKey(s)) {
+                networkDatatmp.put(s, networkdata.get(s));
+            }
+        }
+        networkdata = networkDatatmp;
     }
 }

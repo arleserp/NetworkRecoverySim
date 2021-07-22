@@ -60,7 +60,7 @@ public class diffExportToGephiCSV {
                     fileA = fileA.replace(".graph", "");
                     //spoke condition added for spokecommunitycircle+v+100+beta+0.5+degree+4+clusters+4+sp+10+length+3
                     // communitycircle+v+100+beta+0.5+degree+4+clusters+4 is substring
-                    if (fileB.isFile() && extension.equals("graph") && fileB.getName().contains(fileA) && fileA.contains("spoke") == fileB.getName().contains("spoke")) {
+                    if (fileB.isFile() && extension.equals("graph")){ // && fileB.getName().contains(fileA) && fileA.contains("spoke") == fileB.getName().contains("spoke")) {
                         if (originalNetwork == null) {
                             System.out.println("You must load network A");
                         }

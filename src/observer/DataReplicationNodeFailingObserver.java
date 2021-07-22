@@ -19,7 +19,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.SortedSet;
@@ -230,7 +229,6 @@ public class DataReplicationNodeFailingObserver implements Observer {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
-                    
                     //Write stats about total network consumption and total memory consumption by round
                     String resourcesdirNameMa = baseFilename + "+resourcesMa";
                     createDir(resourcesdirNameMa);
@@ -250,8 +248,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     } catch (IOException ex) {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    
-                    
+
                     //write stats about amount of messages recv a send in each round, it is shown the overhead imposed for the algorithm in each round.
                     String localNetworkStatsSent;
 
@@ -276,8 +273,6 @@ public class DataReplicationNodeFailingObserver implements Observer {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
-                    
-                    
                     //write stats about amount of messages recv a send in each round, it is shown the overhead imposed for the algorithm in each round.
                     String localNetworkStatsSentMa;
                     //Write stats about total network consumption and total memory consumption by round
@@ -300,8 +295,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     } catch (IOException ex) {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    
-                    
+
                     //Recv: 
                     String localNetworkStatsRecv;
                     String localStatsRecvdirName = baseFilename + "+localstatsrecv";
@@ -323,12 +317,11 @@ public class DataReplicationNodeFailingObserver implements Observer {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
-                    
-                     //Recv: 
+                    //Recv: 
                     String localNetworkStatsRecvMa;
                     String localStatsRecvdirNameMa = baseFilename + "+localstatsrecvMa";
                     createDir(localStatsRecvdirNameMa);
-                    String localStatsRecvFileNameMa = "./" + localStatsRecvdirNameMa + "/" + baseFilename + "+" + getFileName()+ "+recvMa.csv";
+                    String localStatsRecvFileNameMa = "./" + localStatsRecvdirNameMa + "/" + baseFilename + "+" + getFileName() + "+recvMa.csv";
 
                     PrintWriter escribirLocalStatsRecvMa = null;
                     try {
@@ -344,8 +337,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     } catch (IOException ex) {
                         Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    
-                    
+
                     //System.out.println("pasoooo!");
                     //Statistics regarding messages received by node.
                     StatisticsProviderReplicationNodeFailing sti = new StatisticsProviderReplicationNodeFailing(baseFilename);
@@ -354,6 +346,20 @@ public class DataReplicationNodeFailingObserver implements Observer {
                     sti.printStatistics(world, finalSimilarity);
 
                     SimulationParameters.stopTime = System.currentTimeMillis();
+
+                     //Recv: 
+                    String jsonDataReportdirNameMa = "jsonDataReport";
+                    createDir(jsonDataReportdirNameMa);
+                    String jsonDataReportFileNameMa = "./" + jsonDataReportdirNameMa + "/" + baseFilename + "+" + getFileName() + "+jsonDataReport.json";
+                    BufferedWriter br;
+                    try {
+                        br = new BufferedWriter(new FileWriter(jsonDataReportFileNameMa));
+                        br.write(world.getDataReport().toString());
+                        br.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
                     System.out.println("The end" + world.getAge() + " time of simulation:" + (SimulationParameters.stopTime - SimulationParameters.startTime) + " number of node failures: " + world.getNumberFailures());
                     System.exit(0);
                 }

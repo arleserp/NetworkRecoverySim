@@ -358,7 +358,7 @@ public class Node extends Agent {
      * @param nodeName node that callas the algorithm
      * @param distances distances to a determined node
      */
-    private void getListNeighboursHop(int nhops, String nodeName, HashMap<String, Integer> distances) {
+    public void getListNeighboursHop(int nhops, String nodeName, HashMap<String, Integer> distances) {
         Deque<String> q = new LinkedList<>();
         distances.put(nodeName, 0);
         if (nhops == 0) {
