@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -18,7 +19,6 @@ public class GephiToGraph {
     public static void main(String[] args) throws FileNotFoundException, IOException {
         File srcDir = new File("./csvgephi");
         File[] filesSrcDir = srcDir.listFiles();
-
 
         for (File fileSrc : filesSrcDir) {
             String fileA = fileSrc.getName();
@@ -40,8 +40,10 @@ public class GephiToGraph {
                 HashMap<String, MyVertex> vertices = new HashMap<>();
 
                 String st;
-                while ((st = br.readLine()) != null) {                    
+                while ((st = br.readLine()) != null) {
                     if (!(st.equals("Id"))) {
+                        st = st.replace("\"", "");
+                        System.out.println("put:"  + st);
                         vertices.put(st, new MyVertex(st));
                         g.addVertex(vertices.get(st));
                     }
@@ -55,10 +57,22 @@ public class GephiToGraph {
                 GraphCreator.EdgeFactory edge_factory = new GraphCreator.EdgeFactory();
                 while ((st = edbr.readLine()) != null) {
                     System.out.println("st:" + st);
-                    String[] l = st.split(",");
-                    if (!l[0].equals("Source")) {                        
-                        //Integer dest = Integer.parseInt(l[1]);
-                        g.addEdge(edge_factory.create(), vertices.get(l[0]), vertices.get(l[1]));
+                    if (st.contains("\"")) {   
+                        
+                        String[] l = st.split("\"");
+                        System.out.println("entra " + Arrays.toString(l));
+                        for(int ii=0;ii< l.length; ii++){
+                            System.out.println("parte " + ii + ": " + l[ii]);
+                        }
+                        if (!l[0].equals("Source")) {                            
+                            g.addEdge(edge_factory.create(), vertices.get(l[1].trim()), vertices.get(l[3].trim()));
+                        }
+                    } else {
+                        String[] l = st.split(",");
+                        if (!l[0].equals("Source")) {
+                            //Integer dest = Integer.parseInt(l[1]);
+                            g.addEdge(edge_factory.create(), vertices.get(l[0]), vertices.get(l[1]));
+                        }
                     }
                 }
                 edbr.close();

@@ -46,6 +46,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
     HashMap<Integer, Integer> nodesComplete = new HashMap<>();
     HashMap<Integer, StatisticsNormalDist> roundVsInfoAvg = new HashMap<>();
     private String nodeStatsFileName = null;
+    private String reportDateFileName = "";
 
     public static int lastagentsAlive = -1;
     public static int lastnodesAlive = -1;
@@ -347,7 +348,7 @@ public class DataReplicationNodeFailingObserver implements Observer {
 
                     SimulationParameters.stopTime = System.currentTimeMillis();
 
-                     //Recv: 
+                    //Recv: 
                     String jsonDataReportdirNameMa = "jsonDataReport";
                     createDir(jsonDataReportdirNameMa);
                     String jsonDataReportFileNameMa = "./" + jsonDataReportdirNameMa + "/" + baseFilename + "+" + getFileName() + "+jsonDataReport.json";
@@ -367,11 +368,15 @@ public class DataReplicationNodeFailingObserver implements Observer {
         }
     }
 
-    private String getFileName() {
-        DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
-        Date today = Calendar.getInstance().getTime();
-        String reportDate = df.format(today);
-        return reportDate;
+    public String getFileName() {
+        if (reportDateFileName.isEmpty()) {
+            DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+            Date today = Calendar.getInstance().getTime();
+            String reportDate = df.format(today);
+            reportDateFileName = reportDate;
+            return reportDate;
+        }
+        return reportDateFileName;
     }
 
     private void createDir(String filename) {

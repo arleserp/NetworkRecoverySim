@@ -29,6 +29,7 @@ import util.HashMapOperations;
  * @author arlese.rodriguezp
  */
 public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
+
     HashMap<String, ArrayList> networkInfo;
     boolean loaded;
 
@@ -50,6 +51,13 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
             }
 
             Node n = (Node) agent;
+            if (getSynsetNodesReported().contains(n.getName())) {
+                //System.out.println(n + " nodes reported " + getSynsetNodesReported());
+                //System.out.println("node" + n.getName() + " already ran this round" + getAge());
+                available.release();
+                return false;
+            }
+
 
             //System.out.println(n.getName() + ":" + n.getRounds());
             //This part is primitive send to neigbors 
@@ -91,11 +99,11 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                                 }
                             }
 
-                            if (SimulationParameters.simMode.equals("nhopsinfo") && inbox[0].equals("networkdatanode")) {
+                            if (SimulationParameters.simMode.equals("nhopsinfo") && inbox[0].equals("networkdatanode")) {                                
                                 String source = inbox[1]; //origin of message
                                 StringSerializer s = new StringSerializer();
                                 HashMap<String, ArrayList> ndata = (HashMap) s.deserialize(inbox[2]); //networkdata
-                                n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), ndata));
+                                n.setNetworkdata(HashMapOperations.JoinSets(n.getNetworkdata(), ndata));                                
                                 n.pruneInformation(SimulationParameters.nhopsPrune); //use nhops to prune data
                             }
                         }
@@ -109,6 +117,10 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
                     System.out.println("action not specified");
             }
 
+            
+            //added to test failures with all info
+            updateMapAmountNodesWithInfoOfNode(n);
+            
             //2. Compare topology data with information obtained
             if (n.status != Action.DIE) {
                 if (SimulationParameters.activateReplication.equals("replalgon")) {
@@ -188,4 +200,5 @@ public class NetworkEnvironmentNodeFailingAllInfo extends NetworkEnvironment {
     public boolean isOccuped(MyVertex v) {
         return false;
     }
+
 }

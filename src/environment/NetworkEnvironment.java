@@ -121,8 +121,12 @@ public abstract class NetworkEnvironment extends Environment {
     private double[][] numberMessagesSentMaMatrix;
     private double[][] sizeMessagesSentMaMatrix;
 
-    //Dictionary with new info
+    //Dictionary with new info    
     JSONObject dataReport;
+
+    //Map with information about number of nodes that has info about a node
+    private Map<String, Integer> mapAmountNodesWithInfoOfNode = Collections.synchronizedMap(new HashMap<>());
+    
 
     public Set getSynsetNodesReported() {
         return synsetNodesReported;
@@ -141,7 +145,9 @@ public abstract class NetworkEnvironment extends Environment {
      * @param gr
      */
     public NetworkEnvironment(Vector<Agent> _agents, SimpleLanguage _nlanguage, SimpleLanguage _alanguage, Graph gr) {
+        
         super(_agents);
+       // System.out.println("Agents " + _agents + " node :" + _agents.size());
         TopologySingleton.getInstance().init(gr);
 
         int size = gr.getVertexCount();
@@ -1184,21 +1190,47 @@ public abstract class NetworkEnvironment extends Environment {
             HashMap<String, Node> nodesInfo = new HashMap<>(nodes);
             JSONObject nodesData = new JSONObject();
 
-            for (String id : nodesInfo.keySet()) {
+            for (String id : nodeVersion.keySet()) {
+                //String id : nodesInfo.keySet()) {
                 JSONObject nodeData = new JSONObject();
-                Node n = nodesInfo.get(id);
-                int nn = dictNodeNeighCount.get(n.getName());
-                int sizeInfo = n.getNetworkdata().size();
-                nodeData.put("status", n.getVertex().getStatus());
-                //System.out.println(n.getName() + ":" + sizeInfo + "--" + nn);
-                nodeData.put("sizeinfo", sizeInfo);
-                nodeData.put("nneignhops", nn);
-                nodeData.put("percinfo", (double) sizeInfo / nodesNumber);
-                nodeData.put("percinfohop", (double) sizeInfo / nn);
+                nodeData.put("version", nodeVersion.get(id));
+                
+                if (nodesInfo.containsKey(id)) {                    
+                    Node n = nodesInfo.get(id);
+                    int nn = dictNodeNeighCount.get(n.getName());                    
+                    int sizeInfo = n.getNetworkdata().size();
+                    nodeData.put("status", n.getVertex().getStatus());
+                    //System.out.println(n.getName() + ":" + sizeInfo + "--" + nn);
+                    nodeData.put("sizeinfo", sizeInfo);
+                    nodeData.put("nneignhops", nn);
+                    nodeData.put("percinfo", (double) sizeInfo / nodesNumber);
+                    nodeData.put("percinfohop", (double) sizeInfo / nn);
+                    if (mapAmountNodesWithInfoOfNode.containsKey(id)) {
+                        nodeData.put("nneighWithNodeInfo", mapAmountNodesWithInfoOfNode.get(id));
+                    }else{
+                        nodeData.put("nneighWithNodeInfo", 0);
+                    }
+                } else {
+                    nodeData.put("status", "failed");
+                    //System.out.println(n.getName() + ":" + sizeInfo + "--" + nn);
+                    nodeData.put("sizeinfo", 0);
+                    nodeData.put("nneignhops", 0);
+                    nodeData.put("percinfo", 0);
+                    nodeData.put("percinfohop", 0);
+                    System.out.println("map" + mapAmountNodesWithInfoOfNode);
+                    if (mapAmountNodesWithInfoOfNode.containsKey(id)) {
+                        nodeData.put("nneighWithNodeInfo", mapAmountNodesWithInfoOfNode.get(id));
+                    }else{
+                        nodeData.put("nneighWithNodeInfo", 0);
+                    }
+                    
+                }
+
                 //System.out.println("nn::"+nn);
                 nodesData.put(id, nodeData);
             }
             dataReport.put("" + getAge(), nodesData);
+            mapAmountNodesWithInfoOfNode.clear();
             //System.out.println(dataReport);
         }
     }
@@ -1222,6 +1254,21 @@ public abstract class NetworkEnvironment extends Environment {
         }
         //dfs(SimulationParameters.nhopsPrune, n.getVertex(), distances);
         return cont;
+    }
+
+    protected void updateMapAmountNodesWithInfoOfNode(Node n) {       
+        synchronized (mapAmountNodesWithInfoOfNode) {
+            for (String neig : n.getNetworkdata().keySet()) {
+                if (!mapAmountNodesWithInfoOfNode.containsKey(neig)) {
+                    System.out.println("round " + round + " node: " + n.getName() + ", neigh:" +  neig);
+                    mapAmountNodesWithInfoOfNode.put(neig, 1);
+                } else {
+                    int prev = mapAmountNodesWithInfoOfNode.get(neig);
+                    System.out.println("round " + round + " node: " + n.getName() + ", neigh:" +  neig);
+                    mapAmountNodesWithInfoOfNode.put(neig, prev + 1);
+                }
+            }
+        }
     }
 
 }

@@ -77,22 +77,30 @@ public class diffExportToGephiCSV {
                             nodeCSVFile = new PrintWriter(new BufferedWriter(new FileWriter(nodeCSV, true)));
                             
                             //HashMap<String, Integer> dictIds = new HashMap<>();
-                            nodeCSVFile.println("Id,State");
-
+                            int c = 0;
+                            String sep = ",";
                             // draw the vertices in the graph
                             for (MyVertex v : originalNetwork.getVertices()) {
+                                if(v.getName().contains(",")){
+                                    sep = ";";
+                                }           
+                                if(c == 0){
+                                    nodeCSVFile.println("Id"+sep+"State");
+                                    c++;
+                                }
                                 // Get the position of the vertex                
                                 if (containsVertex(B, v.getName())) {
-                                    nodeCSVFile.println(v.getName() + ",Recovered");
+                                    nodeCSVFile.println(v.getName() + sep + "Recovered");
                                 } else {
-                                    nodeCSVFile.println(v.getName() + ",Failed");
+                                    nodeCSVFile.println(v.getName() + sep + "Failed");
                                 }
                                 //dictIds.put(v.getName());
                             }
 
                             try (PrintWriter edgeCSVFile = new PrintWriter(new BufferedWriter(new FileWriter(edgeCSV, true)))) {
-                                edgeCSVFile.println("Source,Target,Type,State");
                                 
+                                final String sepa = sep;
+                                edgeCSVFile.println("Source"+ sepa +"Target"+ sepa +"Type"+ sepa +"State");
                                 // draw the edges
                                 //problem of implementation????? when i repair network structure I rename edges!
                                 originalNetwork.getEdges().stream().forEach((ed) -> {
@@ -106,9 +114,9 @@ public class diffExportToGephiCSV {
                                     String newnameC = "eb" + endpoints.getFirst().getName() + endpoints.getSecond().getName();
                                     String newnameD = "eb" + endpoints.getSecond().getName() + endpoints.getFirst().getName();
                                     if (!B.containsEdge(ed) && !B.containsEdge(newname) && !B.containsEdge(newnameB) && !B.containsEdge(newnameC) && !B.containsEdge(newnameD)) {
-                                        edgeCSVFile.println(endpoints.getFirst().getName() + "," + endpoints.getSecond().getName() + ",Undirected,EdgeFailed");
+                                        edgeCSVFile.println(endpoints.getFirst().getName() + sepa + endpoints.getSecond().getName() + sepa + "Undirected"+ sepa +"EdgeFailed");
                                     } else {
-                                        edgeCSVFile.println(endpoints.getFirst().getName() + "," + endpoints.getSecond().getName() + ",Undirected,EdgeRecovered");
+                                        edgeCSVFile.println(endpoints.getFirst().getName() + sepa + endpoints.getSecond().getName() + sepa +"Undirected"+ sepa +"EdgeRecovered");
                                     }
                                 });
                                 nodeCSVFile.close();

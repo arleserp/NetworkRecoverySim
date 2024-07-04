@@ -49,6 +49,9 @@ import environment.NetworkEnvironmentNodeFailingAllInfo;
 import environment.NetworkEnvironmentNodeFailingMobileAgents;
 import environment.NetworkEnvironmentNodeFailingMulticast;
 import environment.NetworkEnvironmentNodeFailingTrickle;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -76,14 +79,14 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
     Hashtable<String, Object> positions;
     int width;
     int height;
-    private Observer graphVisualization;
+    private Observer graphVisualizationObserver;
 
-    public Observer getGraphVisualization() {
-        return graphVisualization;
+    public Observer getGraphVisualizationObserver() {
+        return graphVisualizationObserver;
     }
 
-    public void setGraphVisualization(Observer graphVisualization) {
-        this.graphVisualization = graphVisualization;
+    public void setGraphVisualizationObserver(Observer graphVisualizationObserver) {
+        this.graphVisualizationObserver = graphVisualizationObserver;
     }
     ArrayList<MyVertex> locations;
     HashMap<String, Long> networkDelays;
@@ -234,7 +237,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
             }
         }
 
-        graphVisualization = new DataReplicationNodeFailingObserver(this);
+        graphVisualizationObserver = new DataReplicationNodeFailingObserver(this);
 
         switch (SimulationParameters.simMode) {
             case "broadcast":
@@ -301,6 +304,53 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                     n.trickleInterval = n.getTrickleAlg().next();         //create interval {random, I]                      
                 }
                 break;
+            case "nhopsinfogetdatasize":
+                String baseFilename = SimulationParameters.reportsFilenamePrefix;
+                System.out.println("base filename:" + baseFilename);
+                String reportFilename = baseFilename + "-nhopsinfogetdatasize-" + "-hops-" + SimulationParameters.nhopsPrune + "-dataSize.csv";
+                world = new NetworkEnvironmentNodeFailingAllInfo(agents, nodeLanguaje, g);
+                world.addNodes(nodes);
+
+                BufferedWriter br;
+                try {
+                    br = new BufferedWriter(new FileWriter(reportFilename));
+
+                    for (Node n : world.getNodes()) {
+                        n.setNetworkdata(((NetworkEnvironmentNodeFailingAllInfo) world).loadPartialNetwork(SimulationParameters.nhopsPrune, n));
+                        StringSerializer serializer = new StringSerializer();
+                        String totalData = serializer.serialize(n.getNetworkdata());
+                        System.out.println(n.getName() + "," + totalData.length() + "," + n.getNetworkdata().size());
+                        br.write(n.getName() + "," + totalData.length() + "," + n.getNetworkdata().size() + "\n");
+                    }
+                    br.close();
+                } catch (IOException ex) {
+                    System.out.println("Error!");
+                    //Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+                break;
+            case "loadalldatasize":
+                String baseFilenameall = SimulationParameters.reportsFilenamePrefix;
+                System.out.println("base filename:" + baseFilenameall);
+                String reportFilenameall = baseFilenameall + "-allnetwork-dataSize.csv";
+                world = new NetworkEnvironmentNodeFailingAllInfo(agents, nodeLanguaje, g);
+                world.addNodes(nodes);
+                BufferedWriter brall;
+                try {
+                    brall = new BufferedWriter(new FileWriter(reportFilenameall));
+                    for (Node n : world.getNodes()) {
+                        n.setNetworkdata(((NetworkEnvironmentNodeFailingAllInfo) world).loadAllTopology());
+                        StringSerializer serializer = new StringSerializer();
+                        String totalData = serializer.serialize(n.getNetworkdata());
+                        System.out.println(n.getName() + "," + totalData.length() + "," + n.getNetworkdata().size());
+                        brall.write(n.getName() + "," + totalData.length() + "," + n.getNetworkdata().size() + "\n");
+                    }
+                    brall.close();
+                } catch (IOException ex) {
+                    System.out.println("Error!");
+                    //Logger.getLogger(DataReplicationNodeFailingObserver.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                break;
 //            default:
 //                world = new NetworkEnvironmentPheromoneReplicationNodeFailing(agents, agentsLanguage, nodeLanguaje, g);
 //                ((NetworkEnvironmentPheromoneReplicationNodeFailing) world).addNodes(nodes);
@@ -308,10 +358,15 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
         }
 
         //world.setNetworkDelays(networkDelays);
-        world.initNodesVersion();
-        world.addObserver(graphVisualization);
-        world.sChAndNot();
-        world.run();
+        if (!SimulationParameters.simMode.equals("nhopsinfogetdatasize") && !SimulationParameters.simMode.equals("loadalldatasize")) {
+            world.initNodesVersion();
+            world.addObserver(graphVisualizationObserver);
+            world.sChAndNot();
+            world.run();
+        } else {
+            System.out.println("The end!");
+            System.exit(0);
+        }
     }
 
     public Graph<MyVertex, String> getInitialNetwork() {
@@ -366,14 +421,16 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                                 // System.out.println("entraaa");
                                 System.out.println("wa: " + world.getAge() + " simulation time: "
                                         + currentTime + " nodes " + world.getNodesAlive() + " mobile: " + world.getMobileAgents().size());
-                                world.getSynsetNodesReported().clear();
-                                world.getSynsetAgentsReported().clear();
 
                                 //here we can obtain any info we want
-                                world.fillDataReport();
-                                System.out.println("JSON: " + world.getDataReport());
-                                world.updateWorldAge();
+                                if (SimulationParameters.activateReplication.equals("replalgon")) {
+                                    world.fillDataReport();
+                                    System.out.println("JSON: " + world.getDataReport());
+                                }
 
+                                world.updateWorldAge();
+                                world.getSynsetNodesReported().clear();
+                                world.getSynsetAgentsReported().clear();
                                 synchronized (world.objBlock) {
                                     world.objBlock.notifyAll();
                                 }
@@ -403,13 +460,13 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
                                 //world.printMatrix();
                                 System.out.println("wa: " + world.getAge() + " simulation time: "
                                         + currentTime + " nodes " + world.getNodesAlive() + " mobile: " + world.getMobileAgents().size());
-                                world.getSynsetNodesReported().clear();
-                                //here we can obtain any info we want
-
-                                world.fillDataReport();
+                                if (SimulationParameters.activateReplication.equals("replalgon")) {
+                                    world.fillDataReport();
+                                }
                                 //System.out.println("JSON: " + world.getDataReport());
                                 world.updateWorldAge();
-
+                                world.getSynsetNodesReported().clear();
+                                //here we can obtain any info we want
                                 synchronized (world.objBlock) {
                                     world.objBlock.notifyAll();
                                 }
@@ -550,10 +607,7 @@ public class DataReplicationEscenarioNodeFailing implements Runnable {
     }
 
     private String getFileName() {
-        DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
-        Date today = Calendar.getInstance().getTime();
-        String reportDate = df.format(today);
-        return reportDate;
+        return ((DataReplicationNodeFailingObserver) graphVisualizationObserver).getFileName();
     }
 
 //    public HashMap<Integer, String> getNetworkAndMemoryStats() {

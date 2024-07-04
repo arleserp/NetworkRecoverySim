@@ -585,5 +585,4 @@ public class Node extends Agent {
     public void setTrickleAlg(Trickle trickleAlg) {
         this.trickleAlg = trickleAlg;
     }
-
 }
